@@ -1,17 +1,13 @@
 # Current State
-- **Milestone**: M1
-- **Task**: Not started
+- **Milestone**: M2
+- **Task**: Task 1 (Create M2 tasks)
 - **Status**: ready_for_next
 
 ## Next Action
-1. Clone or access warp repo: https://github.com/NVIDIA/warp.git
-2. Install warp package (`pip install warp-lang`)
-3. Run a basic example from `warp/examples/`
-4. Create `tasks/m1_tasks.md` with detailed task breakdown
+Create `tasks/m2_tasks.md` and begin implementing IR extractor in `code/extraction/ir_extractor.py`.
 
 ## Blockers
 None
 
 ## Session Log
-- (initial): Project initialized, ready to begin M1
-
+- 2025-12-25: Completed M1. Installed warp, ran examples, and reverse-engineered the codegen process. Documented findings in `notes/warp_basics.md`. Confirmed that `ModuleBuilder` and `codegen_kernel` can be used to extract C++ IR.
