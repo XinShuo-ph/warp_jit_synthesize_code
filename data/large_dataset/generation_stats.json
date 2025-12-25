@@ -1,0 +1,20 @@
+{
+  "total_requested": 500,
+  "generated": 338,
+  "failed": 1,
+  "start_time": 1766630374.20818,
+  "end_time": null,
+  "template_counts": {
+    "math": 81,
+    "reduce": 70,
+    "vec": 58,
+    "cond": 64,
+    "map": 65
+  },
+  "errors": [
+    {
+      "index": 583,
+      "error": "[Errno 32] Broken pipe"
+    }
+  ]
+}
