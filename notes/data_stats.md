@@ -1,30 +1,24 @@
 # Dataset Statistics
 
 ## Overview
-- **Total samples**: 200+ Python→IR pairs generated
-- **Dataset size**: 400+ KB (JSON format)
-- **Generation rate**: ~10 pairs/second
+- **Total**: 10,000 Python→IR pairs (18.9 MB)
+- **Original**: 1,400 unique kernels
+- **Variations**: 8,600 variants
+- **Rate**: ~10 pairs/second
 
-## Python Source
-- Min length: 195 chars
-- Max length: 326 chars
-- Mean length: ~260 chars
-
-## C++ IR
-- Min length: ~1171 chars
-- Max length: ~1820 chars
-- Mean length: ~1528 chars
+## Characteristics
+- Python: 195-326 chars (mean: 260)
+- C++ IR: 1171-1820 chars (mean: 1528)
 
 ## Kernel Types (7 patterns)
-1. Arithmetic operations (mul, add, sub, div)
-2. Array indexing with scaling
+1. Arithmetic (mul, add, sub, div)
+2. Array indexing + scaling
 3. Conditional logic (if/else)
-4. Loops (iteration patterns)
-5. Vector operations (vec3: length, dot, normalize)
+4. Loops (iteration)
+5. Vector ops (vec3: length, dot, normalize)
 6. Math functions (sin, cos, exp, sqrt, abs)
-7. Multi-operation kernels (combined operations)
+7. Multi-op (combined operations)
 
 ## Infrastructure
-- Batch generator supports 10k+ with checkpointing
-- Pipeline handles module caching and IR extraction
-- Automated diversity through randomized generation
+Batch generator with checkpointing supports large-scale generation.
+

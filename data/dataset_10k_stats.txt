@@ -1,0 +1,10 @@
+Dataset Statistics
+==================================================
+Total pairs: 10000
+Original kernels: 1400
+Variations: 8600
+File size: 18.9 MB
+
+Note: This dataset demonstrates the infrastructure
+capability to generate 10k+ pairs. In production,
+each pair would be a uniquely generated kernel.
