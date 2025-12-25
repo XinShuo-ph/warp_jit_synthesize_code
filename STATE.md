@@ -1,17 +1,14 @@
 # Current State
 - **Milestone**: M1
-- **Task**: Not started
+- **Task**: Work moved under `jit/` (see `jit/STATE.md`)
 - **Status**: ready_for_next
 
 ## Next Action
-1. Clone or access warp repo: https://github.com/NVIDIA/warp.git
-2. Install warp package (`pip install warp-lang`)
-3. Run a basic example from `warp/examples/`
-4. Create `tasks/m1_tasks.md` with detailed task breakdown
+Open `jit/STATE.md` and continue from its **Next Action**.
 
 ## Blockers
 None
 
 ## Session Log
-- (initial): Project initialized, ready to begin M1
+- 2025-12-25: Created `jit/` structure; completed M1 (Warp install, 3 examples run, notes). See `jit/STATE.md`.
 
