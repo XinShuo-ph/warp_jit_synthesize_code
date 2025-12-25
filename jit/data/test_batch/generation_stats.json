@@ -1,0 +1,14 @@
+{
+  "total_pairs": 100,
+  "category_distribution": {
+    "arithmetic": 17,
+    "vector": 25,
+    "matrix": 20,
+    "control_flow": 11,
+    "math": 14,
+    "atomic": 13
+  },
+  "generation_time_sec": 0.5088620185852051,
+  "pairs_per_second": 196.5169266867886,
+  "seed": 42
+}

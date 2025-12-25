@@ -1,0 +1,12 @@
+{
+  "python_source": "@wp.kernel\ndef arith_udbdpw(a: wp.array(dtype=float), b: wp.array(dtype=float), c: wp.array(dtype=float)):\n    tid = wp.tid()\n    var_0 = wp.log(wp.abs(a[tid]) + 1.0)\n    var_1 = wp.sin(var_0)\n    var_2 = var_1 * b[tid]\n    var_3 = wp.sin(var_2)\n    c[tid] = var_3\n",
+  "cpp_forward": "void arith_udbdpw_286f420d_cpu_kernel_forward(\n    wp::launch_bounds_t dim,\n    size_t task_index,\n    wp_args_arith_udbdpw_286f420d *_wp_args)\n{\n    //---------\n    // argument vars\n    wp::array_t<wp::float32> var_a = _wp_args->a;\n    wp::array_t<wp::float32> var_b = _wp_args->b;\n    wp::array_t<wp::float32> var_c = _wp_args->c;\n    //---------\n    // primal vars\n    wp::int32 var_0;\n    wp::float32* var_1;\n    wp::float32 var_2;\n    wp::float32 var_3;\n    const wp::float32 var_4 = 1.0;\n    wp::float32 var_5;\n    wp::float32 var_6;\n    wp::float32 var_7;\n    wp::float32* var_8;\n    wp::float32 var_9;\n    wp::float32 var_10;\n    wp::float32 var_11;\n    //---------\n    // forward\n    // def arith_udbdpw(a: wp.array(dtype=float), b: wp.array(dtype=float), c: wp.array(dtype=float)):       <L 9>\n    // tid = wp.tid()                                                                         <L 10>\n    var_0 = builtin_tid1d();\n    // var_0 = wp.log(wp.abs(a[tid]) + 1.0)                                                   <L 11>\n    var_1 = wp::address(var_a, var_0);\n    var_3 = wp::load(var_1);\n    var_2 = wp::abs(var_3);\n    var_5 = wp::add(var_2, var_4);\n    var_6 = wp::log(var_5);\n    // var_1 = wp.sin(var_0)                                                                  <L 12>\n    var_7 = wp::sin(var_6);\n    // var_2 = var_1 * b[tid]                                                                 <L 13>\n    var_8 = wp::address(var_b, var_0);\n    var_10 = wp::load(var_8);\n    var_9 = wp::mul(var_7, var_10);\n    // var_3 = wp.sin(var_2)                                                                  <L 14>\n    var_11 = wp::sin(var_9);\n    // c[tid] = var_3                                                                         <L 15>\n    wp::array_store(var_c, var_0, var_11);\n}",
+  "metadata": {
+    "kernel_name": "arith_udbdpw",
+    "category": "arithmetic",
+    "description": "Arithmetic kernel with 4 operations",
+    "device": "cpu",
+    "num_ops": 4,
+    "seed": 5493
+  }
+}

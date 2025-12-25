@@ -1,0 +1,13 @@
+{
+  "python_source": "@wp.kernel\ndef mat_pqvrok(a: wp.array(dtype=wp.mat33), b: wp.array(dtype=wp.mat33), out: wp.array(dtype=wp.mat33)):\n    tid = wp.tid()\n    out[tid] = a[tid] * b[tid]\n",
+  "cpp_forward": "void mat_pqvrok_fa48fc48_cpu_kernel_forward(\n    wp::launch_bounds_t dim,\n    size_t task_index,\n    wp_args_mat_pqvrok_fa48fc48 *_wp_args)\n{\n    //---------\n    // argument vars\n    wp::array_t<wp::mat_t<3, 3, wp::float32>> var_a = _wp_args->a;\n    wp::array_t<wp::mat_t<3, 3, wp::float32>> var_b = _wp_args->b;\n    wp::array_t<wp::mat_t<3, 3, wp::float32>> var_out = _wp_args->out;\n    //---------\n    // primal vars\n    wp::int32 var_0;\n    wp::mat_t<3, 3, wp::float32>* var_1;\n    wp::mat_t<3, 3, wp::float32>* var_2;\n    wp::mat_t<3, 3, wp::float32> var_3;\n    wp::mat_t<3, 3, wp::float32> var_4;\n    wp::mat_t<3, 3, wp::float32> var_5;\n    //---------\n    // forward\n    // def mat_pqvrok(a: wp.array(dtype=wp.mat33), b: wp.array(dtype=wp.mat33), out: wp.array(dtype=wp.mat33)):       <L 22>\n    // tid = wp.tid()                                                                         <L 23>\n    var_0 = builtin_tid1d();\n    // out[tid] = a[tid] * b[tid]                                                             <L 24>\n    var_1 = wp::address(var_a, var_0);\n    var_2 = wp::address(var_b, var_0);\n    var_4 = wp::load(var_1);\n    var_5 = wp::load(var_2);\n    var_3 = wp::mul(var_4, var_5);\n    wp::array_store(var_out, var_0, var_3);\n}",
+  "metadata": {
+    "kernel_name": "mat_pqvrok",
+    "category": "matrix",
+    "description": "Matrix-matrix multiply (wp.mat33)",
+    "device": "cpu",
+    "mat_type": "wp.mat33",
+    "operation": "mat_mat",
+    "seed": 3565
+  }
+}
