@@ -1,0 +1,9 @@
+{
+  "python": "@wp.kernel\ndef kernel_arithmetic(\n    a: wp.array(dtype=float),\n    b: wp.array(dtype=float),\n    c: wp.array(dtype=float)\n):\n    \"\"\"Simple arithmetic: c = (a + b) * 2.0 - 1.0\"\"\"\n    tid = wp.tid()\n    c[tid] = (a[tid] + b[tid]) * 2.0 - 1.0\n",
+  "ir": "void kernel_arithmetic_f6eaaf6e_cpu_kernel_forward(\n    wp::launch_bounds_t dim,\n    size_t task_index,\n    wp_args_kernel_arithmetic_f6eaaf6e *_wp_args)\n{\n    //---------\n    // argument vars\n    wp::array_t<wp::float32> var_a = _wp_args->a;\n    wp::array_t<wp::float32> var_b = _wp_args->b;\n    wp::array_t<wp::float32> var_c = _wp_args->c;\n    //---------\n    // primal vars\n    wp::int32 var_0;\n    wp::float32* var_1;\n    wp::float32* var_2;\n    wp::float32 var_3;\n    wp::float32 var_4;\n    wp::float32 var_5;\n    const wp::float32 var_6 = 2.0;\n    wp::float32 var_7;\n    const wp::float32 var_8 = 1.0;\n    wp::float32 var_9;\n    //---------\n    // forward\n    // def kernel_arithmetic(                                                                 <L 19>\n    // tid = wp.tid()                                                                         <L 25>\n    var_0 = builtin_tid1d();\n    // c[tid] = (a[tid] + b[tid]) * 2.0 - 1.0                                                 <L 26>\n    var_1 = wp::address(var_a, var_0);\n    var_2 = wp::address(var_b, var_0);\n    var_4 = wp::load(var_1);\n    var_5 = wp::load(var_2);\n    var_3 = wp::add(var_4, var_5);\n    var_7 = wp::mul(var_3, var_6);\n    var_9 = wp::sub(var_7, var_8);\n    wp::array_store(var_c, var_0, var_9);\n}",
+  "metadata": {
+    "python_length": 241,
+    "ir_length": 1279,
+    "python_hash": "3cc365fa7b1eed42"
+  }
+}

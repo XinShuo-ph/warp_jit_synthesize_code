@@ -1,0 +1,14 @@
+{
+  "python_code": "@wp.kernel\ndef kernel_78(a0: wp.array(dtype=float), a1: wp.array(dtype=float), a2: wp.array(dtype=float), b0: wp.array(dtype=float), b1: wp.array(dtype=float)):\n    tid = wp.tid()\n    b0[tid] = a0[tid] - a1[tid]\n    b1[tid] = a0[tid] - a1[tid]\n",
+  "ir_code": "void kernel_78_e45217f0_cpu_kernel_forward(\n    wp::launch_bounds_t dim,\n    size_t task_index,\n    wp_args_kernel_78_e45217f0 *_wp_args)\n{\n    //---------\n    // argument vars\n    wp::array_t<wp::float32> var_a0 = _wp_args->a0;\n    wp::array_t<wp::float32> var_a1 = _wp_args->a1;\n    wp::array_t<wp::float32> var_a2 = _wp_args->a2;\n    wp::array_t<wp::float32> var_b0 = _wp_args->b0;\n    wp::array_t<wp::float32> var_b1 = _wp_args->b1;\n    //---------\n    // primal vars\n    wp::int32 var_0;\n    wp::float32* var_1;\n    wp::float32* var_2;\n    wp::float32 var_3;\n    wp::float32 var_4;\n    wp::float32 var_5;\n    wp::float32* var_6;\n    wp::float32* var_7;\n    wp::float32 var_8;\n    wp::float32 var_9;\n    wp::float32 var_10;\n    //---------\n    // forward\n    // def kernel_78(a0: wp.array(dtype=float), a1: wp.array(dtype=float), a2: wp.array(dtype=float), b0: wp.array(dtype=float), b1: wp.array(dtype=float)):       <L 4>\n    // tid = wp.tid()                                                                         <L 5>\n    var_0 = builtin_tid1d();\n    // b0[tid] = a0[tid] - a1[tid]                                                            <L 6>\n    var_1 = wp::address(var_a0, var_0);\n    var_2 = wp::address(var_a1, var_0);\n    var_4 = wp::load(var_1);\n    var_5 = wp::load(var_2);\n    var_3 = wp::sub(var_4, var_5);\n    wp::array_store(var_b0, var_0, var_3);\n    // b1[tid] = a0[tid] - a1[tid]                                                            <L 7>\n    var_6 = wp::address(var_a0, var_0);\n    var_7 = wp::address(var_a1, var_0);\n    var_9 = wp::load(var_6);\n    var_10 = wp::load(var_7);\n    var_8 = wp::sub(var_9, var_10);\n    wp::array_store(var_b1, var_0, var_8);\n}",
+  "metadata": {
+    "kernel_name": "kernel_78",
+    "op_type": "arithmetic",
+    "complexity": 2,
+    "num_inputs": 3,
+    "num_outputs": 2,
+    "has_scalar_param": false,
+    "python_lines": 6,
+    "ir_lines": 45
+  }
+}

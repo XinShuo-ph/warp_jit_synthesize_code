@@ -1,0 +1,14 @@
+{
+  "python_code": "@wp.kernel\ndef kernel_28(values: wp.array(dtype=float), categories: wp.array(dtype=int), results: wp.array(dtype=float)):\n    tid = wp.tid()\n    val = values[tid]\n    \n    if val < -1.0:\n        categories[tid] = 0\n        results[tid] = val * val\n    elif val < 1.0:\n        categories[tid] = 1\n        results[tid] = val\n    else:\n        categories[tid] = 2\n        results[tid] = wp.sqrt(val)\n",
+  "ir_code": "void _prepare_node_sort_kernel_2830f90b_cpu_kernel_forward(\n    wp::launch_bounds_t dim,\n    size_t task_index,\n    wp_args__prepare_node_sort_kernel_2830f90b *_wp_args)\n{\n    //---------\n    // argument vars\n    wp::array_t<wp::int32> var_node_indices = _wp_args->node_indices;\n    wp::array_t<wp::int32> var_sort_keys = _wp_args->sort_keys;\n    wp::array_t<wp::int32> var_sort_values = _wp_args->sort_values;\n    wp::int32 var_divisor = _wp_args->divisor;\n    //---------\n    // primal vars\n    wp::int32 var_0;\n    wp::int32* var_1;\n    wp::int32 var_2;\n    wp::int32 var_3;\n    const wp::int32 var_4 = 0;\n    bool var_5;\n    const wp::int32 var_6 = 2147483647;\n    wp::int32 var_7;\n    wp::int32 var_8;\n    //---------\n    // forward\n    // def _prepare_node_sort_kernel(                                                         <L 225>\n    // i = wp.tid()                                                                           <L 231>\n    var_0 = builtin_tid1d();\n    // node = node_indices[i]                                                                 <L 232>\n    var_1 = wp::address(var_node_indices, var_0);\n    var_3 = wp::load(var_1);\n    var_2 = wp::copy(var_3);\n    // sort_keys[i] = wp.where(node >= 0, node, NULL_NODE_INDEX)                              <L 233>\n    var_5 = (var_2 >= var_4);\n    var_7 = wp::where(var_5, var_2, var_6);\n    wp::array_store(var_sort_keys, var_0, var_7);\n    // sort_values[i] = i // divisor                                                          <L 234>\n    var_8 = wp::floordiv(var_0, var_divisor);\n    wp::array_store(var_sort_values, var_0, var_8);\n}",
+  "metadata": {
+    "kernel_name": "kernel_28",
+    "op_type": "conditional",
+    "complexity": 2,
+    "num_inputs": 1,
+    "num_outputs": 1,
+    "has_scalar_param": false,
+    "python_lines": 15,
+    "ir_lines": 39
+  }
+}
