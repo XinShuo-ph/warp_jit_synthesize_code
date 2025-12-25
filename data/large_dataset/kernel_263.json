@@ -1,0 +1,14 @@
+{
+  "python_code": "@wp.kernel\ndef kernel_263(x: wp.array(dtype=float), result: wp.array(dtype=float)):\n    tid = wp.tid()\n    val = x[tid]\n    result[tid] = wp.sin(val) + wp.cos(val * 2.0)\n",
+  "ir_code": "void kernel_263_9be24a16_cpu_kernel_forward(\n    wp::launch_bounds_t dim,\n    size_t task_index,\n    wp_args_kernel_263_9be24a16 *_wp_args)\n{\n    //---------\n    // argument vars\n    wp::array_t<wp::float32> var_a0 = _wp_args->a0;\n    wp::array_t<wp::float32> var_b0 = _wp_args->b0;\n    wp::float32 var_scale = _wp_args->scale;\n    //---------\n    // primal vars\n    wp::int32 var_0;\n    wp::float32* var_1;\n    wp::float32 var_2;\n    wp::float32 var_3;\n    //---------\n    // forward\n    // def kernel_263(a0: wp.array(dtype=float), b0: wp.array(dtype=float), scale: float):       <L 4>\n    // tid = wp.tid()                                                                         <L 5>\n    var_0 = builtin_tid1d();\n    // b0[tid] = a0[tid] * scale                                                              <L 6>\n    var_1 = wp::address(var_a0, var_0);\n    var_3 = wp::load(var_1);\n    var_2 = wp::mul(var_3, var_scale);\n    wp::array_store(var_b0, var_0, var_2);\n}",
+  "metadata": {
+    "kernel_name": "kernel_263",
+    "op_type": "trigonometry",
+    "complexity": 2,
+    "num_inputs": 1,
+    "num_outputs": 1,
+    "has_scalar_param": false,
+    "python_lines": 6,
+    "ir_lines": 27
+  }
+}

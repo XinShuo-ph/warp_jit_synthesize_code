@@ -1,0 +1,14 @@
+{
+  "python_code": "@wp.kernel\ndef kernel_8(a0: wp.array(dtype=float), a1: wp.array(dtype=float), b0: wp.array(dtype=float), b1: wp.array(dtype=float), scale: float):\n    tid = wp.tid()\n    b0[tid] = a0[tid] * scale\n    b1[tid] = a0[tid] * scale\n",
+  "ir_code": "void _extract_inverse_diagonal_scalar_3bf3cfd2_cpu_kernel_forward(\n    wp::launch_bounds_t dim,\n    size_t task_index,\n    wp_args__extract_inverse_diagonal_scalar_3bf3cfd2 *_wp_args)\n{\n    //---------\n    // argument vars\n    wp::array_t<wp::float64> var_diag_array = _wp_args->diag_array;\n    wp::array_t<wp::float64> var_inv_diag = _wp_args->inv_diag;\n    wp::int32 var_use_abs = _wp_args->use_abs;\n    //---------\n    // primal vars\n    wp::int32 var_0;\n    wp::float64* var_1;\n    const wp::int32 var_2 = 0;\n    bool var_3;\n    wp::float64 var_4;\n    wp::float64 var_5;\n    //---------\n    // forward\n    // def _extract_inverse_diagonal_scalar(                                                  <L 1>\n    // i = wp.tid()                                                                           <L 6>\n    var_0 = builtin_tid1d();\n    // inv_diag[i] = _inverse_diag_coefficient(diag_array[i], use_abs != 0)                   <L 7>\n    var_1 = wp::address(var_diag_array, var_0);\n    var_3 = (var_use_abs != var_2);\n    var_5 = wp::load(var_1);\n    var_4 = _inverse_diag_coefficient_0(var_5, var_3);\n    wp::array_store(var_inv_diag, var_0, var_4);\n}",
+  "metadata": {
+    "kernel_name": "kernel_8",
+    "op_type": "arithmetic",
+    "complexity": 1,
+    "num_inputs": 2,
+    "num_outputs": 2,
+    "has_scalar_param": true,
+    "python_lines": 6,
+    "ir_lines": 30
+  }
+}

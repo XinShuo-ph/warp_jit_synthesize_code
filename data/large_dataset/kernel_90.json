@@ -1,0 +1,14 @@
+{
+  "python_code": "@wp.kernel\ndef kernel_90(values: wp.array(dtype=float), categories: wp.array(dtype=int), results: wp.array(dtype=float)):\n    tid = wp.tid()\n    val = values[tid]\n    \n    if val < 0.0:\n        categories[tid] = 0\n        results[tid] = -val\n    else:\n        categories[tid] = 1\n        results[tid] = val\n",
+  "ir_code": "void kernel_90_5c4f8a33_cpu_kernel_forward(\n    wp::launch_bounds_t dim,\n    size_t task_index,\n    wp_args_kernel_90_5c4f8a33 *_wp_args)\n{\n    //---------\n    // argument vars\n    wp::array_t<wp::float32> var_values = _wp_args->values;\n    wp::array_t<wp::int32> var_categories = _wp_args->categories;\n    wp::array_t<wp::float32> var_results = _wp_args->results;\n    //---------\n    // primal vars\n    wp::int32 var_0;\n    wp::float32* var_1;\n    wp::float32 var_2;\n    wp::float32 var_3;\n    const wp::float32 var_4 = 0.0;\n    bool var_5;\n    const wp::int32 var_6 = 0;\n    wp::float32 var_7;\n    const wp::int32 var_8 = 1;\n    //---------\n    // forward\n    // def kernel_90(values: wp.array(dtype=float), categories: wp.array(dtype=int), results: wp.array(dtype=float)):       <L 4>\n    // tid = wp.tid()                                                                         <L 5>\n    var_0 = builtin_tid1d();\n    // val = values[tid]                                                                      <L 6>\n    var_1 = wp::address(var_values, var_0);\n    var_3 = wp::load(var_1);\n    var_2 = wp::copy(var_3);\n    // if val < 0.0:                                                                          <L 8>\n    var_5 = (var_2 < var_4);\n    if (var_5) {\n        // categories[tid] = 0                                                                <L 9>\n        wp::array_store(var_categories, var_0, var_6);\n        // results[tid] = -val                                                                <L 10>\n        var_7 = wp::neg(var_2);\n        wp::array_store(var_results, var_0, var_7);\n    }\n    if (!var_5) {\n        // categories[tid] = 1                                                                <L 12>\n        wp::array_store(var_categories, var_0, var_8);\n        // results[tid] = val                                                                 <L 13>\n        wp::array_store(var_results, var_0, var_2);\n    }\n}",
+  "metadata": {
+    "kernel_name": "kernel_90",
+    "op_type": "conditional",
+    "complexity": 1,
+    "num_inputs": 1,
+    "num_outputs": 1,
+    "has_scalar_param": false,
+    "python_lines": 12,
+    "ir_lines": 46
+  }
+}

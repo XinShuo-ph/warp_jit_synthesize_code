@@ -1,0 +1,14 @@
+{
+  "total_generated": 500,
+  "total_failed": 0,
+  "by_type": {
+    "conditional": 78,
+    "loop": 85,
+    "atomic": 81,
+    "trigonometry": 86,
+    "arithmetic": 87,
+    "vector": 83
+  },
+  "start_time": 1766630029.277294,
+  "end_time": 1766630599.9453168
+}
