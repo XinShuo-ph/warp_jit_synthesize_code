@@ -1,0 +1,13 @@
+# Local dependencies / clones
+jit/_deps/
+
+# Generated datasets / artifacts
+jit/data/
+
+# Local virtualenvs
+jit/.venv/
+
+# Python bytecode
+__pycache__/
+.pytest_cache/
+
