@@ -1,12 +1,12 @@
 # Current State
-- **Milestone**: M2
-- **Task**: M2 complete (Python kernel -> generated C++ source extraction)
+- **Milestone**: M3
+- **Task**: M3 complete (warp.fem Poisson solver + validation tests)
 - **Status**: ready_for_next
 
 ## Next Action
-1. Create `jit/tasks/m3_tasks.md` with a concrete breakdown for the FEM Poisson solver milestone (M3).
-2. Implement `jit/code/examples/poisson_solver.py` using `warp.fem` (solve Poisson with an analytic solution for validation).
-3. Add `jit/code/examples/test_poisson.py` and run tests twice consecutively.
+1. Create `jit/tasks/m4_tasks.md` with a concrete breakdown for the synthesis pipeline (M4).
+2. Implement `jit/code/synthesis/generator.py` to programmatically generate varied Warp kernels (small, typed, deterministic).
+3. Implement `jit/code/synthesis/pipeline.py` to: generate kernel → compile → `extract_ir()` → save Python/IR pair under `jit/data/samples/`.
 
 ## Blockers
 None
@@ -23,4 +23,7 @@ None
   - Implemented `jit/code/extraction/ir_extractor.py` (`extract_ir()` returns Warp-generated CPU C++ source via `ModuleBuilder.codegen("cpu")`).
   - Added fixtures in `jit/code/extraction/fixture_kernels.py` and 5 stable pytest cases in `jit/code/extraction/test_ir_extractor.py` (tests pass twice).
   - Documented chosen IR format in `jit/notes/ir_format.md` (<= 30 lines).
+- 2025-12-25: Completed M3 FEM Poisson solver:
+  - Added `jit/code/examples/poisson_solver.py` solving `-Δu = f` on `[0,1]^2` with full Dirichlet BCs using analytic `u=sin(pi x) sin(pi y)`.
+  - Added `jit/code/examples/test_poisson.py` (pytest); tests pass twice and error decreases with resolution.
 
