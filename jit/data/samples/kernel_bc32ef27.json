@@ -1,0 +1,42 @@
+{
+  "name": "kernel_bc32ef27",
+  "python_source": "@wp.kernel\ndef kernel_bc32ef27(data: wp.array(dtype=float)):\n    tid = wp.tid()\n    v0 = data[tid]\n    v1 = 0.0\n    v2 = 1.0\n    tmp = 0.0\n    v2 = (0.22 * 0.63)\n    v1 = (wp.exp(v1) - wp.exp(v0))\n    v0 = 0.55\n    v1 = wp.exp(0.18)\n    v2 = (0.64 - (0.81 / (v1 + 0.79 - tmp + 0.09)))\n    tmp = (0.25 + v1)\n    tmp = 0.86\n    tmp = 0.55\n    data[tid] = v0\n",
+  "ir": [
+    "// Block 0",
+    "// def kernel_bc32ef27(data: wp.array(dtype=float)):                                      <L 4>",
+    "// tid = wp.tid()                                                                         <L 5>",
+    "var_0 = builtin_tid1d();",
+    "// v0 = data[tid]                                                                         <L 6>",
+    "var_1 = wp::address(var_data, var_0);",
+    "var_3 = wp::load(var_1);",
+    "var_2 = wp::copy(var_3);",
+    "// v1 = 0.0                                                                               <L 7>",
+    "// v2 = 1.0                                                                               <L 8>",
+    "// tmp = 0.0                                                                              <L 9>",
+    "// v2 = (0.22 * 0.63)                                                                     <L 10>",
+    "var_9 = wp::mul(var_7, var_8);",
+    "// v1 = (wp.exp(v1) - wp.exp(v0))                                                         <L 11>",
+    "var_10 = wp::exp(var_4);",
+    "var_11 = wp::exp(var_2);",
+    "var_12 = wp::sub(var_10, var_11);",
+    "// v0 = 0.55                                                                              <L 12>",
+    "// v1 = wp.exp(0.18)                                                                      <L 13>",
+    "var_15 = wp::exp(var_14);",
+    "// v2 = (0.64 - (0.81 / (v1 + 0.79 - tmp + 0.09)))                                        <L 14>",
+    "var_19 = wp::add(var_15, var_18);",
+    "var_20 = wp::sub(var_19, var_6);",
+    "var_22 = wp::add(var_20, var_21);",
+    "var_23 = wp::div(var_17, var_22);",
+    "var_24 = wp::sub(var_16, var_23);",
+    "// tmp = (0.25 + v1)                                                                      <L 15>",
+    "var_26 = wp::add(var_25, var_15);",
+    "// tmp = 0.86                                                                             <L 16>",
+    "// tmp = 0.55                                                                             <L 17>",
+    "// data[tid] = v0                                                                         <L 18>",
+    "wp::array_store(var_data, var_0, var_13);"
+  ],
+  "args": {
+    "data": "array<class 'warp._src.types.float32'>"
+  },
+  "id": "kernel_bc32ef27"
+}

@@ -1,0 +1,41 @@
+{
+  "name": "kernel_312e2c75",
+  "python_source": "@wp.kernel\ndef kernel_312e2c75(data: wp.array(dtype=float)):\n    tid = wp.tid()\n    v0 = data[tid]\n    v1 = 0.0\n    v2 = 1.0\n    tmp = 0.0\n    v1 = wp.cos(wp.cos((v2 + 0.12 / tmp + 0.42)))\n    tmp = (wp.abs(v0) - 0.55)\n    v0 = (v2 / wp.exp(0.07))\n    v0 = (wp.exp((tmp + 0.05 + tmp + 1.00)) - v2)\n    data[tid] = v0\n",
+  "ir": [
+    "// Block 0",
+    "// def kernel_312e2c75(data: wp.array(dtype=float)):                                      <L 4>",
+    "// tid = wp.tid()                                                                         <L 5>",
+    "var_0 = builtin_tid1d();",
+    "// v0 = data[tid]                                                                         <L 6>",
+    "var_1 = wp::address(var_data, var_0);",
+    "var_3 = wp::load(var_1);",
+    "var_2 = wp::copy(var_3);",
+    "// v1 = 0.0                                                                               <L 7>",
+    "// v2 = 1.0                                                                               <L 8>",
+    "// tmp = 0.0                                                                              <L 9>",
+    "// v1 = wp.cos(wp.cos((v2 + 0.12 / tmp + 0.42)))                                          <L 10>",
+    "var_8 = wp::div(var_7, var_6);",
+    "var_9 = wp::add(var_5, var_8);",
+    "var_11 = wp::add(var_9, var_10);",
+    "var_12 = wp::cos(var_11);",
+    "var_13 = wp::cos(var_12);",
+    "// tmp = (wp.abs(v0) - 0.55)                                                              <L 11>",
+    "var_14 = wp::abs(var_2);",
+    "var_16 = wp::sub(var_14, var_15);",
+    "// v0 = (v2 / wp.exp(0.07))                                                               <L 12>",
+    "var_18 = wp::exp(var_17);",
+    "var_19 = wp::div(var_5, var_18);",
+    "// v0 = (wp.exp((tmp + 0.05 + tmp + 1.00)) - v2)                                          <L 13>",
+    "var_21 = wp::add(var_16, var_20);",
+    "var_22 = wp::add(var_21, var_16);",
+    "var_24 = wp::add(var_22, var_23);",
+    "var_25 = wp::exp(var_24);",
+    "var_26 = wp::sub(var_25, var_5);",
+    "// data[tid] = v0                                                                         <L 14>",
+    "wp::array_store(var_data, var_0, var_26);"
+  ],
+  "args": {
+    "data": "array<class 'warp._src.types.float32'>"
+  },
+  "id": "kernel_312e2c75"
+}

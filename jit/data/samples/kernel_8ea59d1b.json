@@ -1,0 +1,34 @@
+{
+  "name": "kernel_8ea59d1b",
+  "python_source": "@wp.kernel\ndef kernel_8ea59d1b(data: wp.array(dtype=float)):\n    tid = wp.tid()\n    v0 = data[tid]\n    v1 = 0.0\n    v2 = 1.0\n    tmp = 0.0\n    v0 = 0.55\n    tmp = 0.48\n    tmp = 0.67\n    v1 = (wp.abs(0.93) / v0)\n    v0 = (v1 * (wp.exp(v1 + 0.85) * 0.96))\n    data[tid] = v0\n",
+  "ir": [
+    "// Block 0",
+    "// def kernel_8ea59d1b(data: wp.array(dtype=float)):                                      <L 4>",
+    "// tid = wp.tid()                                                                         <L 5>",
+    "var_0 = builtin_tid1d();",
+    "// v0 = data[tid]                                                                         <L 6>",
+    "var_1 = wp::address(var_data, var_0);",
+    "var_3 = wp::load(var_1);",
+    "var_2 = wp::copy(var_3);",
+    "// v1 = 0.0                                                                               <L 7>",
+    "// v2 = 1.0                                                                               <L 8>",
+    "// tmp = 0.0                                                                              <L 9>",
+    "// v0 = 0.55                                                                              <L 10>",
+    "// tmp = 0.48                                                                             <L 11>",
+    "// tmp = 0.67                                                                             <L 12>",
+    "// v1 = (wp.abs(0.93) / v0)                                                               <L 13>",
+    "var_11 = wp::abs(var_10);",
+    "var_12 = wp::div(var_11, var_7);",
+    "// v0 = (v1 * (wp.exp(v1 + 0.85) * 0.96))                                                 <L 14>",
+    "var_14 = wp::add(var_12, var_13);",
+    "var_15 = wp::exp(var_14);",
+    "var_17 = wp::mul(var_15, var_16);",
+    "var_18 = wp::mul(var_12, var_17);",
+    "// data[tid] = v0                                                                         <L 15>",
+    "wp::array_store(var_data, var_0, var_18);"
+  ],
+  "args": {
+    "data": "array<class 'warp._src.types.float32'>"
+  },
+  "id": "kernel_8ea59d1b"
+}
