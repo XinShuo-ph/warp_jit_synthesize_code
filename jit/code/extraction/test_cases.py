@@ -8,8 +8,6 @@ import sys
 
 import warp as wp
 
-from extraction.ir_extractor import extract_ir
-
 
 def _sha256(s: str) -> str:
     return hashlib.sha256(s.encode("utf-8")).hexdigest()
@@ -18,9 +16,12 @@ def _sha256(s: str) -> str:
 def main() -> None:
     wp.init()
 
+    # Ensure the package root (`jit/code/`) is importable when running this as a script.
     code_root = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
     if code_root not in sys.path:
         sys.path.insert(0, code_root)
+
+    from extraction.ir_extractor import extract_ir  # noqa: PLC0415
 
     case_mods = [
         "extraction.cases.case_arith",
