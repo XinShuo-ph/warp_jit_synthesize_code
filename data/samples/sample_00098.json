@@ -1,0 +1,12 @@
+{
+  "sample_id": 98,
+  "kernel_name": "conditional_0098",
+  "category": "conditional",
+  "complexity": "medium",
+  "module_name": "temp_kernel_98",
+  "module_hash": "57dc168",
+  "python_file": "sample_00098.py",
+  "cpp_file": "sample_00098.cpp",
+  "python_size": 324,
+  "cpp_size": 7861
+}

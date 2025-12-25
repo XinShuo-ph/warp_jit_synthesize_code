@@ -1,0 +1,12 @@
+{
+  "sample_id": 87,
+  "kernel_name": "arithmetic_0087",
+  "category": "arithmetic",
+  "complexity": "simple",
+  "module_name": "temp_kernel_87",
+  "module_hash": "20d510d",
+  "python_file": "sample_00087.py",
+  "cpp_file": "sample_00087.cpp",
+  "python_size": 180,
+  "cpp_size": 5593
+}

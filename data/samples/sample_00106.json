@@ -1,0 +1,12 @@
+{
+  "sample_id": 106,
+  "kernel_name": "loop_0106",
+  "category": "loop",
+  "complexity": "medium",
+  "module_name": "temp_kernel_106",
+  "module_hash": "507ca79",
+  "python_file": "sample_00106.py",
+  "cpp_file": "sample_00106.cpp",
+  "python_size": 339,
+  "cpp_size": 7491
+}

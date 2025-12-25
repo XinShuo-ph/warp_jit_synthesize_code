@@ -1,0 +1,12 @@
+{
+  "sample_id": 96,
+  "kernel_name": "reduction_0096",
+  "category": "reduction",
+  "complexity": "medium",
+  "module_name": "temp_kernel_96",
+  "module_hash": "ff32bbe",
+  "python_file": "sample_00096.py",
+  "cpp_file": "sample_00096.cpp",
+  "python_size": 444,
+  "cpp_size": 8690
+}

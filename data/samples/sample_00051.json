@@ -1,0 +1,12 @@
+{
+  "sample_id": 51,
+  "kernel_name": "conditional_0051",
+  "category": "conditional",
+  "complexity": "medium",
+  "module_name": "temp_kernel_51",
+  "module_hash": "edc3119",
+  "python_file": "sample_00051.py",
+  "cpp_file": "sample_00051.cpp",
+  "python_size": 331,
+  "cpp_size": 8173
+}

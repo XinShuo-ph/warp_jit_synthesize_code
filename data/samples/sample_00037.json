@@ -1,0 +1,12 @@
+{
+  "sample_id": 37,
+  "kernel_name": "math_0037",
+  "category": "math",
+  "complexity": "simple",
+  "module_name": "temp_kernel_37",
+  "module_hash": "59e6a05",
+  "python_file": "sample_00037.py",
+  "cpp_file": "sample_00037.cpp",
+  "python_size": 222,
+  "cpp_size": 5431
+}

@@ -1,0 +1,12 @@
+{
+  "sample_id": 76,
+  "kernel_name": "function_0076",
+  "category": "function",
+  "complexity": "complex",
+  "module_name": "temp_kernel_76",
+  "module_hash": "49359db",
+  "python_file": "sample_00076.py",
+  "cpp_file": "sample_00076.cpp",
+  "python_size": 253,
+  "cpp_size": 6642
+}

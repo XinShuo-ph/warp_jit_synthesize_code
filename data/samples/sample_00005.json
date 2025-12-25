@@ -1,0 +1,12 @@
+{
+  "sample_id": 5,
+  "kernel_name": "function_0005",
+  "category": "function",
+  "complexity": "complex",
+  "module_name": "temp_kernel_5",
+  "module_hash": "f36ee62",
+  "python_file": "sample_00005.py",
+  "cpp_file": "sample_00005.cpp",
+  "python_size": 258,
+  "cpp_size": 5593
+}
