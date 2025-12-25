@@ -1,0 +1,9 @@
+{
+  "kernel_name": "test_vectors",
+  "module_name": "__main__",
+  "module_hash": "a42204c",
+  "device": "cpu",
+  "cache_path": "/home/ubuntu/.cache/warp/1.10.1/wp___main___a42204c",
+  "cpp_file": "/workspace/data/test_cases/test_vectors.cpp",
+  "py_file": "/workspace/data/test_cases/test_vectors.py"
+}
