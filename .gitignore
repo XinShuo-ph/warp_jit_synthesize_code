@@ -1,0 +1,9 @@
+# Large generated datasets (keep manifests + reports)
+data/production_cpu/
+data/production_cuda/
+
+# Warp cache
+.warp/
+__pycache__/
+*.pyc
+

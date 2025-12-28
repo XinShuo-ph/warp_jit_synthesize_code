@@ -1,0 +1,28 @@
+{
+  "bytes": 209978937,
+  "category_counts_this_run": {
+    "arithmetic": 2482,
+    "atomic": 2493,
+    "combined": 2457,
+    "control_flow": 2440,
+    "math": 2438,
+    "matrix": 2492,
+    "multi_conditional": 2469,
+    "nested_loop": 2409,
+    "scalar_param": 2454,
+    "vector": 2416
+  },
+  "completed_at_utc": "2025-12-28T22:28:32.211204+00:00",
+  "dataset_path": "/workspace/data/production_cuda/cuda_code_dataset.jsonl",
+  "device": "cuda",
+  "generation_time_sec_this_run": 46.513580322265625,
+  "kernels_per_module": 50,
+  "kernels_written_this_run": 24550,
+  "mib": 200.25151920318604,
+  "records_written_this_run": 491,
+  "schema_version": 1,
+  "seed_cursor": 25042,
+  "started_at_utc": "2025-12-28T22:27:45.697609+00:00",
+  "target_mib": 200,
+  "warp_version": "1.10.1"
+}

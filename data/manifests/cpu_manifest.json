@@ -1,0 +1,28 @@
+{
+  "bytes": 209773374,
+  "category_counts_this_run": {
+    "arithmetic": 2431,
+    "atomic": 2444,
+    "combined": 2407,
+    "control_flow": 2400,
+    "math": 2391,
+    "matrix": 2443,
+    "multi_conditional": 2426,
+    "nested_loop": 2365,
+    "scalar_param": 2415,
+    "vector": 2378
+  },
+  "completed_at_utc": "2025-12-28T22:28:31.944555+00:00",
+  "dataset_path": "/workspace/data/production_cpu/cpu_code_dataset.jsonl",
+  "device": "cpu",
+  "generation_time_sec_this_run": 46.42712330818176,
+  "kernels_per_module": 50,
+  "kernels_written_this_run": 24100,
+  "mib": 200.05547904968262,
+  "records_written_this_run": 482,
+  "schema_version": 1,
+  "seed_cursor": 24583,
+  "started_at_utc": "2025-12-28T22:27:45.517402+00:00",
+  "target_mib": 200,
+  "warp_version": "1.10.1"
+}
