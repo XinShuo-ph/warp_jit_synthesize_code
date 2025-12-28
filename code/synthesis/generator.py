@@ -369,6 +369,183 @@ def {name}(values: wp.array(dtype=float), result: wp.array(dtype=float)):
     )
 
 
+def generate_nested_loop_kernel(seed: int | None = None) -> KernelSpec:
+    """Generate a kernel with nested loops."""
+    if seed is not None:
+        random.seed(seed)
+    
+    name = random_name("nested")
+    outer = random.randint(2, 4)
+    inner = random.randint(2, 4)
+    
+    source = f'''@wp.kernel
+def {name}(data: wp.array(dtype=float), out: wp.array(dtype=float)):
+    tid = wp.tid()
+    total = float(0.0)
+    for i in range({outer}):
+        for j in range({inner}):
+            total = total + data[tid] * float(i * j + 1)
+    out[tid] = total
+'''
+    
+    return KernelSpec(
+        name=name,
+        category="nested",
+        source=source,
+        arg_types={"data": "wp.array(dtype=float)", "out": "wp.array(dtype=float)"},
+        description=f"Nested loops ({outer}x{inner})",
+        metadata={"outer": outer, "inner": inner, "seed": seed}
+    )
+
+
+def generate_multi_conditional_kernel(seed: int | None = None) -> KernelSpec:
+    """Generate a kernel with multiple conditions."""
+    if seed is not None:
+        random.seed(seed)
+    
+    name = random_name("mcond")
+    t1, t2 = sorted([round(random.uniform(-10, 10), 2), round(random.uniform(-10, 10), 2)])
+    
+    source = f'''@wp.kernel
+def {name}(x: wp.array(dtype=float), out: wp.array(dtype=float)):
+    tid = wp.tid()
+    val = x[tid]
+    if val < {t1}:
+        out[tid] = val * 0.5
+    elif val < {t2}:
+        out[tid] = val * 1.0
+    else:
+        out[tid] = val * 2.0
+'''
+    
+    return KernelSpec(
+        name=name,
+        category="multi_cond",
+        source=source,
+        arg_types={"x": "wp.array(dtype=float)", "out": "wp.array(dtype=float)"},
+        description=f"Multi-conditional logic (<{t1}, <{t2}, else)",
+        metadata={"thresholds": [t1, t2], "seed": seed}
+    )
+
+
+def generate_combined_kernel(seed: int | None = None) -> KernelSpec:
+    """Generate a kernel combining multiple features."""
+    if seed is not None:
+        random.seed(seed)
+    
+    name = random_name("combined")
+    iterations = random.randint(2, 5)
+    threshold = round(random.uniform(0.1, 5.0), 2)
+    func = random.choice(list(UNARY_OPS.keys()))
+    func_template = UNARY_OPS[func]
+    
+    source = f'''@wp.kernel
+def {name}(a: wp.array(dtype=float), b: wp.array(dtype=float), out: wp.array(dtype=float)):
+    tid = wp.tid()
+    acc = float(0.0)
+    for i in range({iterations}):
+        if a[tid] * float(i) > {threshold}:
+            # Use format instead of direct substitution for consistency
+            val = {func_template.format(x="b[tid]")}
+            acc = acc + val
+        else:
+            acc = acc + b[tid]
+    out[tid] = acc
+'''
+    
+    return KernelSpec(
+        name=name,
+        category="combined",
+        source=source,
+        arg_types={"a": "wp.array(dtype=float)", "b": "wp.array(dtype=float)", "out": "wp.array(dtype=float)"},
+        description=f"Combined features (loop, cond, math)",
+        metadata={"iterations": iterations, "func": func, "seed": seed}
+    )
+
+
+def generate_scalar_param_kernel(seed: int | None = None) -> KernelSpec:
+    """Generate a kernel with scalar parameters."""
+    if seed is not None:
+        random.seed(seed)
+    
+    name = random_name("scalar")
+    op = random.choice(["+", "-", "*", "/"])
+    
+    source = f'''@wp.kernel
+def {name}(x: wp.array(dtype=float), scale: float, offset: float, out: wp.array(dtype=float)):
+    tid = wp.tid()
+    out[tid] = x[tid] {op} scale + offset
+'''
+    
+    return KernelSpec(
+        name=name,
+        category="scalar_param",
+        source=source,
+        arg_types={"x": "wp.array(dtype=float)", "scale": "float", "offset": "float", "out": "wp.array(dtype=float)"},
+        description=f"Scalar parameters ({op})",
+        metadata={"operation": op, "seed": seed}
+    )
+
+
+def generate_expression_tree_kernel(seed: int | None = None) -> KernelSpec:
+    """Generate a kernel with random expression trees."""
+    if seed is not None:
+        random.seed(seed)
+    
+    name = random_name("expr")
+    
+    ops = ['+', '-', '*', '/']
+    funcs = ['wp.sin', 'wp.cos', 'wp.exp', 'wp.abs']
+    vars_list = ['v0', 'v1', 'v2', 'tmp']
+    
+    def generate_expression(depth=0):
+        if depth > 2:
+            return f"{random.choice(vars_list)} + {round(random.random(), 2)}"
+        
+        choice = random.random()
+        if choice < 0.4:
+            op = random.choice(ops)
+            left = generate_expression(depth + 1)
+            right = generate_expression(depth + 1)
+            return f"({left} {op} {right})"
+        elif choice < 0.7:
+            func = random.choice(funcs)
+            arg = generate_expression(depth + 1)
+            return f"{func}({arg})"
+        else:
+            if random.random() < 0.5:
+                return random.choice(vars_list)
+            else:
+                return f"{round(random.random(), 2)}"
+
+    num_stmts = random.randint(3, 8)
+    stmt_lines = []
+    for _ in range(num_stmts):
+        target = random.choice(vars_list)
+        expr = generate_expression()
+        stmt_lines.append(f"    {target} = {expr}")
+    
+    source = f'''@wp.kernel
+def {name}(data: wp.array(dtype=float)):
+    tid = wp.tid()
+    v0 = data[tid]
+    v1 = float(0.0)
+    v2 = float(1.0)
+    tmp = float(0.0)
+{chr(10).join(stmt_lines)}
+    data[tid] = v0
+'''
+    
+    return KernelSpec(
+        name=name,
+        category="expression_tree",
+        source=source,
+        arg_types={"data": "wp.array(dtype=float)"},
+        description="Random expression tree",
+        metadata={"num_stmts": num_stmts, "seed": seed}
+    )
+
+
 # Generator dispatch table
 GENERATORS = {
     "arithmetic": generate_arithmetic_kernel,
@@ -377,6 +554,11 @@ GENERATORS = {
     "control_flow": generate_control_flow_kernel,
     "math": generate_math_kernel,
     "atomic": generate_atomic_kernel,
+    "nested": generate_nested_loop_kernel,
+    "multi_cond": generate_multi_conditional_kernel,
+    "combined": generate_combined_kernel,
+    "scalar_param": generate_scalar_param_kernel,
+    "expression_tree": generate_expression_tree_kernel,
 }
 
 

@@ -180,41 +180,50 @@ def generate_batch(
     
     print(f"Generating {n} pairs in chunks of {chunk_size}...")
     
-    while total_generated < n:
-        # Generate a chunk of kernel specs
-        chunk_n = min(chunk_size, n - total_generated)
-        specs = []
-        
-        for i in range(chunk_n):
-            cat = random.choice(list(GENERATORS.keys()))
-            spec = generate_kernel(cat, seed=seed + total_generated + i)
-            specs.append(spec)
-        
-        # Process in batches of KERNELS_PER_MODULE
-        chunk_pairs = []
-        for batch_start in range(0, len(specs), KERNELS_PER_MODULE):
-            batch_specs = specs[batch_start:batch_start + KERNELS_PER_MODULE]
-            pairs = compile_kernel_batch(batch_specs, batch_id, temp_dir)
-            chunk_pairs.extend(pairs)
-            batch_id += 1
-        
-        # Save chunk
-        for pair in chunk_pairs:
-            filename = f"pair_{file_index:06d}.json"
-            filepath = output_dir / filename
+    # Use max_workers=None (defaults to cpu_count)
+    with ProcessPoolExecutor() as executor:
+        while total_generated < n:
+            # Generate a chunk of kernel specs
+            chunk_n = min(chunk_size, n - total_generated)
+            specs = []
             
-            with open(filepath, 'w') as f:
-                json.dump(pair, f, indent=2)
+            for i in range(chunk_n):
+                cat = random.choice(list(GENERATORS.keys()))
+                spec = generate_kernel(cat, seed=seed + total_generated + i)
+                specs.append(spec)
             
-            category_counts[pair["metadata"]["category"]] += 1
-            file_index += 1
-        
-        total_generated += len(chunk_pairs)
-        
-        elapsed = time.time() - start_time
-        rate = total_generated / elapsed if elapsed > 0 else 0
-        
-        print(f"  Progress: {total_generated}/{n} ({rate:.1f} pairs/sec)")
+            # Process in batches of KERNELS_PER_MODULE using parallel execution
+            futures = []
+            for batch_start in range(0, len(specs), KERNELS_PER_MODULE):
+                batch_specs = specs[batch_start:batch_start + KERNELS_PER_MODULE]
+                futures.append(executor.submit(compile_kernel_batch, batch_specs, batch_id, temp_dir))
+                batch_id += 1
+            
+            chunk_pairs = []
+            for future in as_completed(futures):
+                try:
+                    pairs = future.result()
+                    chunk_pairs.extend(pairs)
+                except Exception as e:
+                    print(f"Batch failed: {e}")
+            
+            # Save chunk
+            for pair in chunk_pairs:
+                filename = f"pair_{file_index:06d}.json"
+                filepath = output_dir / filename
+                
+                with open(filepath, 'w') as f:
+                    json.dump(pair, f, indent=2)
+                
+                category_counts[pair["metadata"]["category"]] += 1
+                file_index += 1
+            
+            total_generated += len(chunk_pairs)
+            
+            elapsed = time.time() - start_time
+            rate = total_generated / elapsed if elapsed > 0 else 0
+            
+            print(f"  Progress: {total_generated}/{n} ({rate:.1f} pairs/sec)")
     
     elapsed = time.time() - start_time
     
