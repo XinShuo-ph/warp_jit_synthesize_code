@@ -92,6 +92,22 @@ jit/
 
 ---
 
+### P1.5: CUDA Codegen-Only (No GPU Required)
+**Goal**: Produce CUDA generated code/IR on machines **without** a CUDA driver/GPU by running Warp’s *codegen* for `device="cuda"` without launching kernels.
+
+**Key idea**: Warp can emit CUDA generated code (e.g., `.cu`-style output) even when `wp.is_cuda_available()` is false. This milestone does **not** validate runtime execution on GPU—only that CUDA code generation succeeds.
+
+**Requirements**:
+- Add a `--codegen-only` path that allows `--device cuda` even when CUDA is unavailable
+- Mark outputs with metadata indicating `codegen_only` and whether CUDA was available at generation time
+- Add a pytest that asserts CUDA codegen works on CPU-only machines
+
+**Done when**:
+- `python3 jit/code/synthesis/cuda_codegen_pipeline.py -n 3` succeeds on a CPU-only machine
+- `python3 -m pytest -q` passes (CUDA-runtime tests may still skip)
+
+---
+
 ### P2: CUDA Iterations (kernel type × forward/backward)
 **Goal**: Ensure each kernel type produces valid CUDA generated code/IR, for both forward and backward (if applicable).
 
