@@ -111,6 +111,25 @@ cuda/
 - `README_CUDA.md`: Setup instructions and testing guide for GPU users
 - All tests include clear success criteria and expected outputs
 
+### M6: Production CUDA IR Dataset Generation
+**Goal**: Generate large-scale, production-quality CUDA IR training dataset (without GPU hardware)
+**Deliverables**:
+- `production/generate_cuda_dataset.py`: Production dataset generator
+- `production/validate_dataset.py`: Dataset quality validation
+- `production/analyze_dataset.py`: Dataset statistics and analysis
+- Generate 1,000+ CUDA IR pairs demonstrating full coverage
+- `data/cuda_production/`: Generated dataset with proper structure
+- `notes/cuda_production_stats.md`: Dataset characteristics and quality metrics
+- Verification that all CUDA patterns are present in output
+
+**Success Criteria**:
+- 1,000+ high-quality CUDA IR pairs generated
+- All 6 kernel categories represented
+- CUDA thread indexing present in all outputs
+- Balanced category distribution
+- No duplicates or errors
+- Ready for LLM training
+
 ---
 
 ## Task Breakdown Rules

@@ -1,0 +1,18 @@
+{
+  "total_generated": 1200,
+  "successful": 1200,
+  "failed": 0,
+  "by_category": {
+    "arithmetic": 200,
+    "vector": 200,
+    "matrix": 200,
+    "control_flow": 200,
+    "math": 200,
+    "atomic": 200
+  },
+  "cuda_patterns_verified": 1200,
+  "start_time": 1766958509.4921608,
+  "end_time": 1766958511.7256927,
+  "generation_time": 2.233531951904297,
+  "pairs_per_second": 537.265651819705
+}

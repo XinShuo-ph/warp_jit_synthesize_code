@@ -1,0 +1,13 @@
+{
+  "python_source": "@wp.kernel\ndef ctrl_ouioan(a: wp.array(dtype=float), b: wp.array(dtype=float), out: wp.array(dtype=float)):\n    tid = wp.tid()\n    diff = a[tid] - b[tid]\n    if diff < 0.0:\n        out[tid] = -diff\n    else:\n        out[tid] = diff\n",
+  "cuda_ir": "void ctrl_ouioan_0bbb037e_cuda_kernel_forward(\n    wp::launch_bounds_t dim,\n    wp::array_t<wp::float32> var_a,\n    wp::array_t<wp::float32> var_b,\n    wp::array_t<wp::float32> var_out)\n{\n    wp::tile_shared_storage_t tile_mem;\n\n    for (size_t _idx = static_cast<size_t>(blockDim.x) * static_cast<size_t>(blockIdx.x) + static_cast<size_t>(threadIdx.x);\n         _idx < dim.size;\n         _idx += static_cast<size_t>(blockDim.x) * static_cast<size_t>(gridDim.x))\n    {\n            // reset shared memory allocator\n        wp::tile_shared_storage_t::init();\n\n        //---------\n        // primal vars\n        wp::int32 var_0;\n        wp::float32* var_1;\n        wp::float32* var_2;\n        wp::float32 var_3;\n        wp::float32 var_4;\n        wp::float32 var_5;\n        const wp::float32 var_6 = 0.0;\n        bool var_7;\n        wp::float32 var_8;\n        //---------\n        // forward\n        // def ctrl_ouioan(a: wp.array(dtype=float), b: wp.array(dtype=float), out: wp.array(dtype=float)):       <L 4>\n        // tid = wp.tid()                                                                         <L 5>\n        var_0 = builtin_tid1d();\n        // diff = a[tid] - b[tid]                                                                 <L 6>\n        var_1 = wp::address(var_a, var_0);\n        var_2 = wp::address(var_b, var_0);\n        var_4 = wp::load(var_1);\n        var_5 = wp::load(var_2);\n        var_3 = wp::sub(var_4, var_5);\n        // if diff < 0.0:                                                                         <L 7>\n        var_7 = (var_3 < var_6);\n        if (var_7) {\n            // out[tid] = -diff                                                                   <L 8>\n            var_8 = wp::neg(var_3);\n            wp::array_store(var_out, var_0, var_8);\n        }\n        if (!var_7) {\n            // out[tid] = diff                                                                    <L 10>\n            wp::array_store(var_out, var_0, var_3);\n        }\n    }\n}",
+  "metadata": {
+    "kernel_name": "ctrl_ouioan",
+    "category": "control_flow",
+    "description": "Absolute difference",
+    "device": "cuda",
+    "seed": 10695,
+    "cuda_patterns_verified": true,
+    "pattern": "abs_diff"
+  }
+}
