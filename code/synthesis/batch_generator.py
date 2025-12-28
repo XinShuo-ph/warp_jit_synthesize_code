@@ -145,7 +145,8 @@ def generate_batch(
     output_dir: str | Path,
     seed: int = 42,
     chunk_size: int = 100,
-    start_index: int = 0
+    start_index: int = 0,
+    resume: bool = False
 ) -> dict[str, Any]:
     """
     Generate n Python→IR pairs in batches.
@@ -156,6 +157,7 @@ def generate_batch(
         seed: Random seed
         chunk_size: Number of pairs per save operation
         start_index: Starting index for file naming (for resumability)
+        resume: If True, skip generation if target count reached and start from existing count
     
     Returns:
         Statistics dict
@@ -165,6 +167,18 @@ def generate_batch(
     
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Check existing files if resuming
+    if resume:
+        existing_files = list(output_dir.glob("pair_*.json"))
+        existing_count = len(existing_files)
+        if existing_count >= n:
+            print(f"Resume: Target {n} pairs already met (found {existing_count}). Skipping.")
+            return {"total_pairs": existing_count, "skipped": True}
+        
+        start_index = existing_count
+        print(f"Resume: Found {existing_count} pairs. Generating {n - existing_count} more.")
+        n = n - existing_count
     
     temp_dir = Path(tempfile.gettempdir()) / "warp_batch_synthesis"
     temp_dir.mkdir(exist_ok=True)
@@ -237,7 +251,8 @@ def generate_batch(
 def run_large_scale_generation(
     n: int = 10000,
     output_dir: str = "/workspace/jit/data/large",
-    seed: int = 42
+    seed: int = 42,
+    resume: bool = False
 ):
     """Run large-scale pair generation."""
     print("=" * 60)
@@ -246,10 +261,14 @@ def run_large_scale_generation(
     print(f"Target: {n} pairs")
     print(f"Output: {output_dir}")
     print(f"Seed: {seed}")
+    print(f"Resume: {resume}")
     print()
     
-    stats = generate_batch(n, output_dir, seed, chunk_size=500)
+    stats = generate_batch(n, output_dir, seed, chunk_size=500, resume=resume)
     
+    if stats.get("skipped"):
+        return stats
+
     print("\n" + "=" * 60)
     print("Generation Complete")
     print("=" * 60)
@@ -270,7 +289,8 @@ if __name__ == "__main__":
     parser.add_argument("-n", type=int, default=10000, help="Number of pairs to generate")
     parser.add_argument("-o", "--output", default="/workspace/jit/data/large", help="Output directory")
     parser.add_argument("-s", "--seed", type=int, default=42, help="Random seed")
+    parser.add_argument("--resume", action="store_true", help="Resume from existing files")
     
     args = parser.parse_args()
     
-    run_large_scale_generation(args.n, args.output, args.seed)
+    run_large_scale_generation(args.n, args.output, args.seed, args.resume)
