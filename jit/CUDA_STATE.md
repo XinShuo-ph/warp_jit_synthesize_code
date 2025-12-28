@@ -1,16 +1,16 @@
 # CUDA State
-- **Milestone**: M4
+- **Milestone**: M5
 - **Task**: Completed
 - **Status**: ready_for_next
 
 ## Next Action
-None. CUDA backend adaptation is complete and validated.
+None. CUDA production pipeline established and verified.
 
 ## Key Findings
-- `warp` allows generating CUDA IR without a GPU driver.
-- The `ir_extractor.py` regex `void {func_name}` correctly matches `extern "C" __global__ void {func_name}`.
-- Updated pipeline to include `arg_types` metadata for easier validation.
-- Created `verify_kernels.py` to allow user to validate generated kernels on their GPU.
+- **Production Pipeline**: `cuda_production.py` successfully generates 1000 pairs in ~5s on CPU.
+- **Validation**: `static_validator.py` confirms that generated IR includes `extern "C" __global__` signature and correct metadata.
+- **Regex Fix**: Updated `batch_generator.py` to correctly capture CUDA function signatures.
 
 ## Session Log
-- Dec 28: Initialized. Adapted `pipeline.py` for CUDA. Validated extraction. Created verification suite.
+- Dec 28: Initialized M1-M4.
+- Dec 28: Added M5. Updated `batch_generator.py` for CUDA support. Created `cuda_production.py` and `static_validator.py`. Validated with 1k sample run.

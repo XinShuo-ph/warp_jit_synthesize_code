@@ -35,7 +35,7 @@ jit/
 ### CUDA_STATE.md Template
 ```markdown
 # CUDA State
-- **Milestone**: M1/M2/M3/M4
+- **Milestone**: M1/M2/M3/M4/M5
 - **Task**: [task number and name]
 - **Status**: in_progress | blocked | ready_for_next
 
@@ -82,6 +82,15 @@ Iterate through kernel types (arithmetic, math, loop, conditional, vector, matri
 1. Consolidate tests into a suite.
 2. Document usage in `README_CUDA.md`.
 3. Verify all code paths (except actual execution) on agent machine.
+
+### M5: Production Pipeline & Dataset Generation
+**Goal**: Formalize the mass production of CUDA IR codes and ensure data quality.
+**Tasks**:
+1.  Update `batch_generator.py` to support `device` parameter and correctly handle CUDA IR extraction in batch mode.
+2.  Create `jit/code/synthesis/cuda_production.py` for configuring and running large-scale CUDA generation.
+3.  Create `jit/code/validation/static_validator.py` to verify the generated dataset's structure and content (e.g., presence of `extern "C"`, correct metadata).
+4.  Generate a pilot dataset of 1,000 samples.
+5.  Run static validation on the pilot dataset.
 
 ---
 
