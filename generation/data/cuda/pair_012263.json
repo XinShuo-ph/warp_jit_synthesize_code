@@ -1,0 +1,9 @@
+{
+  "python_source": "@wp.kernel\ndef scalar_nryfcm(x: wp.array(dtype=float), out: wp.array(dtype=float), scale: float, offset: float):\n    tid = wp.tid()\n    out[tid] = x[tid] * scale + offset\n",
+  "cuda_forward": "extern \"C\" __global__ void scalar_nryfcm_f5262ab8_cuda_kernel_forward(\n    wp::launch_bounds_t dim,\n    wp::array_t<wp::float32> var_x,\n    wp::array_t<wp::float32> var_out,\n    wp::float32 var_scale,\n    wp::float32 var_offset)\n{\n    wp::tile_shared_storage_t tile_mem;\n\n    for (size_t _idx = static_cast<size_t>(blockDim.x) * static_cast<size_t>(blockIdx.x) + static_cast<size_t>(threadIdx.x);\n         _idx < dim.size;\n         _idx += static_cast<size_t>(blockDim.x) * static_cast<size_t>(gridDim.x))\n    {\n            // reset shared memory allocator\n        wp::tile_shared_storage_t::init();\n\n        //---------\n        // primal vars\n        wp::int32 var_0;\n        wp::float32* var_1;\n        wp::float32 var_2;\n        wp::float32 var_3;\n        wp::float32 var_4;\n        //---------\n        // forward\n        // def scalar_nryfcm(x: wp.array(dtype=float), out: wp.array(dtype=float), scale: float, offset: float):       <L 29>\n        // tid = wp.tid()                                                                         <L 30>\n        var_0 = builtin_tid1d();\n        // out[tid] = x[tid] * scale + offset                                                     <L 31>\n        var_1 = wp::address(var_x, var_0);\n        var_3 = wp::load(var_1);\n        var_2 = wp::mul(var_3, var_scale);\n        var_4 = wp::add(var_2, var_offset);\n        wp::array_store(var_out, var_0, var_4);\n    }\n}",
+  "metadata": {
+    "kernel_name": "scalar_nryfcm",
+    "category": "scalar_param",
+    "device": "cuda"
+  }
+}

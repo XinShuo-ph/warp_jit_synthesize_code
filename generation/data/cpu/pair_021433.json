@@ -1,0 +1,9 @@
+{
+  "python_source": "@wp.kernel\ndef math_jicpkm(x: wp.array(dtype=float), out: wp.array(dtype=float)):\n    tid = wp.tid()\n    val = wp.cos(x[tid] * -3.01)\n    out[tid] = wp.abs(val)\n",
+  "cpp_forward": "void math_jicpkm_c9321018_cpu_kernel_forward(\n    wp::launch_bounds_t dim,\n    size_t task_index,\n    wp_args_math_jicpkm_c9321018 *_wp_args)\n{\n    //---------\n    // argument vars\n    wp::array_t<wp::float32> var_x = _wp_args->x;\n    wp::array_t<wp::float32> var_out = _wp_args->out;\n    //---------\n    // primal vars\n    wp::int32 var_0;\n    wp::float32* var_1;\n    const wp::float32 var_2 = 3.01;\n    const wp::float32 var_3 = -3.01;\n    wp::float32 var_4;\n    wp::float32 var_5;\n    wp::float32 var_6;\n    wp::float32 var_7;\n    //---------\n    // forward\n    // def math_jicpkm(x: wp.array(dtype=float), out: wp.array(dtype=float)):                 <L 25>\n    // tid = wp.tid()                                                                         <L 26>\n    var_0 = builtin_tid1d();\n    // val = wp.cos(x[tid] * -3.01)                                                           <L 27>\n    var_1 = wp::address(var_x, var_0);\n    var_5 = wp::load(var_1);\n    var_4 = wp::mul(var_5, var_3);\n    var_6 = wp::cos(var_4);\n    // out[tid] = wp.abs(val)                                                                 <L 28>\n    var_7 = wp::abs(var_6);\n    wp::array_store(var_out, var_0, var_7);\n}",
+  "metadata": {
+    "kernel_name": "math_jicpkm",
+    "category": "math",
+    "device": "cpu"
+  }
+}
