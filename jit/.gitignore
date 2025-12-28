@@ -1,0 +1,9 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Large data files - keep samples in data/samples/
+# Full datasets stored separately (not in git)
+data/cpu/
+data/cuda/
