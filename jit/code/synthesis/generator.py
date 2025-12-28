@@ -369,6 +369,90 @@ def {name}(values: wp.array(dtype=float), result: wp.array(dtype=float)):
     )
 
 
+def generate_nested_loop_kernel(seed: int | None = None) -> KernelSpec:
+    """Generate a kernel with nested loops (from 9177)."""
+    if seed is not None:
+        random.seed(seed)
+    
+    name = random_name("nested")
+    outer = random.randint(2, 4)
+    inner = random.randint(2, 4)
+    
+    source = f'''@wp.kernel
+def {name}(data: wp.array(dtype=float), out: wp.array(dtype=float)):
+    tid = wp.tid()
+    total = float(0.0)
+    for i in range({outer}):
+        for j in range({inner}):
+            total = total + data[tid] * float(i * j + 1)
+    out[tid] = total
+'''
+    
+    return KernelSpec(
+        name=name,
+        category="nested_loop",
+        source=source,
+        arg_types={"data": "wp.array(dtype=float)", "out": "wp.array(dtype=float)"},
+        description=f"Nested loop kernel ({outer}x{inner} iterations)",
+        metadata={"outer_bound": outer, "inner_bound": inner, "seed": seed}
+    )
+
+
+def generate_multi_conditional_kernel(seed: int | None = None) -> KernelSpec:
+    """Generate a kernel with multiple conditional branches (from 9177)."""
+    if seed is not None:
+        random.seed(seed)
+    
+    name = random_name("multicond")
+    t1 = random.uniform(-5.0, 5.0)
+    t2 = random.uniform(t1, 10.0)
+    
+    source = f'''@wp.kernel
+def {name}(x: wp.array(dtype=float), out: wp.array(dtype=float)):
+    tid = wp.tid()
+    val = x[tid]
+    if val < {t1:.2f}:
+        out[tid] = val * 0.5
+    elif val < {t2:.2f}:
+        out[tid] = val * 1.0
+    else:
+        out[tid] = val * 2.0
+'''
+    
+    return KernelSpec(
+        name=name,
+        category="multi_conditional",
+        source=source,
+        arg_types={"x": "wp.array(dtype=float)", "out": "wp.array(dtype=float)"},
+        description=f"Multi-conditional kernel with 3 branches (thresholds: {t1:.2f}, {t2:.2f})",
+        metadata={"threshold1": t1, "threshold2": t2, "seed": seed}
+    )
+
+
+def generate_scalar_param_kernel(seed: int | None = None) -> KernelSpec:
+    """Generate a kernel with scalar parameters (from 9177)."""
+    if seed is not None:
+        random.seed(seed)
+    
+    name = random_name("scalar")
+    op = random.choice(["+", "-", "*"])
+    
+    source = f'''@wp.kernel
+def {name}(x: wp.array(dtype=float), out: wp.array(dtype=float), scale: float, offset: float):
+    tid = wp.tid()
+    out[tid] = x[tid] {op} scale + offset
+'''
+    
+    return KernelSpec(
+        name=name,
+        category="scalar_param",
+        source=source,
+        arg_types={"x": "wp.array(dtype=float)", "out": "wp.array(dtype=float)", "scale": "float", "offset": "float"},
+        description=f"Scalar parameter kernel with operation: {op}",
+        metadata={"operation": op, "seed": seed}
+    )
+
+
 # Generator dispatch table
 GENERATORS = {
     "arithmetic": generate_arithmetic_kernel,
@@ -377,6 +461,9 @@ GENERATORS = {
     "control_flow": generate_control_flow_kernel,
     "math": generate_math_kernel,
     "atomic": generate_atomic_kernel,
+    "nested_loop": generate_nested_loop_kernel,
+    "multi_conditional": generate_multi_conditional_kernel,
+    "scalar_param": generate_scalar_param_kernel,
 }
 
 
