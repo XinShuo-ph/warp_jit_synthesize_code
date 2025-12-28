@@ -1,16 +1,16 @@
 # Current State
-- **Milestone**: M3 (Validation & Handoff)
+- **Milestone**: M4 (Offline CUDA IR Generation)
 - **Task**: All tasks complete
 - **Status**: ready_for_next
 
 ## Next Action
-None. Project adapted for CUDA backend validation.
+Commit changes and wrap up.
 
 ## Blockers (if any)
 None.
 
 ## Session Log
-- Dec 28: Initialized project structure.
-- Dec 28: Reproduced CPU baseline (M1 complete).
-- Dec 28: Adapted `pipeline.py` and `ir_extractor.py` for CUDA (M2 complete).
-- Dec 28: Created verification tools and documentation (M3 complete).
+- Dec 28: Completed M1-M3.
+- Dec 28: Investigated Warp internals for offline codegen.
+- Dec 28: Implemented `pipeline_offline.py` using `ModuleBuilder`.
+- Dec 28: Generated valid CUDA IR without GPU.
