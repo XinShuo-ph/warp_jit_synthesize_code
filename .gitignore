@@ -1,0 +1,10 @@
+# Large generated datasets (keep out of git)
+/data/production/
+
+# Python caches
+**/__pycache__/
+**/*.pyc
+
+# Warp cache (can be huge)
+.cache/warp/
+
