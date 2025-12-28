@@ -85,6 +85,21 @@ jit/
 - `ir_extractor.py` can compile/extract for `device="cpu"` and `device="cuda"`
 - Output metadata includes device + generated code artifact type (e.g., `.cpp` vs `.cu`)
 
+### M2.5: CUDA Code-Only Production (no GPU required)
+**Goal**: Produce CUDA intermediate code (`.cu`) in CPU-only environments by using Warp’s CUDA code generator
+without launching kernels or requiring a CUDA device/driver.
+
+**Why**: In many environments, you can generate CUDA source via `ModuleBuilder.codegen("cuda")` even if no GPU
+is present. This enables dataset generation and validation of CUDA *code emission* separately from CUDA *runtime execution*.
+
+**Deliverables**:
+- `extract_ir(..., device="cuda", require_device=False)` succeeds on CPU-only machines
+- New pipeline script: `jit/code/synthesis/cuda_codegen_pipeline.py`
+  - Generates CUDA `.cu` code for all kernel categories without requiring a GPU
+  - Writes JSON pairs with `metadata.codegen_only=true` and `metadata.code_ext=".cu"`
+- Test coverage:
+  - A pytest test that verifies CUDA codegen-only works even when `"cuda"` is not in `warp.get_devices()`
+
 ### M3: CUDA-Enabled Synthesis Pipeline (all kernel types)
 **Goal**: Make generator + pipeline + batch generator work on CUDA (when available).
 
@@ -130,6 +145,15 @@ python -m pytest -q
 
 # Run CUDA pipeline smoke test (small)
 python jit/code/synthesis/pipeline.py --count 5 --device cuda --output /tmp/jit_cuda_smoke
+```
+
+## CPU-Only CUDA Codegen Commands (no GPU required)
+
+On a CPU-only machine:
+
+```bash
+# Generate CUDA source pairs without a CUDA driver/GPU
+python3 jit/code/synthesis/cuda_codegen_pipeline.py -n 5 -o /tmp/jit_cuda_codegen
 ```
 
 ---

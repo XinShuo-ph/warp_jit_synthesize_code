@@ -37,7 +37,13 @@ def _code_extension(device: str) -> str:
     return ".cu" if device == "cuda" else ".cpp"
 
 
-def extract_ir(kernel, device: str = "cpu", include_backward: bool = True) -> dict[str, Any]:
+def extract_ir(
+    kernel,
+    device: str = "cpu",
+    include_backward: bool = True,
+    *,
+    require_device: bool = True,
+) -> dict[str, Any]:
     """
     Extract IR (generated C++ code) from a Warp kernel.
     
@@ -45,6 +51,8 @@ def extract_ir(kernel, device: str = "cpu", include_backward: bool = True) -> di
         kernel: A warp kernel decorated with @wp.kernel
         device: Target device ("cpu" or "cuda")
         include_backward: If True, include backward/adjoint kernels
+        require_device: If False, allow generating CUDA source even if no CUDA device is available.
+            This supports a "CUDA code-only" pipeline that does not launch kernels.
         
     Returns:
         dict with keys:
@@ -56,7 +64,11 @@ def extract_ir(kernel, device: str = "cpu", include_backward: bool = True) -> di
             - metadata: Dict with kernel info (arg names, types, etc.)
     """
     device = _normalize_device(device)
-    _ensure_device_available(device)
+    if require_device:
+        _ensure_device_available(device)
+    else:
+        # Still initialize Warp runtime; codegen('cuda') can succeed without a CUDA driver.
+        wp.init()
 
     module = kernel.module
     

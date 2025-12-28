@@ -34,3 +34,12 @@ def test_extract_ir_cuda_smoke():
     assert result["forward_code"]
     assert result["metadata"]["device"] == "cuda"
     assert result["metadata"]["code_ext"] == ".cu"
+
+
+def test_extract_ir_cuda_codegen_only_without_device():
+    # Even if no CUDA device/driver exists, Warp can still codegen CUDA source.
+    result = extract_ir(kernel_add, device="cuda", include_backward=False, require_device=False)
+    assert result["cpp_code"]
+    assert result["forward_code"]
+    assert result["metadata"]["device"] == "cuda"
+    assert result["metadata"]["code_ext"] == ".cu"

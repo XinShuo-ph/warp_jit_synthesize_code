@@ -34,6 +34,9 @@ python3 code/synthesis/pipeline.py -n 10 -o data/test --device cpu
 # Generate 10 Python→IR pairs (CUDA; run on a GPU machine)
 python3 code/synthesis/pipeline.py -n 10 -o data/test_cuda --device cuda
 
+# Generate CUDA source pairs without a GPU (codegen-only)
+python3 code/synthesis/cuda_codegen_pipeline.py -n 10 -o /tmp/jit_cuda_codegen
+
 # Run Poisson solver validation
 python3 code/examples/test_poisson.py
 
