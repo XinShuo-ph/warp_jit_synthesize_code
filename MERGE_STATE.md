@@ -1,46 +1,24 @@
 # Merge State
 - **Phase**: P1
-- **Current Branch**: 12c4 (first in queue)
-- **Branches Completed**: []
-- **Status**: ready_for_next
+- **Current Branch**: 9177
+- **Branches Completed**: [12c4]
+- **Status**: in_progress
 
 ## Next Action
-1. Create merge_notes directory:
+1. Analyze branch 9177:
    ```bash
-   mkdir -p merge_notes
+   git show origin/cursor/following-instructions-md-9177:jit/notes/data_stats.md
+   git ls-tree --name-only -r origin/cursor/following-instructions-md-9177 | grep -E '\.(py|md)$' | head -30
    ```
-2. Start analyzing branch 12c4:
-   ```bash
-   git show origin/cursor/following-instructions-md-12c4:jit/notes/data_stats.md
-   git ls-tree --name-only -r origin/cursor/following-instructions-md-12c4 | grep -E '\.(py|md)$' | head -30
-   ```
-3. Test pipeline from 12c4
-4. Document findings in `merge_notes/12c4_notes.md`
-
-Note: You are on a `cursor/merge-...` branch created by Cursor agent.
-
-## Branch Queue (from branch_progresses.md)
-### Tier 1 - Must Process
-- [ ] 12c4 (10,727 pairs)
-- [ ] 9177 (10,320 pairs)
-- [ ] 8631 (10,101 pairs)
-
-### Tier 2 - Process for Features
-- [ ] 82cf (775 pairs, README)
-- [ ] aa30 (628 pairs, QUICKSTART)
-- [ ] ff72 (371 pairs, clean docs)
-- [ ] 3576 (239 pairs, test categories)
-- [ ] 3a5b (100 pairs)
-
-### Tier 3-4 - Quick Scan
-- [ ] 25e7, 5d09, a4fd, 0fbe, 7288, 3f34, 4b76, d623
+2. Test pipeline from 9177 (if different/better)
+3. Document findings in `merge_notes/9177_notes.md`
 
 ## Key Findings This Session
-(none yet)
+- **12c4**: Strong base candidate. 10.5k pairs, working pipeline, clean structure.
 
 ## Merge Decisions Made
-(none yet)
+- Selected 12c4 as the base for Phase 2.
 
 ## Session Log
-- (initial): Merge workflow initialized, ready to begin P1 with branch 12c4
-
+- (initial): Merge workflow initialized.
+- Analyzed 12c4: Confirmed it works and has data. Created notes.
