@@ -4,7 +4,7 @@ sys.path.insert(0, "/workspace/jit/code/extraction")
 
 import warp as wp
 import numpy as np
-from ir_extractor import extract_ir, extract_python_ir_pair
+from code.extraction.ir_extractor import extract_ir, extract_python_ir_pair
 
 wp.init()
 

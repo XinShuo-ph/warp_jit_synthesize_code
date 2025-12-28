@@ -6,7 +6,7 @@ import warp as wp
 wp.set_module_options({"enable_backward": False})
 wp.init()
 
-from poisson_solver import PoissonSolver, compute_analytical_solution, compute_l2_error
+from code.examples.poisson_solver import PoissonSolver, compute_analytical_solution, compute_l2_error
 
 
 def test_convergence_with_resolution():
