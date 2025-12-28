@@ -1,0 +1,10 @@
+{
+  "python_source": "@wp.kernel\ndef cond_zzoqfy(x: wp.array(dtype=float), out: wp.array(dtype=float)):\n    tid = wp.tid()\n    if x[tid] == 4.84:\n        out[tid] = x[tid] * 6.45\n    else:\n        out[tid] = x[tid] * -5.11\n",
+  "cpp_forward": "void cond_zzoqfy_ea0c68a3_cpu_kernel_forward(\n    wp::launch_bounds_t dim,\n    size_t task_index,\n    wp_args_cond_zzoqfy_ea0c68a3 *_wp_args)\n{\n    //---------\n    // argument vars\n    wp::array_t<wp::float32> var_x = _wp_args->x;\n    wp::array_t<wp::float32> var_out = _wp_args->out;\n    //---------\n    // primal vars\n    wp::int32 var_0;\n    wp::float32* var_1;\n    const wp::float32 var_2 = 4.84;\n    bool var_3;\n    wp::float32 var_4;\n    wp::float32* var_5;\n    const wp::float32 var_6 = 6.45;\n    wp::float32 var_7;\n    wp::float32 var_8;\n    wp::float32* var_9;\n    const wp::float32 var_10 = 5.11;\n    const wp::float32 var_11 = -5.11;\n    wp::float32 var_12;\n    wp::float32 var_13;\n    //---------\n    // forward\n    // def cond_zzoqfy(x: wp.array(dtype=float), out: wp.array(dtype=float)):                 <L 47>\n    // tid = wp.tid()                                                                         <L 48>\n    var_0 = builtin_tid1d();\n    // if x[tid] == 4.84:                                                                     <L 49>\n    var_1 = wp::address(var_x, var_0);\n    var_4 = wp::load(var_1);\n    var_3 = (var_4 == var_2);\n    if (var_3) {\n        // out[tid] = x[tid] * 6.45                                                           <L 50>\n        var_5 = wp::address(var_x, var_0);\n        var_8 = wp::load(var_5);\n        var_7 = wp::mul(var_8, var_6);\n        wp::array_store(var_out, var_0, var_7);\n    }\n    if (!var_3) {\n        // out[tid] = x[tid] * -5.11                                                          <L 52>\n        var_9 = wp::address(var_x, var_0);\n        var_13 = wp::load(var_9);\n        var_12 = wp::mul(var_13, var_11);\n        wp::array_store(var_out, var_0, var_12);\n    }\n}",
+  "metadata": {
+    "kernel_name": "cond_zzoqfy",
+    "category": "conditional",
+    "device": "cpu",
+    "batch_id": 1566
+  }
+}

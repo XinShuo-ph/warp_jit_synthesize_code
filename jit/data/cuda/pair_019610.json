@@ -1,0 +1,9 @@
+{
+  "python_source": "@wp.kernel\ndef math_syyykw(x: wp.array(dtype=float), out: wp.array(dtype=float)):\n    tid = wp.tid()\n    val = wp.exp(x[tid] * 5.67)\n    out[tid] = wp.sqrt(val)\n",
+  "cpp_forward": "void math_syyykw_1e4c439e_cuda_kernel_forward(\n    wp::launch_bounds_t dim,\n    wp::array_t<wp::float32> var_x,\n    wp::array_t<wp::float32> var_out)\n{\n    wp::tile_shared_storage_t tile_mem;\n\n    for (size_t _idx = static_cast<size_t>(blockDim.x) * static_cast<size_t>(blockIdx.x) + static_cast<size_t>(threadIdx.x);\n         _idx < dim.size;\n         _idx += static_cast<size_t>(blockDim.x) * static_cast<size_t>(gridDim.x))\n    {\n            // reset shared memory allocator\n        wp::tile_shared_storage_t::init();\n\n        //---------\n        // primal vars\n        wp::int32 var_0;\n        wp::float32* var_1;\n        const wp::float32 var_2 = 5.67;\n        wp::float32 var_3;\n        wp::float32 var_4;\n        wp::float32 var_5;\n        wp::float32 var_6;\n        //---------\n        // forward\n        // def math_syyykw(x: wp.array(dtype=float), out: wp.array(dtype=float)):                 <L 4>\n        // tid = wp.tid()                                                                         <L 5>\n        var_0 = builtin_tid1d();\n        // val = wp.exp(x[tid] * 5.67)                                                            <L 6>\n        var_1 = wp::address(var_x, var_0);\n        var_4 = wp::load(var_1);\n        var_3 = wp::mul(var_4, var_2);\n        var_5 = wp::exp(var_3);\n        // out[tid] = wp.sqrt(val)                                                                <L 7>\n        var_6 = wp::sqrt(var_5);\n        wp::array_store(var_out, var_0, var_6);\n    }\n}",
+  "metadata": {
+    "kernel_name": "math_syyykw",
+    "category": "math",
+    "device": "cuda"
+  }
+}

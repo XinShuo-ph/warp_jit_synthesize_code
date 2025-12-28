@@ -1,0 +1,10 @@
+{
+  "python_source": "@wp.kernel\ndef cond_odssnw(x: wp.array(dtype=float), out: wp.array(dtype=float)):\n    tid = wp.tid()\n    if x[tid] <= 0.72:\n        out[tid] = x[tid] * 2.97\n    else:\n        out[tid] = x[tid] * -8.14\n",
+  "cpp_forward": "void cond_odssnw_a7d069d7_cpu_kernel_forward(\n    wp::launch_bounds_t dim,\n    size_t task_index,\n    wp_args_cond_odssnw_a7d069d7 *_wp_args)\n{\n    //---------\n    // argument vars\n    wp::array_t<wp::float32> var_x = _wp_args->x;\n    wp::array_t<wp::float32> var_out = _wp_args->out;\n    //---------\n    // primal vars\n    wp::int32 var_0;\n    wp::float32* var_1;\n    const wp::float32 var_2 = 0.72;\n    bool var_3;\n    wp::float32 var_4;\n    wp::float32* var_5;\n    const wp::float32 var_6 = 2.97;\n    wp::float32 var_7;\n    wp::float32 var_8;\n    wp::float32* var_9;\n    const wp::float32 var_10 = 8.14;\n    const wp::float32 var_11 = -8.14;\n    wp::float32 var_12;\n    wp::float32 var_13;\n    //---------\n    // forward\n    // def cond_odssnw(x: wp.array(dtype=float), out: wp.array(dtype=float)):                 <L 46>\n    // tid = wp.tid()                                                                         <L 47>\n    var_0 = builtin_tid1d();\n    // if x[tid] <= 0.72:                                                                     <L 48>\n    var_1 = wp::address(var_x, var_0);\n    var_4 = wp::load(var_1);\n    var_3 = (var_4 <= var_2);\n    if (var_3) {\n        // out[tid] = x[tid] * 2.97                                                           <L 49>\n        var_5 = wp::address(var_x, var_0);\n        var_8 = wp::load(var_5);\n        var_7 = wp::mul(var_8, var_6);\n        wp::array_store(var_out, var_0, var_7);\n    }\n    if (!var_3) {\n        // out[tid] = x[tid] * -8.14                                                          <L 51>\n        var_9 = wp::address(var_x, var_0);\n        var_13 = wp::load(var_9);\n        var_12 = wp::mul(var_13, var_11);\n        wp::array_store(var_out, var_0, var_12);\n    }\n}",
+  "metadata": {
+    "kernel_name": "cond_odssnw",
+    "category": "conditional",
+    "device": "cpu",
+    "batch_id": 1069
+  }
+}
