@@ -1,15 +1,15 @@
 # Dataset Statistics
 
-**Total Samples**: 729  
-**Total Size**: 5.7 MB  
-**Unique Kernels**: 427
+**Total Samples**: 770  
+**Total Size**: 5.9 MB  
+**Unique Kernels**: 469
 
 ## Template Distribution
-- **math**: 169 (23.2%)
-- **reduce**: 144 (19.8%)
-- **map**: 140 (19.2%)
-- **cond**: 135 (18.5%)
-- **vec**: 127 (17.4%)
+- **math**: 177 (23.0%)
+- **reduce**: 156 (20.3%)
+- **map**: 147 (19.1%)
+- **cond**: 142 (18.4%)
+- **vec**: 134 (17.4%)
 - **add**: 1 (0.1%)
 - **transpose**: 1 (0.1%)
 - **sum**: 1 (0.1%)
@@ -27,4 +27,4 @@
 
 ## Code Size
 - Python lines: 5-26 (avg: 7.6)
-- C++ IR lines: 144-2443 (avg: 215.8)
+- C++ IR lines: 144-2443 (avg: 213.1)

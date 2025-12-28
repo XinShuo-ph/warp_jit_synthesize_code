@@ -1,6 +1,6 @@
 {
-  "total": 20,
-  "success": 20,
+  "total": 5,
+  "success": 5,
   "failed": 0,
   "output_dir": "/workspace/data/pipeline",
   "generated_files": [
@@ -8,22 +8,7 @@
     "sample_0001.json",
     "sample_0002.json",
     "sample_0003.json",
-    "sample_0004.json",
-    "sample_0005.json",
-    "sample_0006.json",
-    "sample_0007.json",
-    "sample_0008.json",
-    "sample_0009.json",
-    "sample_0010.json",
-    "sample_0011.json",
-    "sample_0012.json",
-    "sample_0013.json",
-    "sample_0014.json",
-    "sample_0015.json",
-    "sample_0016.json",
-    "sample_0017.json",
-    "sample_0018.json",
-    "sample_0019.json"
+    "sample_0004.json"
   ],
   "failures": []
 }
