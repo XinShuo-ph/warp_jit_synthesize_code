@@ -87,6 +87,13 @@ jit/
 - `README_GPU.md`: Instructions for running the validation suite on a GPU.
 - Verified generation of `.cu` or CUDA IR code (even if execution fails locally).
 
+### M4: CUDA IR Production Pipeline
+**Goal**: Establish a robust pipeline for mass-producing CUDA IR (C++/CUDA source) without a GPU.
+**Deliverables**:
+- `code/synthesis/produce_ir.py`: Wrapper around batch generator optimized for offline CUDA generation.
+- `data/cuda_v1/`: A generated dataset of at least 100 pairs.
+- `notes/cuda_production_notes.md`: Documentation on the production process and any constraints.
+
 ---
 
 ## Task Breakdown Rules
