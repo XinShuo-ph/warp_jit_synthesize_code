@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# JIT output / datasets (keep git small)
+jit/data/large/
+jit/data/test_batch/
+jit/data/custom/
+jit/data/output/
+*.egg-info/
+dist/
+build/
