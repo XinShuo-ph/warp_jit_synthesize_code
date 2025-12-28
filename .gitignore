@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+
+.pytest_cache/
+
+# Local outputs
+data/cpu_smoke/
+data/gpu_smoke/
+
