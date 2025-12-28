@@ -1,0 +1,12 @@
+{
+  "python_source": "@wp.kernel\ndef arith_xmmowt(a: wp.array(dtype=float), b: wp.array(dtype=float), c: wp.array(dtype=float)):\n    tid = wp.tid()\n    var_0 = wp.cos(a[tid])\n    var_1 = var_0 * b[tid]\n    var_2 = wp.min(var_1, b[tid])\n    c[tid] = var_2\n",
+  "cpp_forward": "void arith_xmmowt_42ecf56f_cpu_kernel_forward(\n    wp::launch_bounds_t dim,\n    size_t task_index,\n    wp_args_arith_xmmowt_42ecf56f *_wp_args)\n{\n    //---------\n    // argument vars\n    wp::array_t<wp::float32> var_a = _wp_args->a;\n    wp::array_t<wp::float32> var_b = _wp_args->b;\n    wp::array_t<wp::float32> var_c = _wp_args->c;\n    //---------\n    // primal vars\n    wp::int32 var_0;\n    wp::float32* var_1;\n    wp::float32 var_2;\n    wp::float32 var_3;\n    wp::float32* var_4;\n    wp::float32 var_5;\n    wp::float32 var_6;\n    wp::float32* var_7;\n    wp::float32 var_8;\n    wp::float32 var_9;\n    //---------\n    // forward\n    // def arith_xmmowt(a: wp.array(dtype=float), b: wp.array(dtype=float), c: wp.array(dtype=float)):       <L 4>\n    // tid = wp.tid()                                                                         <L 5>\n    var_0 = builtin_tid1d();\n    // var_0 = wp.cos(a[tid])                                                                 <L 6>\n    var_1 = wp::address(var_a, var_0);\n    var_3 = wp::load(var_1);\n    var_2 = wp::cos(var_3);\n    // var_1 = var_0 * b[tid]                                                                 <L 7>\n    var_4 = wp::address(var_b, var_0);\n    var_6 = wp::load(var_4);\n    var_5 = wp::mul(var_2, var_6);\n    // var_2 = wp.min(var_1, b[tid])                                                          <L 8>\n    var_7 = wp::address(var_b, var_0);\n    var_9 = wp::load(var_7);\n    var_8 = wp::min(var_5, var_9);\n    // c[tid] = var_2                                                                         <L 9>\n    wp::array_store(var_c, var_0, var_8);\n}",
+  "metadata": {
+    "kernel_name": "arith_xmmowt",
+    "category": "arithmetic",
+    "description": "Arithmetic kernel with 3 operations",
+    "device": "cpu",
+    "num_ops": 3,
+    "seed": 490
+  }
+}
