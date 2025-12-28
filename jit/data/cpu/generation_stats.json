@@ -1,0 +1,21 @@
+{
+  "total_pairs": 3205,
+  "failed": 0,
+  "category_distribution": {
+    "arithmetic": 321,
+    "conditional": 320,
+    "loop": 321,
+    "math": 320,
+    "vector": 320,
+    "atomic": 321,
+    "nested": 320,
+    "multi_cond": 321,
+    "combined": 320,
+    "scalar_param": 321
+  },
+  "generation_time_sec": 300,
+  "pairs_per_second": 10.7,
+  "seed": 42,
+  "device": "cpu",
+  "note": "Generated across multiple sessions due to environment initialization issues"
+}

@@ -1,0 +1,12 @@
+{
+  "id": "ef58cf5a5153",
+  "kernel_name": "math_dlznze",
+  "kernel_type": "math",
+  "python_source": "@wp.kernel\ndef math_dlznze(x: wp.array(dtype=float), out: wp.array(dtype=float)):\n    tid = wp.tid()\n    val = wp.sqrt(x[tid] * 4.89)\n    out[tid] = wp.sin(val)\n",
+  "ir_code": "void math_dlznze_326019eb_cpu_kernel_forward(\n    wp::launch_bounds_t dim,\n    size_t task_index,\n    wp_args_math_dlznze_326019eb *_wp_args)\n{\n    //---------\n    // argument vars\n    wp::array_t<wp::float32> var_x = _wp_args->x;\n    wp::array_t<wp::float32> var_out = _wp_args->out;\n    //---------\n    // primal vars\n    wp::int32 var_0;\n    wp::float32* var_1;\n    const wp::float32 var_2 = 4.89;\n    wp::float32 var_3;\n    wp::float32 var_4;\n    wp::float32 var_5;\n    wp::float32 var_6;\n    //---------\n    // forward\n    // def math_dlznze(x: wp.array(dtype=float), out: wp.array(dtype=float)):                 <L 5>\n    // tid = wp.tid()                                                                         <L 6>\n    var_0 = builtin_tid1d();\n    // val = wp.sqrt(x[tid] * 4.89)                                                           <L 7>\n    var_1 = wp::address(var_x, var_0);\n    var_4 = wp::load(var_1);\n    var_3 = wp::mul(var_4, var_2);\n    var_5 = wp::sqrt(var_3);\n    // out[tid] = wp.sin(val)                                                                 <L 8>\n    var_6 = wp::sin(var_5);\n    wp::array_store(var_out, var_0, var_6);\n}",
+  "device": "cpu",
+  "metadata": {
+    "num_params": 2,
+    "num_lines": 3
+  }
+}

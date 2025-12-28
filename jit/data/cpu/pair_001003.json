@@ -1,0 +1,12 @@
+{
+  "id": "30769d812d75",
+  "kernel_name": "math_wigoxr",
+  "kernel_type": "math",
+  "python_source": "@wp.kernel\ndef math_wigoxr(x: wp.array(dtype=float), out: wp.array(dtype=float)):\n    tid = wp.tid()\n    val = wp.cos(x[tid] * 3.93)\n    out[tid] = wp.log(val)\n",
+  "ir_code": "void math_wigoxr_017e031d_cpu_kernel_forward(\n    wp::launch_bounds_t dim,\n    size_t task_index,\n    wp_args_math_wigoxr_017e031d *_wp_args)\n{\n    //---------\n    // argument vars\n    wp::array_t<wp::float32> var_x = _wp_args->x;\n    wp::array_t<wp::float32> var_out = _wp_args->out;\n    //---------\n    // primal vars\n    wp::int32 var_0;\n    wp::float32* var_1;\n    const wp::float32 var_2 = 3.93;\n    wp::float32 var_3;\n    wp::float32 var_4;\n    wp::float32 var_5;\n    wp::float32 var_6;\n    //---------\n    // forward\n    // def math_wigoxr(x: wp.array(dtype=float), out: wp.array(dtype=float)):                 <L 5>\n    // tid = wp.tid()                                                                         <L 6>\n    var_0 = builtin_tid1d();\n    // val = wp.cos(x[tid] * 3.93)                                                            <L 7>\n    var_1 = wp::address(var_x, var_0);\n    var_4 = wp::load(var_1);\n    var_3 = wp::mul(var_4, var_2);\n    var_5 = wp::cos(var_3);\n    // out[tid] = wp.log(val)                                                                 <L 8>\n    var_6 = wp::log(var_5);\n    wp::array_store(var_out, var_0, var_6);\n}",
+  "device": "cpu",
+  "metadata": {
+    "num_params": 2,
+    "num_lines": 3
+  }
+}

@@ -1,0 +1,16 @@
+# Large data files - keep only samples
+data/cpu/pair_0001*.json
+data/cpu/pair_0002*.json
+data/cpu/pair_0003*.json
+data/cuda/pair_0001*.json
+data/cuda/pair_0002*.json
+data/cuda/pair_0003*.json
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Editor files
+.vscode/
+.idea/

@@ -1,0 +1,8 @@
+{
+  "id": "41c4405901f9",
+  "kernel_name": "math_aaqiig",
+  "kernel_type": "math",
+  "python_source": "@wp.kernel\ndef math_aaqiig(x: wp.array(dtype=float), out: wp.array(dtype=float)):\n    tid = wp.tid()\n    val = wp.cos(x[tid] * -2.36)\n    out[tid] = wp.cos(val)\n",
+  "ir_code": "void math_aaqiig_f6036d69_cpu_kernel_forward(\n    wp::launch_bounds_t dim,\n    size_t task_index,\n    wp_args_math_aaqiig_f6036d69 *_wp_args)\n{\n    //---------\n    // argument vars\n    wp::array_t<wp::float32> var_x = _wp_args->x;\n    wp::array_t<wp::float32> var_out = _wp_args->out;\n    //---------\n    // primal vars\n    wp::int32 var_0;\n    wp::float32* var_1;\n    const wp::float32 var_2 = 2.36;\n    const wp::float32 var_3 = -2.36;\n    wp::float32 var_4;\n    wp::float32 var_5;\n    wp::float32 var_6;\n    wp::float32 var_7;\n    //---------\n    // forward\n    // def math_aaqiig(x: wp.array(dtype=float), out: wp.array(dtype=float)):                 <L 4>\n    // tid = wp.tid()                                                                         <L 5>\n    var_0 = builtin_tid1d();\n    // val = wp.cos(x[tid] * -2.36)                                                           <L 6>\n    var_1 = wp::address(var_x, var_0);\n    var_5 = wp::load(var_1);\n    var_4 = wp::mul(var_5, var_3);\n    var_6 = wp::cos(var_4);\n    // out[tid] = wp.cos(val)                                                                 <L 7>\n    var_7 = wp::cos(var_6);\n    wp::array_store(var_out, var_0, var_7);\n}",
+  "device": "cpu"
+}
