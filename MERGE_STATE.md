@@ -1,46 +1,49 @@
 # Merge State
-- **Phase**: P1
-- **Current Branch**: 12c4 (first in queue)
-- **Branches Completed**: []
+- **Phase**: P1 Complete → Starting P2
+- **Current Branch**: Ready to initialize from 12c4
+- **Branches Completed**: All 16 tested
 - **Status**: ready_for_next
 
+## Test Results Summary
+
+### Tier 1 (All Tested)
+| Branch | Pipeline Works | Types | Recommendation |
+|--------|---------------|-------|----------------|
+| 12c4 | ✅ 5/5 | 6 types | **PRIMARY BASE** |
+| 9177 | ✅ 5/5 | 10 types | Merge extra generators |
+| 8631 | ⚠️ 1 only | 1 type | Skip |
+
+### Tier 2 (All Tested)  
+| Branch | Pipeline Works | Types | Recommendation |
+|--------|---------------|-------|----------------|
+| 82cf | ✅ 5/5 | 4 types | Skip |
+| aa30 | ✅ pass | atomic | Skip |
+| ff72 | ✅ 7/7 | 7 types | **MERGE combined** |
+| 3576 | ✅ pass | multi-file | Skip |
+| 3a5b | ⚠️ ignores args | - | Skip |
+
+### Tier 3-4 (Quick Tested)
+- 25e7, 5d09, a4fd: Import issues, Skip
+- 0fbe, 7288, 3f34, 4b76, d623: No pipeline, Skip
+
+## Merge Plan
+1. Initialize from 12c4 (6 types, clean structure)
+2. Merge from ff72: generate_combined_kernel() (7th type)
+3. Consider from 9177: Additional types if time permits
+
 ## Next Action
-1. Create merge_notes directory:
-   ```bash
-   mkdir -p merge_notes
-   ```
-2. Start analyzing branch 12c4:
-   ```bash
-   git show origin/cursor/following-instructions-md-12c4:jit/notes/data_stats.md
-   git ls-tree --name-only -r origin/cursor/following-instructions-md-12c4 | grep -E '\.(py|md)$' | head -30
-   ```
-3. Test pipeline from 12c4
-4. Document findings in `merge_notes/12c4_notes.md`
-
-Note: You are on a `cursor/merge-...` branch created by Cursor agent.
-
-## Branch Queue (from branch_progresses.md)
-### Tier 1 - Must Process
-- [ ] 12c4 (10,727 pairs)
-- [ ] 9177 (10,320 pairs)
-- [ ] 8631 (10,101 pairs)
-
-### Tier 2 - Process for Features
-- [ ] 82cf (775 pairs, README)
-- [ ] aa30 (628 pairs, QUICKSTART)
-- [ ] ff72 (371 pairs, clean docs)
-- [ ] 3576 (239 pairs, test categories)
-- [ ] 3a5b (100 pairs)
-
-### Tier 3-4 - Quick Scan
-- [ ] 25e7, 5d09, a4fd, 0fbe, 7288, 3f34, 4b76, d623
-
-## Key Findings This Session
-(none yet)
-
-## Merge Decisions Made
-(none yet)
+```bash
+# P2 Step 1: Initialize from 12c4
+git checkout origin/cursor/following-instructions-md-12c4 -- jit/code/ jit/notes/ jit/README.md
+```
 
 ## Session Log
-- (initial): Merge workflow initialized, ready to begin P1 with branch 12c4
-
+- P1: Tested 12c4 ✅ (5/5, 6 types) - PRIMARY BASE
+- P1: Tested 9177 ✅ (5/5, 10 types) - Extra generators
+- P1: Tested 8631 ⚠️ (1 only) - Skip
+- P1: Tested 82cf ✅ (5/5) - Skip
+- P1: Tested aa30 ✅ - Skip
+- P1: Tested ff72 ✅ (7/7, 7 types) - MERGE combined
+- P1: Tested 3576 ✅ - Skip
+- P1: Tested 3a5b ⚠️ - Skip
+- P1: Quick tested Tier 3-4 - All Skip
