@@ -88,12 +88,33 @@ Why:
 
 **Requirements**:
 - Default remains **CPU**.
-- If `--device cuda` is requested without CUDA availability, fail fast with a clear error message.
+- If `--device cuda` is requested:
+  - If CUDA is available, use the normal CUDA compile/extract path.
+  - If CUDA is **not** available, still support **CUDA codegen-only** (produce CUDA source/IR without executing kernels).
 - Add a small helper for device resolution (single source of truth).
 
 **Done when**:
 - `--device` is accepted and wired end-to-end (pipeline → generator/extractor)
 - CPU path still passes tests and sample generation
+
+---
+
+### P1.5: Offline CUDA IR Codegen (No GPU Required)
+**Goal**: Produce CUDA intermediate representation (generated `.cu` source / kernel functions) **without requiring a GPU device**.
+
+This phase exists because Warp can generate CUDA code through its codegen path even when CUDA runtime is unavailable.
+
+**Tasks**:
+- Add an offline CUDA codegen utility that uses Warp’s internal `ModuleBuilder.codegen("cuda")`
+- Update the synthesis pipeline to support `--device cuda` in CPU-only environments by using codegen-only mode
+- Add tests that validate:
+  - CUDA codegen runs without a GPU
+  - `_cuda_kernel_forward` function extraction works
+
+**Done when** (must pass on CPU-only machines):
+- `python -m pytest -q` passes (CUDA-runtime tests may be skipped)
+- `python code/synthesis/pipeline.py --count 3 --output data/cuda_codegen_smoke --device cuda` succeeds
+- `python code/synthesis/validate_dataset.py data/cuda_codegen_smoke --sample-size 3 --device cuda` succeeds
 
 ---
 

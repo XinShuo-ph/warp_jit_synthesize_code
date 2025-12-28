@@ -14,8 +14,9 @@ from typing import List, Optional
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT))
 
-from code.common.device import resolve_warp_device
+from code.common.device import normalize_warp_target, resolve_warp_device
 from code.extraction.ir_extractor import extract_kernel_functions, get_generated_source_path
+from code.extraction.offline_codegen import codegen_module_source
 from code.synthesis.generator import KernelGenerator, KernelSpec
 
 
@@ -45,8 +46,7 @@ def compile_kernel_from_source(python_source: str, kernel_name: str, device: str
     Returns: (kernel, module) or raises exception
     """
     import warp as wp
-
-    resolved = resolve_warp_device(device)
+    target = normalize_warp_target(device)
     
     # Create a temporary module file
     with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
@@ -71,7 +71,11 @@ import warp as wp
         
         # Force compilation
         wp_module = kernel.module
-        wp_module.load(resolved.name)
+        # For CPU, always compile. For CUDA, compile only if CUDA runtime is available.
+        if target == "cpu":
+            wp_module.load("cpu")
+        elif wp.is_cuda_available():
+            wp_module.load("cuda")
         
         return kernel, wp_module
         
@@ -87,7 +91,9 @@ class SynthesisPipeline:
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.generator = KernelGenerator(seed=seed)
-        self.device = resolve_warp_device(device).name
+        # `device` here means the intended codegen/compile target. CUDA may still be
+        # supported in CPU-only environments via offline codegen.
+        self.device = normalize_warp_target(device)
         self.stats = {
             "total_generated": 0,
             "successful": 0,
@@ -111,11 +117,22 @@ class SynthesisPipeline:
         try:
             # Compile and extract IR
             kernel, wp_module = compile_kernel_from_source(python_source, spec.name, device=self.device)
-            
-            # Get cache path and read generated source
-            module_id = wp_module.get_module_identifier()
-            source_file = get_generated_source_path(module_id, self.device)
-            cpp_full = source_file.read_text()
+
+            codegen_only = False
+            source_file: Path | None = None
+
+            if self.device == "cuda" and not wp.is_cuda_available():
+                # Offline CUDA codegen: produce .cu source without requiring a GPU/driver.
+                codegen_only = True
+                cg = codegen_module_source(kernel.module, target="cuda", enable_backward=True)
+                module_id = cg.module_id
+                cpp_full = cg.source
+            else:
+                # Runtime-backed compilation: read generated source from cache.
+                module_id = wp_module.get_module_identifier()
+                source_file = get_generated_source_path(module_id, self.device)
+                cpp_full = source_file.read_text()
+
             funcs = extract_kernel_functions(cpp_full, kernel.key, device=self.device)
             forward_ir, backward_ir = funcs.get("forward", ""), funcs.get("backward", "")
             
@@ -138,7 +155,8 @@ class SynthesisPipeline:
                     "num_lines": len(spec.body_lines),
                     "module_id": module_id,
                     "device": self.device,
-                    "source_file": str(source_file),
+                    "source_file": str(source_file) if source_file else None,
+                    "codegen_only": codegen_only,
                 }
             )
             

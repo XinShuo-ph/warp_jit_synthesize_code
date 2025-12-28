@@ -5,6 +5,7 @@ import pytest
 import warp as wp
 
 from ir_extractor import extract_ir, extract_kernel_functions
+from code.extraction.offline_codegen import codegen_module_source
 
 
 wp.init()
@@ -140,3 +141,16 @@ def test_extract_ir_and_forward_function_cuda():
         ir_pair = extract_ir(kernel, device=device)
         funcs = extract_kernel_functions(ir_pair.cpp_ir, kernel.key, device=device)
         assert funcs["forward"], f"missing forward function for {kernel.key} on {device}"
+
+
+@pytest.mark.cuda_codegen
+def test_offline_cuda_codegen_extract_forward_function():
+    # This must work on CPU-only machines: generate CUDA code via internal codegen
+    # without loading kernels onto a CUDA device.
+    try:
+        cg = codegen_module_source(kernel_add.module, target="cuda", enable_backward=True)
+    except Exception as e:
+        pytest.skip(f"CUDA codegen not available in this Warp build/environment: {e}")
+
+    funcs = extract_kernel_functions(cg.source, kernel_add.key, device="cuda")
+    assert funcs["forward"], "missing forward function in offline CUDA codegen output"

@@ -11,6 +11,16 @@ class ResolvedDevice:
 
     name: str  # "cpu" | "cuda"
 
+def normalize_warp_target(requested: str | None) -> str:
+    """Normalize a codegen/compile target name (does not require runtime availability)."""
+    if requested is None:
+        requested = "cpu"
+
+    target = requested.strip().lower()
+    if target not in {"cpu", "cuda"}:
+        raise ValueError(f"Unsupported target '{requested}'. Expected 'cpu' or 'cuda'.")
+    return target
+
 
 def resolve_warp_device(requested: str) -> ResolvedDevice:
     """
@@ -22,12 +32,7 @@ def resolve_warp_device(requested: str) -> ResolvedDevice:
     """
     import warp as wp
 
-    if requested is None:
-        requested = "cpu"
-
-    device = requested.strip().lower()
-    if device not in {"cpu", "cuda"}:
-        raise ValueError(f"Unsupported device '{requested}'. Expected 'cpu' or 'cuda'.")
+    device = normalize_warp_target(requested)
 
     # For explicit CUDA requests, fail fast if unavailable.
     # Prefer `is_cuda_available()` since `is_device_available("cuda")` may touch the

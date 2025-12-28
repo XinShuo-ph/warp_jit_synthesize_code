@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 import warp as wp
 
-from code.common.device import resolve_warp_device
+from code.common.device import normalize_warp_target, resolve_warp_device
 
 
 @dataclass
@@ -90,7 +90,9 @@ def extract_kernel_functions(cpp_ir: str, kernel_name: str, device: str = "cpu")
     """
     import re
 
-    resolved = resolve_warp_device(device)
+    # Important: extracting function bodies is purely string parsing; it must work
+    # for offline CUDA codegen too (no CUDA runtime required).
+    target = normalize_warp_target(device)
     
     def extract_function(start_pattern: str) -> str:
         match = re.search(start_pattern, cpp_ir)
@@ -113,7 +115,7 @@ def extract_kernel_functions(cpp_ir: str, kernel_name: str, device: str = "cpu")
     # Some CUDA kernels may be emitted with `__global__ void ...`.
     # Function name suffix differs by target: `_cpu_kernel_*` vs `_cuda_kernel_*`.
     kernel_name_esc = re.escape(kernel_name)
-    device_suffix = re.escape(resolved.name)
+    device_suffix = re.escape(target)
 
     forward_start = rf'((?:__global__\s+)?void\s+{kernel_name_esc}_[a-f0-9]+_{device_suffix}_kernel_forward\([^)]*\)\s*\{{)'
     backward_start = rf'((?:__global__\s+)?void\s+{kernel_name_esc}_[a-f0-9]+_{device_suffix}_kernel_backward\([^)]*\)\s*\{{)'
