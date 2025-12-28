@@ -206,7 +206,7 @@ def save_pairs(pairs: list[dict], output_dir: str | Path, prefix: str = "pair"):
 
 def run_pipeline(
     n: int = 100,
-    output_dir: str = "/workspace/jit/data/samples",
+    output_dir: str = "data/samples",
     categories: list[str] | None = None,
     seed: int = 42
 ):
@@ -255,7 +255,7 @@ if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
     parser.add_argument("-n", type=int, default=100, help="Number of pairs to generate")
-    parser.add_argument("-o", "--output", default="/workspace/jit/data/samples", help="Output directory")
+    parser.add_argument("-o", "--output", default="data/samples", help="Output directory")
     parser.add_argument("-s", "--seed", type=int, default=42, help="Random seed")
     parser.add_argument("-c", "--categories", nargs="+", choices=list(GENERATORS.keys()), 
                         help="Categories to generate")

@@ -236,7 +236,7 @@ def generate_batch(
 
 def run_large_scale_generation(
     n: int = 10000,
-    output_dir: str = "/workspace/jit/data/large",
+    output_dir: str = "data/large",
     seed: int = 42
 ):
     """Run large-scale pair generation."""
@@ -268,7 +268,7 @@ if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
     parser.add_argument("-n", type=int, default=10000, help="Number of pairs to generate")
-    parser.add_argument("-o", "--output", default="/workspace/jit/data/large", help="Output directory")
+    parser.add_argument("-o", "--output", default="data/large", help="Output directory")
     parser.add_argument("-s", "--seed", type=int, default=42, help="Random seed")
     
     args = parser.parse_args()
