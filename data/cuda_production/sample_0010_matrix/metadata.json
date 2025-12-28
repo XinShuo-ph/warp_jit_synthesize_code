@@ -1,0 +1,11 @@
+{
+  "sample_id": 10,
+  "category": "matrix",
+  "kernel_name": "mat_dwetwf",
+  "python_file": "mat_dwetwf.py",
+  "cuda_file": "mat_dwetwf.cu",
+  "makefile": "Makefile",
+  "ptx_file": null,
+  "ptx_generated": false,
+  "description": "Matrix-matrix multiply (wp.mat22)"
+}

@@ -1,0 +1,11 @@
+{
+  "sample_id": 49,
+  "category": "scalar_param",
+  "kernel_name": "scalar_tlxqzy",
+  "python_file": "scalar_tlxqzy.py",
+  "cuda_file": "scalar_tlxqzy.cu",
+  "makefile": "Makefile",
+  "ptx_file": null,
+  "ptx_generated": false,
+  "description": "Scalar parameters (scale=2.3, offset=-1.65)"
+}

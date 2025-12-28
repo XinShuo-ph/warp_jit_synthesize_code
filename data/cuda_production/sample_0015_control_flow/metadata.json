@@ -1,0 +1,11 @@
+{
+  "sample_id": 15,
+  "category": "control_flow",
+  "kernel_name": "ctrl_wjujtb",
+  "python_file": "ctrl_wjujtb.py",
+  "cuda_file": "ctrl_wjujtb.cu",
+  "makefile": "Makefile",
+  "ptx_file": null,
+  "ptx_generated": false,
+  "description": "Absolute difference"
+}

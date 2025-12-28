@@ -1,0 +1,11 @@
+{
+  "sample_id": 21,
+  "category": "math",
+  "kernel_name": "math_hnfauv",
+  "python_file": "math_hnfauv.py",
+  "cuda_file": "math_hnfauv.cu",
+  "makefile": "Makefile",
+  "ptx_file": null,
+  "ptx_generated": false,
+  "description": "Math functions: cos, abs, neg"
+}

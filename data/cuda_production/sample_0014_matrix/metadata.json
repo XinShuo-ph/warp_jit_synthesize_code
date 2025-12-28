@@ -1,0 +1,11 @@
+{
+  "sample_id": 14,
+  "category": "matrix",
+  "kernel_name": "mat_apjbjy",
+  "python_file": "mat_apjbjy.py",
+  "cuda_file": "mat_apjbjy.cu",
+  "makefile": "Makefile",
+  "ptx_file": null,
+  "ptx_generated": false,
+  "description": "Matrix transpose (wp.mat33)"
+}

@@ -1,0 +1,11 @@
+{
+  "sample_id": 31,
+  "category": "nested_loop",
+  "kernel_name": "nested_zptoks",
+  "python_file": "nested_zptoks.py",
+  "cuda_file": "nested_zptoks.cu",
+  "makefile": "Makefile",
+  "ptx_file": null,
+  "ptx_generated": false,
+  "description": "Nested loops (3x2)"
+}

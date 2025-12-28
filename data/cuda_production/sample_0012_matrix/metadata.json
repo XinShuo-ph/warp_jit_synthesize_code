@@ -1,0 +1,11 @@
+{
+  "sample_id": 12,
+  "category": "matrix",
+  "kernel_name": "mat_byhkii",
+  "python_file": "mat_byhkii.py",
+  "cuda_file": "mat_byhkii.cu",
+  "makefile": "Makefile",
+  "ptx_file": null,
+  "ptx_generated": false,
+  "description": "Matrix transpose (wp.mat33)"
+}

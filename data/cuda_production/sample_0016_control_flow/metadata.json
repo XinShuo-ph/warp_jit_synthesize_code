@@ -1,0 +1,11 @@
+{
+  "sample_id": 16,
+  "category": "control_flow",
+  "kernel_name": "ctrl_jquzcd",
+  "python_file": "ctrl_jquzcd.py",
+  "cuda_file": "ctrl_jquzcd.cu",
+  "makefile": "Makefile",
+  "ptx_file": null,
+  "ptx_generated": false,
+  "description": "Clamp values between lo and hi"
+}

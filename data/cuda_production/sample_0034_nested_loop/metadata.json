@@ -1,0 +1,11 @@
+{
+  "sample_id": 34,
+  "category": "nested_loop",
+  "kernel_name": "nested_aigoig",
+  "python_file": "nested_aigoig.py",
+  "cuda_file": "nested_aigoig.cu",
+  "makefile": "Makefile",
+  "ptx_file": null,
+  "ptx_generated": false,
+  "description": "Nested loops (2x2)"
+}

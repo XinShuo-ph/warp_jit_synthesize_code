@@ -1,0 +1,11 @@
+{
+  "sample_id": 17,
+  "category": "control_flow",
+  "kernel_name": "ctrl_kjyuat",
+  "python_file": "ctrl_kjyuat.py",
+  "cuda_file": "ctrl_kjyuat.cu",
+  "makefile": "Makefile",
+  "ptx_file": null,
+  "ptx_generated": false,
+  "description": "Step function"
+}

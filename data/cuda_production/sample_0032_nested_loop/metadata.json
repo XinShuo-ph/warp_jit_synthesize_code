@@ -1,0 +1,11 @@
+{
+  "sample_id": 32,
+  "category": "nested_loop",
+  "kernel_name": "nested_bxkbgg",
+  "python_file": "nested_bxkbgg.py",
+  "cuda_file": "nested_bxkbgg.cu",
+  "makefile": "Makefile",
+  "ptx_file": null,
+  "ptx_generated": false,
+  "description": "Nested loops (3x3)"
+}

@@ -1,0 +1,11 @@
+{
+  "sample_id": 7,
+  "category": "vector",
+  "kernel_name": "vec_gyqaks",
+  "python_file": "vec_gyqaks.py",
+  "cuda_file": "vec_gyqaks.cu",
+  "makefile": "Makefile",
+  "ptx_file": null,
+  "ptx_generated": false,
+  "description": "Vector kernel: cross on wp.vec3"
+}

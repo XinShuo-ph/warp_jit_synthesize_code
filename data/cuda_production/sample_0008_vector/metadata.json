@@ -1,0 +1,11 @@
+{
+  "sample_id": 8,
+  "category": "vector",
+  "kernel_name": "vec_okuuez",
+  "python_file": "vec_okuuez.py",
+  "cuda_file": "vec_okuuez.cu",
+  "makefile": "Makefile",
+  "ptx_file": null,
+  "ptx_generated": false,
+  "description": "Vector kernel: length on wp.vec4"
+}

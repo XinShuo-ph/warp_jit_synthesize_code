@@ -1,0 +1,11 @@
+{
+  "sample_id": 39,
+  "category": "multi_conditional",
+  "kernel_name": "multicond_tdzjrm",
+  "python_file": "multicond_tdzjrm.py",
+  "cuda_file": "multicond_tdzjrm.cu",
+  "makefile": "Makefile",
+  "ptx_file": null,
+  "ptx_generated": false,
+  "description": "Multiple conditions (thresholds: 1.21, 3.79)"
+}

@@ -1,0 +1,11 @@
+{
+  "sample_id": 46,
+  "category": "scalar_param",
+  "kernel_name": "scalar_fcrmeo",
+  "python_file": "scalar_fcrmeo.py",
+  "cuda_file": "scalar_fcrmeo.cu",
+  "makefile": "Makefile",
+  "ptx_file": null,
+  "ptx_generated": false,
+  "description": "Scalar parameters (scale=3.81, offset=0.55)"
+}

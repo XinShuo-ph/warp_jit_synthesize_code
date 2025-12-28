@@ -1,0 +1,11 @@
+{
+  "sample_id": 28,
+  "category": "atomic",
+  "kernel_name": "atom_sxoaqm",
+  "python_file": "atom_sxoaqm.py",
+  "cuda_file": "atom_sxoaqm.cu",
+  "makefile": "Makefile",
+  "ptx_file": null,
+  "ptx_generated": false,
+  "description": "Atomic min reduction"
+}

@@ -1,0 +1,11 @@
+{
+  "sample_id": 27,
+  "category": "atomic",
+  "kernel_name": "atom_qharmi",
+  "python_file": "atom_qharmi.py",
+  "cuda_file": "atom_qharmi.cu",
+  "makefile": "Makefile",
+  "ptx_file": null,
+  "ptx_generated": false,
+  "description": "Atomic max reduction"
+}

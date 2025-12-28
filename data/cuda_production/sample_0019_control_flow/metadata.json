@@ -1,0 +1,11 @@
+{
+  "sample_id": 19,
+  "category": "control_flow",
+  "kernel_name": "ctrl_scjoaa",
+  "python_file": "ctrl_scjoaa.py",
+  "cuda_file": "ctrl_scjoaa.cu",
+  "makefile": "Makefile",
+  "ptx_file": null,
+  "ptx_generated": false,
+  "description": "Loop sum (5 iterations)"
+}

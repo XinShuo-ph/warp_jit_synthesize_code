@@ -1,0 +1,11 @@
+{
+  "sample_id": 48,
+  "category": "scalar_param",
+  "kernel_name": "scalar_tqjcbz",
+  "python_file": "scalar_tqjcbz.py",
+  "cuda_file": "scalar_tqjcbz.cu",
+  "makefile": "Makefile",
+  "ptx_file": null,
+  "ptx_generated": false,
+  "description": "Scalar parameters (scale=3.17, offset=0.05)"
+}

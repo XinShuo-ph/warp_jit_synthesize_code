@@ -1,0 +1,11 @@
+{
+  "sample_id": 23,
+  "category": "math",
+  "kernel_name": "math_ciiams",
+  "python_file": "math_ciiams.py",
+  "cuda_file": "math_ciiams.cu",
+  "makefile": "Makefile",
+  "ptx_file": null,
+  "ptx_generated": false,
+  "description": "Math functions: neg, exp, log"
+}

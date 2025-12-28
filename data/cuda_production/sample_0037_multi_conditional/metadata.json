@@ -1,0 +1,11 @@
+{
+  "sample_id": 37,
+  "category": "multi_conditional",
+  "kernel_name": "multicond_eziiui",
+  "python_file": "multicond_eziiui.py",
+  "cuda_file": "multicond_eziiui.cu",
+  "makefile": "Makefile",
+  "ptx_file": null,
+  "ptx_generated": false,
+  "description": "Multiple conditions (thresholds: -4.89, -1.18)"
+}

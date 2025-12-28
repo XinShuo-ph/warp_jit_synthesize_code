@@ -1,0 +1,11 @@
+{
+  "sample_id": 2,
+  "category": "arithmetic",
+  "kernel_name": "arith_uarovi",
+  "python_file": "arith_uarovi.py",
+  "cuda_file": "arith_uarovi.cu",
+  "makefile": "Makefile",
+  "ptx_file": null,
+  "ptx_generated": false,
+  "description": "Arithmetic kernel with 4 operations"
+}

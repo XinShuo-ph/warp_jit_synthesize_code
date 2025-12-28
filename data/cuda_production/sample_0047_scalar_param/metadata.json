@@ -1,0 +1,11 @@
+{
+  "sample_id": 47,
+  "category": "scalar_param",
+  "kernel_name": "scalar_dttsrd",
+  "python_file": "scalar_dttsrd.py",
+  "cuda_file": "scalar_dttsrd.cu",
+  "makefile": "Makefile",
+  "ptx_file": null,
+  "ptx_generated": false,
+  "description": "Scalar parameters (scale=1.5, offset=1.11)"
+}

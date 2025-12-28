@@ -1,0 +1,11 @@
+{
+  "sample_id": 33,
+  "category": "nested_loop",
+  "kernel_name": "nested_kfwusk",
+  "python_file": "nested_kfwusk.py",
+  "cuda_file": "nested_kfwusk.cu",
+  "makefile": "Makefile",
+  "ptx_file": null,
+  "ptx_generated": false,
+  "description": "Nested loops (4x3)"
+}

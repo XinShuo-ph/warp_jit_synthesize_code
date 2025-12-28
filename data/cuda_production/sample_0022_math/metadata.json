@@ -1,0 +1,11 @@
+{
+  "sample_id": 22,
+  "category": "math",
+  "kernel_name": "math_rfmrtw",
+  "python_file": "math_rfmrtw.py",
+  "cuda_file": "math_rfmrtw.cu",
+  "makefile": "Makefile",
+  "ptx_file": null,
+  "ptx_generated": false,
+  "description": "Math functions: abs, sqrt"
+}

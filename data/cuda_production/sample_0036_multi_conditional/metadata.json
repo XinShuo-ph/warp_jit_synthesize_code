@@ -1,0 +1,11 @@
+{
+  "sample_id": 36,
+  "category": "multi_conditional",
+  "kernel_name": "multicond_lxkjwf",
+  "python_file": "multicond_lxkjwf.py",
+  "cuda_file": "multicond_lxkjwf.cu",
+  "makefile": "Makefile",
+  "ptx_file": null,
+  "ptx_generated": false,
+  "description": "Multiple conditions (thresholds: -0.08, 4.54)"
+}

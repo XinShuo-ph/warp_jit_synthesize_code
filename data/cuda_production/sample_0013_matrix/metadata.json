@@ -1,0 +1,11 @@
+{
+  "sample_id": 13,
+  "category": "matrix",
+  "kernel_name": "mat_ufrugc",
+  "python_file": "mat_ufrugc.py",
+  "cuda_file": "mat_ufrugc.cu",
+  "makefile": "Makefile",
+  "ptx_file": null,
+  "ptx_generated": false,
+  "description": "Matrix-matrix multiply (wp.mat33)"
+}

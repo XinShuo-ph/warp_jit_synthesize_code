@@ -1,0 +1,11 @@
+{
+  "sample_id": 9,
+  "category": "vector",
+  "kernel_name": "vec_syjfja",
+  "python_file": "vec_syjfja.py",
+  "cuda_file": "vec_syjfja.cu",
+  "makefile": "Makefile",
+  "ptx_file": null,
+  "ptx_generated": false,
+  "description": "Vector kernel: normalize on wp.vec2"
+}

@@ -141,6 +141,33 @@ jit/
 - Clear instructions provided for GPU testing
 - Sample data committed (≤100 pairs for git)
 
+### CM5: CUDA Code Production Pipeline
+**Goal**: Generate standalone CUDA C++ code that can be compiled without Warp
+**Deliverables**:
+- `code/cuda_production/code_generator.py`: Converts Python kernels to pure CUDA C++
+- `code/cuda_production/cuda_template.py`: CUDA code templates and utilities
+- `code/cuda_production/compile_cuda.py`: Compilation validation (nvcc wrapper)
+- Generated `.cu` files that compile with nvcc
+- PTX assembly output for analysis
+- 50+ Python→CUDA code pairs in `data/cuda_production/`
+- `notes/cuda_production.md`: CUDA code generation details
+
+**Subtasks**:
+1. Analyze Warp CUDA IR structure and extract patterns
+2. Create CUDA code templates (kernel signature, memory ops, thread indexing)
+3. Build Python→CUDA translator for each kernel type
+4. Generate standalone .cu files with host code
+5. Create compilation pipeline (code → .cu → PTX)
+6. Validate generated code structure
+7. Document CUDA code generation process
+
+**Done when**:
+- All 10 kernel types generate compilable CUDA code
+- Generated .cu files have proper CUDA syntax
+- PTX assembly can be produced (without GPU)
+- 50+ production-ready code samples
+- Documentation explains code generation process
+
 ---
 
 ## Task Breakdown Rules

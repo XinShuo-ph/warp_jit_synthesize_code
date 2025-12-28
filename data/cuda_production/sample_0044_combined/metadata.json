@@ -1,0 +1,11 @@
+{
+  "sample_id": 44,
+  "category": "combined",
+  "kernel_name": "combined_sfdqao",
+  "python_file": "combined_sfdqao.py",
+  "cuda_file": "combined_sfdqao.cu",
+  "makefile": "Makefile",
+  "ptx_file": null,
+  "ptx_generated": false,
+  "description": "Combined pattern (loop+cond+wp.sin)"
+}

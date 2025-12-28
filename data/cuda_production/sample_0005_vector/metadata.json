@@ -1,0 +1,11 @@
+{
+  "sample_id": 5,
+  "category": "vector",
+  "kernel_name": "vec_kgoohi",
+  "python_file": "vec_kgoohi.py",
+  "cuda_file": "vec_kgoohi.cu",
+  "makefile": "Makefile",
+  "ptx_file": null,
+  "ptx_generated": false,
+  "description": "Vector kernel: cross on wp.vec3"
+}

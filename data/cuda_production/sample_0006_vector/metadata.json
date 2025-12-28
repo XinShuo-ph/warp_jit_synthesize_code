@@ -1,0 +1,11 @@
+{
+  "sample_id": 6,
+  "category": "vector",
+  "kernel_name": "vec_sipwqd",
+  "python_file": "vec_sipwqd.py",
+  "cuda_file": "vec_sipwqd.cu",
+  "makefile": "Makefile",
+  "ptx_file": null,
+  "ptx_generated": false,
+  "description": "Vector kernel: dot on wp.vec3"
+}

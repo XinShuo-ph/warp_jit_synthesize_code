@@ -1,0 +1,11 @@
+{
+  "sample_id": 43,
+  "category": "combined",
+  "kernel_name": "combined_ldrywc",
+  "python_file": "combined_ldrywc.py",
+  "cuda_file": "combined_ldrywc.cu",
+  "makefile": "Makefile",
+  "ptx_file": null,
+  "ptx_generated": false,
+  "description": "Combined pattern (loop+cond+wp.cos)"
+}

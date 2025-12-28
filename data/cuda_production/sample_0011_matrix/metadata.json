@@ -1,0 +1,11 @@
+{
+  "sample_id": 11,
+  "category": "matrix",
+  "kernel_name": "mat_akfmrx",
+  "python_file": "mat_akfmrx.py",
+  "cuda_file": "mat_akfmrx.cu",
+  "makefile": "Makefile",
+  "ptx_file": null,
+  "ptx_generated": false,
+  "description": "Matrix-vector multiply (wp.mat22 * wp.vec2)"
+}

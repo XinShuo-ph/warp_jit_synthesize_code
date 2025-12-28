@@ -1,0 +1,11 @@
+{
+  "sample_id": 3,
+  "category": "arithmetic",
+  "kernel_name": "arith_ethdna",
+  "python_file": "arith_ethdna.py",
+  "cuda_file": "arith_ethdna.cu",
+  "makefile": "Makefile",
+  "ptx_file": null,
+  "ptx_generated": false,
+  "description": "Arithmetic kernel with 2 operations"
+}

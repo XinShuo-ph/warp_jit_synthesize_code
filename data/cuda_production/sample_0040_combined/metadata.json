@@ -1,0 +1,11 @@
+{
+  "sample_id": 40,
+  "category": "combined",
+  "kernel_name": "combined_iflttc",
+  "python_file": "combined_iflttc.py",
+  "cuda_file": "combined_iflttc.cu",
+  "makefile": "Makefile",
+  "ptx_file": null,
+  "ptx_generated": false,
+  "description": "Combined pattern (loop+cond+wp.sin)"
+}

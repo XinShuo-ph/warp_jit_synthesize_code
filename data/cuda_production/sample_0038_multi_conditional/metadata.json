@@ -1,0 +1,11 @@
+{
+  "sample_id": 38,
+  "category": "multi_conditional",
+  "kernel_name": "multicond_rmmlsj",
+  "python_file": "multicond_rmmlsj.py",
+  "cuda_file": "multicond_rmmlsj.cu",
+  "makefile": "Makefile",
+  "ptx_file": null,
+  "ptx_generated": false,
+  "description": "Multiple conditions (thresholds: -2.44, 0.95)"
+}

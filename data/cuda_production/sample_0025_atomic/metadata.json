@@ -1,0 +1,11 @@
+{
+  "sample_id": 25,
+  "category": "atomic",
+  "kernel_name": "atom_bommgp",
+  "python_file": "atom_bommgp.py",
+  "cuda_file": "atom_bommgp.cu",
+  "makefile": "Makefile",
+  "ptx_file": null,
+  "ptx_generated": false,
+  "description": "Atomic min reduction"
+}

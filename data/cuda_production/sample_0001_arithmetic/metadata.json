@@ -1,0 +1,11 @@
+{
+  "sample_id": 1,
+  "category": "arithmetic",
+  "kernel_name": "arith_bctogr",
+  "python_file": "arith_bctogr.py",
+  "cuda_file": "arith_bctogr.cu",
+  "makefile": "Makefile",
+  "ptx_file": null,
+  "ptx_generated": false,
+  "description": "Arithmetic kernel with 3 operations"
+}
