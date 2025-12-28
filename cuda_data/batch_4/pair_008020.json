@@ -1,0 +1,13 @@
+{
+  "python_source": "@wp.kernel\ndef vec_oovitb(a: wp.array(dtype=wp.vec4), b: wp.array(dtype=wp.vec4), out: wp.array(dtype=float)):\n    tid = wp.tid()\n    out[tid] = wp.length(a[tid])\n",
+  "cuda_forward": "__global__ void vec_oovitb_e529ccf0_cuda_kernel_forward(\n    wp::launch_bounds_t dim,\n    wp::array_t<wp::vec_t<4, wp::float32>> var_a,\n    wp::array_t<wp::vec_t<4, wp::float32>> var_b,\n    wp::array_t<wp::float32> var_out)\n{\n    wp::tile_shared_storage_t tile_mem;\n\n    for (size_t _idx = static_cast<size_t>(blockDim.x) * static_cast<size_t>(blockIdx.x) + static_cast<size_t>(threadIdx.x);\n         _idx < dim.size;\n         _idx += static_cast<size_t>(blockDim.x) * static_cast<size_t>(gridDim.x))\n    {\n            // reset shared memory allocator\n        wp::tile_shared_storage_t::init();\n\n        //---------\n        // primal vars\n        wp::int32 var_0;\n        wp::vec_t<4, wp::float32>* var_1;\n        wp::float32 var_2;\n        wp::vec_t<4, wp::float32> var_3;\n        //---------\n        // forward\n        // def vec_oovitb(a: wp.array(dtype=wp.vec4), b: wp.array(dtype=wp.vec4), out: wp.array(dtype=float)):       <L 4>\n        // tid = wp.tid()                                                                         <L 5>\n        var_0 = builtin_tid1d();\n        // out[tid] = wp.length(a[tid])                                                           <L 6>\n        var_1 = wp::address(var_a, var_0);\n        var_3 = wp::load(var_1);\n        var_2 = wp::length(var_3);\n        wp::array_store(var_out, var_0, var_2);\n    }\n}",
+  "metadata": {
+    "kernel_name": "vec_oovitb",
+    "category": "vector",
+    "description": "Vector kernel: length on wp.vec4",
+    "device": "cuda",
+    "vec_type": "wp.vec4",
+    "operation": "length",
+    "seed": 38062
+  }
+}

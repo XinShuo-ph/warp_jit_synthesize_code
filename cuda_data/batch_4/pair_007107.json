@@ -1,0 +1,12 @@
+{
+  "python_source": "@wp.kernel\ndef atom_fkxxwq(values: wp.array(dtype=float), result: wp.array(dtype=float)):\n    tid = wp.tid()\n    wp.atomic_max(result, 0, values[tid])\n",
+  "cuda_forward": "__global__ void atom_fkxxwq_ef07d361_cuda_kernel_forward(\n    wp::launch_bounds_t dim,\n    wp::array_t<wp::float32> var_values,\n    wp::array_t<wp::float32> var_result)\n{\n    wp::tile_shared_storage_t tile_mem;\n\n    for (size_t _idx = static_cast<size_t>(blockDim.x) * static_cast<size_t>(blockIdx.x) + static_cast<size_t>(threadIdx.x);\n         _idx < dim.size;\n         _idx += static_cast<size_t>(blockDim.x) * static_cast<size_t>(gridDim.x))\n    {\n            // reset shared memory allocator\n        wp::tile_shared_storage_t::init();\n\n        //---------\n        // primal vars\n        wp::int32 var_0;\n        const wp::int32 var_1 = 0;\n        wp::float32* var_2;\n        wp::float32 var_3;\n        wp::float32 var_4;\n        //---------\n        // forward\n        // def atom_fkxxwq(values: wp.array(dtype=float), result: wp.array(dtype=float)):         <L 48>\n        // tid = wp.tid()                                                                         <L 49>\n        var_0 = builtin_tid1d();\n        // wp.atomic_max(result, 0, values[tid])                                                  <L 50>\n        var_2 = wp::address(var_values, var_0);\n        var_4 = wp::load(var_2);\n        var_3 = wp::atomic_max(var_result, var_1, var_4);\n    }\n}",
+  "metadata": {
+    "kernel_name": "atom_fkxxwq",
+    "category": "atomic",
+    "description": "Atomic max reduction",
+    "device": "cuda",
+    "operation": "max",
+    "seed": 37149
+  }
+}

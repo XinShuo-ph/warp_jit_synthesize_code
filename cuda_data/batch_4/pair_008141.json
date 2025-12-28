@@ -1,0 +1,12 @@
+{
+  "python_source": "@wp.kernel\ndef ctrl_ofjpsd(a: wp.array(dtype=float), threshold: float, out: wp.array(dtype=float)):\n    tid = wp.tid()\n    if a[tid] > threshold:\n        out[tid] = 1.0\n    else:\n        out[tid] = 0.0\n",
+  "cuda_forward": "__global__ void ctrl_ofjpsd_e300674a_cuda_kernel_forward(\n    wp::launch_bounds_t dim,\n    wp::array_t<wp::float32> var_a,\n    wp::float32 var_threshold,\n    wp::array_t<wp::float32> var_out)\n{\n    wp::tile_shared_storage_t tile_mem;\n\n    for (size_t _idx = static_cast<size_t>(blockDim.x) * static_cast<size_t>(blockIdx.x) + static_cast<size_t>(threadIdx.x);\n         _idx < dim.size;\n         _idx += static_cast<size_t>(blockDim.x) * static_cast<size_t>(gridDim.x))\n    {\n            // reset shared memory allocator\n        wp::tile_shared_storage_t::init();\n\n        //---------\n        // primal vars\n        wp::int32 var_0;\n        wp::float32* var_1;\n        bool var_2;\n        wp::float32 var_3;\n        const wp::float32 var_4 = 1.0;\n        const wp::float32 var_5 = 0.0;\n        //---------\n        // forward\n        // def ctrl_ofjpsd(a: wp.array(dtype=float), threshold: float, out: wp.array(dtype=float)):       <L 9>\n        // tid = wp.tid()                                                                         <L 10>\n        var_0 = builtin_tid1d();\n        // if a[tid] > threshold:                                                                 <L 11>\n        var_1 = wp::address(var_a, var_0);\n        var_3 = wp::load(var_1);\n        var_2 = (var_3 > var_threshold);\n        if (var_2) {\n            // out[tid] = 1.0                                                                     <L 12>\n            wp::array_store(var_out, var_0, var_4);\n        }\n        if (!var_2) {\n            // out[tid] = 0.0                                                                     <L 14>\n            wp::array_store(var_out, var_0, var_5);\n        }\n    }\n}",
+  "metadata": {
+    "kernel_name": "ctrl_ofjpsd",
+    "category": "control_flow",
+    "description": "Step function",
+    "device": "cuda",
+    "pattern": "step",
+    "seed": 38183
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "python_source": "@wp.kernel\ndef math_ciiurz(a: wp.array(dtype=float), out: wp.array(dtype=float)):\n    tid = wp.tid()\n    out[tid] = wp.sqrt(wp.abs(wp.log(wp.abs(a[tid]) + 1.0)))\n",
+  "cuda_forward": "__global__ void math_ciiurz_167398c9_cuda_kernel_forward(\n    wp::launch_bounds_t dim,\n    wp::array_t<wp::float32> var_a,\n    wp::array_t<wp::float32> var_out)\n{\n    wp::tile_shared_storage_t tile_mem;\n\n    for (size_t _idx = static_cast<size_t>(blockDim.x) * static_cast<size_t>(blockIdx.x) + static_cast<size_t>(threadIdx.x);\n         _idx < dim.size;\n         _idx += static_cast<size_t>(blockDim.x) * static_cast<size_t>(gridDim.x))\n    {\n            // reset shared memory allocator\n        wp::tile_shared_storage_t::init();\n\n        //---------\n        // primal vars\n        wp::int32 var_0;\n        wp::float32* var_1;\n        wp::float32 var_2;\n        wp::float32 var_3;\n        const wp::float32 var_4 = 1.0;\n        wp::float32 var_5;\n        wp::float32 var_6;\n        wp::float32 var_7;\n        wp::float32 var_8;\n        //---------\n        // forward\n        // def math_ciiurz(a: wp.array(dtype=float), out: wp.array(dtype=float)):                 <L 32>\n        // tid = wp.tid()                                                                         <L 33>\n        var_0 = builtin_tid1d();\n        // out[tid] = wp.sqrt(wp.abs(wp.log(wp.abs(a[tid]) + 1.0)))                               <L 34>\n        var_1 = wp::address(var_a, var_0);\n        var_3 = wp::load(var_1);\n        var_2 = wp::abs(var_3);\n        var_5 = wp::add(var_2, var_4);\n        var_6 = wp::log(var_5);\n        var_7 = wp::abs(var_6);\n        var_8 = wp::sqrt(var_7);\n        wp::array_store(var_out, var_0, var_8);\n    }\n}",
+  "metadata": {
+    "kernel_name": "math_ciiurz",
+    "category": "math",
+    "description": "Math functions: log, sqrt",
+    "device": "cuda",
+    "functions": [
+      "log",
+      "sqrt"
+    ],
+    "seed": 30766
+  }
+}

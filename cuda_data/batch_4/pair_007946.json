@@ -1,0 +1,12 @@
+{
+  "python_source": "@wp.kernel\ndef arith_qhkgqk(a: wp.array(dtype=float), b: wp.array(dtype=float), c: wp.array(dtype=float)):\n    tid = wp.tid()\n    var_0 = wp.sqrt(wp.abs(a[tid]))\n    c[tid] = var_0\n",
+  "cuda_forward": "__global__ void arith_qhkgqk_5aa05458_cuda_kernel_forward(\n    wp::launch_bounds_t dim,\n    wp::array_t<wp::float32> var_a,\n    wp::array_t<wp::float32> var_b,\n    wp::array_t<wp::float32> var_c)\n{\n    wp::tile_shared_storage_t tile_mem;\n\n    for (size_t _idx = static_cast<size_t>(blockDim.x) * static_cast<size_t>(blockIdx.x) + static_cast<size_t>(threadIdx.x);\n         _idx < dim.size;\n         _idx += static_cast<size_t>(blockDim.x) * static_cast<size_t>(gridDim.x))\n    {\n            // reset shared memory allocator\n        wp::tile_shared_storage_t::init();\n\n        //---------\n        // primal vars\n        wp::int32 var_0;\n        wp::float32* var_1;\n        wp::float32 var_2;\n        wp::float32 var_3;\n        wp::float32 var_4;\n        //---------\n        // forward\n        // def arith_qhkgqk(a: wp.array(dtype=float), b: wp.array(dtype=float), c: wp.array(dtype=float)):       <L 49>\n        // tid = wp.tid()                                                                         <L 50>\n        var_0 = builtin_tid1d();\n        // var_0 = wp.sqrt(wp.abs(a[tid]))                                                        <L 51>\n        var_1 = wp::address(var_a, var_0);\n        var_3 = wp::load(var_1);\n        var_2 = wp::abs(var_3);\n        var_4 = wp::sqrt(var_2);\n        // c[tid] = var_0                                                                         <L 52>\n        wp::array_store(var_c, var_0, var_4);\n    }\n}",
+  "metadata": {
+    "kernel_name": "arith_qhkgqk",
+    "category": "arithmetic",
+    "description": "Arithmetic kernel with 1 operations",
+    "device": "cuda",
+    "num_ops": 1,
+    "seed": 37988
+  }
+}

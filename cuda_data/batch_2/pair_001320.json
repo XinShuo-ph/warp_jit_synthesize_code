@@ -1,0 +1,13 @@
+{
+  "python_source": "@wp.kernel\ndef mat_hesitz(m: wp.array(dtype=wp.mat44), out: wp.array(dtype=wp.mat44)):\n    tid = wp.tid()\n    out[tid] = wp.transpose(m[tid])\n",
+  "cuda_forward": "__global__ void mat_hesitz_950bce92_cuda_kernel_forward(\n    wp::launch_bounds_t dim,\n    wp::array_t<wp::mat_t<4, 4, wp::float32>> var_m,\n    wp::array_t<wp::mat_t<4, 4, wp::float32>> var_out)\n{\n    wp::tile_shared_storage_t tile_mem;\n\n    for (size_t _idx = static_cast<size_t>(blockDim.x) * static_cast<size_t>(blockIdx.x) + static_cast<size_t>(threadIdx.x);\n         _idx < dim.size;\n         _idx += static_cast<size_t>(blockDim.x) * static_cast<size_t>(gridDim.x))\n    {\n            // reset shared memory allocator\n        wp::tile_shared_storage_t::init();\n\n        //---------\n        // primal vars\n        wp::int32 var_0;\n        wp::mat_t<4, 4, wp::float32>* var_1;\n        wp::mat_t<4, 4, wp::float32> var_2;\n        wp::mat_t<4, 4, wp::float32> var_3;\n        //---------\n        // forward\n        // def mat_hesitz(m: wp.array(dtype=wp.mat44), out: wp.array(dtype=wp.mat44)):            <L 4>\n        // tid = wp.tid()                                                                         <L 5>\n        var_0 = builtin_tid1d();\n        // out[tid] = wp.transpose(m[tid])                                                        <L 6>\n        var_1 = wp::address(var_m, var_0);\n        var_3 = wp::load(var_1);\n        var_2 = wp::transpose(var_3);\n        wp::array_store(var_out, var_0, var_2);\n    }\n}",
+  "metadata": {
+    "kernel_name": "mat_hesitz",
+    "category": "matrix",
+    "description": "Matrix transpose (wp.mat44)",
+    "device": "cuda",
+    "mat_type": "wp.mat44",
+    "operation": "transpose",
+    "seed": 11362
+  }
+}
