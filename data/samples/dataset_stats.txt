@@ -1,17 +1,17 @@
 Dataset Statistics
 ==================================================
-Total pairs: 120
-Generated at: 2025-12-25T02:18:29.596795
+Total pairs: 5
+Generated at: 2025-12-28T03:50:40.719371
 
 Python source:
   Min length: 195
   Max length: 326
-  Mean length: 260
+  Mean length: 245
 
 C++ IR:
   Min length: 1171
-  Max length: 1820
-  Mean length: 1528
+  Max length: 1818
+  Mean length: 1525
 
 Sample descriptions:
   1. Math: sin with scale=0.54
@@ -19,8 +19,3 @@ Sample descriptions:
   3. Math: abs with scale=0.63
   4. Loop: 2 iterations
   5. Arithmetic: mul, add
-  6. Array indexing with scale=3
-  7. Vector: length
-  8. Vector: length
-  9. Math: abs with scale=1.13
-  10. Loop: 4 iterations
