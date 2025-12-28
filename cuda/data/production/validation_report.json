@@ -1,0 +1,21 @@
+{
+  "total_files": 1001,
+  "valid_pairs": 1000,
+  "invalid_pairs": 1,
+  "validation_rate": 0.999000999000999,
+  "avg_forward_lines": 76.263,
+  "avg_backward_lines": 136.556,
+  "by_category": {
+    "arithmetic": 91,
+    "conditional": 91,
+    "loop": 91,
+    "math": 91,
+    "vector": 91,
+    "atomic": 91,
+    "nested": 91,
+    "multi_cond": 91,
+    "combined": 91,
+    "scalar_param": 91,
+    "random_math": 90
+  }
+}

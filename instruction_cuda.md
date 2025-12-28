@@ -74,6 +74,7 @@ cuda/
 | P3 | Kernel adaptation | All kernel types generating CUDA code |
 | P4 | Batch pipeline | Full CUDA data generation pipeline |
 | P5 | GPU test suite | Validation tools for actual GPU testing |
+| P6 | Production pipeline | Large-scale CUDA dataset generation tool |
 
 ---
 
@@ -236,6 +237,83 @@ For each kernel type:
 
 ---
 
+### P6: Production CUDA Code Generation Pipeline
+**Goal**: Create a production-ready pipeline for large-scale CUDA training data generation
+
+**Key Insight**: CUDA code generation via `builder.codegen("cuda")` is pure Python and works WITHOUT a GPU. The GPU is only needed for execution, not code generation.
+
+**Deliverables**:
+
+1. `code/synthesis/cuda_producer.py`:
+   - Standalone production script for CUDA dataset generation
+   - Configurable target count (1k, 10k, 100k pairs)
+   - Quality validation before saving
+   - Deduplication of generated kernels
+   - Progress tracking and resumption
+   - Statistics output
+
+2. `code/synthesis/cuda_validator.py`:
+   - Validate CUDA code structure without GPU
+   - Check for required CUDA patterns (blockDim, threadIdx, etc.)
+   - Verify forward/backward code extraction
+   - Report quality metrics
+
+3. Large-scale dataset in `data/production/`:
+   - Generate 1000+ CUDA Python→IR pairs
+   - Balanced across all kernel categories
+   - Include metadata for each pair
+   - Statistics file with distribution info
+
+**Script Interface**:
+```bash
+# Generate 1000 CUDA pairs
+python cuda_producer.py --count 1000 --output ../data/production
+
+# Generate with specific categories
+python cuda_producer.py --count 500 --categories arithmetic vector math
+
+# Validate existing dataset
+python cuda_validator.py --input ../data/production
+```
+
+**Output Format**:
+```json
+{
+  "id": "cuda_0001",
+  "kernel_name": "arith_xyz123",
+  "category": "arithmetic",
+  "python_source": "@wp.kernel\ndef ...",
+  "cuda_forward": "void ...cuda_kernel_forward(...) {...}",
+  "cuda_backward": "void ...cuda_kernel_backward(...) {...}",
+  "metadata": {
+    "device": "cuda",
+    "has_backward": true,
+    "forward_lines": 45,
+    "backward_lines": 78,
+    "generation_time_ms": 123
+  }
+}
+```
+
+**Statistics File** (`data/production/stats.json`):
+```json
+{
+  "total_pairs": 1000,
+  "by_category": {"arithmetic": 120, "vector": 95, ...},
+  "avg_forward_lines": 42,
+  "avg_backward_lines": 68,
+  "generation_time_seconds": 156,
+  "pairs_per_second": 6.4
+}
+```
+
+**Done when**: 
+- `cuda_producer.py` generates 1000+ valid CUDA pairs
+- `cuda_validator.py` validates dataset with 100% pass rate
+- Statistics show balanced category distribution
+
+---
+
 ## Task Breakdown Rules
 
 When starting a phase, create `tasks/pX_tasks.md` with:
@@ -279,6 +357,7 @@ Before marking any task complete:
 | P3 | ~60k | All 6 kernel types (~10k each) |
 | P4 | ~30k | Pipeline updates, batch generation |
 | P5 | ~30k | Test suite creation |
+| P6 | ~50k | Production pipeline, large dataset |
 
 If blocked for >20k tokens on same issue:
 1. Document the blocker in CUDA_STATE.md
@@ -316,3 +395,4 @@ Project is complete when:
 3. ✅ Batch pipeline generates 50+ CUDA pairs
 4. ✅ Test suite ready for GPU validation
 5. ✅ `GPU_TESTING.md` has clear instructions for user
+6. ✅ Production pipeline generates 1000+ validated CUDA pairs
