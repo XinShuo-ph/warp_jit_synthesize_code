@@ -1,24 +1,24 @@
 # Merge State
-- **Working Branch**: (run `git branch --show-current` and record here)
-- **Phase**: P1
-- **Current Branch**: 12c4 (first in queue)
-- **Branches Completed**: []
-- **Status**: ready_for_next
+- **Working Branch**: cursor/agent-work-merge-process-6964
+- **Phase**: P1 → P2 (Phase 1 complete, starting Phase 2)
+- **Current Branch**: Ready to initialize from 12c4
+- **Branches Completed**: All 16 analyzed
+- **Status**: ready_for_phase2
 
-## Next Action
-1. Create merge_notes directory:
+## Next Action (Phase 2 Start)
+1. Initialize codebase from 12c4 (best base branch):
    ```bash
-   mkdir -p merge_notes
+   git checkout origin/cursor/following-instructions-md-12c4 -- jit/
    ```
-2. Start analyzing branch 12c4:
+2. Restructure directories:
    ```bash
-   git show origin/cursor/following-instructions-md-12c4:jit/notes/data_stats.md
-   git ls-tree --name-only -r origin/cursor/following-instructions-md-12c4 | grep -E '\.(py|md)$' | head -30
+   mkdir -p code/extraction code/synthesis code/examples tests data
+   mv jit/code/* code/
+   mv jit/notes .
+   mv jit/tasks .
    ```
-3. Test pipeline from 12c4
-4. Document findings in `merge_notes/12c4_notes.md`
-
-**First action**: Run `git branch --show-current` and record the branch name above.
+3. Test baseline pipeline
+4. Begin iterative improvements from other branches
 
 ## Branch Queue (from branch_progresses.md)
 ### Tier 1 - Must Process
@@ -36,12 +36,47 @@
 ### Tier 3-4 - Quick Scan
 - [ ] 25e7, 5d09, a4fd, 0fbe, 7288, 3f34, 4b76, d623
 
-## Key Findings This Session
-(none yet)
+## Key Findings This Session (Phase 1 Complete)
+- **12c4**: Best base (10,500 pairs, 6 kernel types, M5 complete, excellent structure)
+- **9177**: Has 4 additional kernel types (nested_loop, multi_conditional, combined, with_scalar_param) - MUST merge these
+- **8631**: Expression tree approach but limited (1 type) - SKIP generator, take debug tools
+- **82cf**: BEST documentation (README, validation tools, analysis tools) - MUST merge docs
+- **aa30**: Good QUICKSTART.md - merge this
+- **ff72**: Good example progression (ex1, ex2, ex3) - merge examples
+- **3576**: Categorized test cases - merge test organization
+- **d623**: Excellent categorized test cases (M2 branch) - MUST merge
+- **3f34**: Debug tools (check_codegen, check_install) - consider merging
+- **0fbe**: fixture_kernels.py - consider merging
+- **Others**: No unique features worth merging
 
 ## Merge Decisions Made
-(none yet)
+
+### Base Branch: 12c4
+- Most complete M5 implementation
+- 10,500 pairs generated
+- 6 kernel types in generator
+- Full pipeline + batch generator
+- Complete documentation
+- All examples including Poisson solver
+
+### Priority Merges (in order):
+1. **9177 generator enhancements**: Add 4 new kernel types to reach 10 total
+2. **82cf documentation**: README, validate_extraction, validate_dataset, analyze_dataset
+3. **d623 test cases**: Categorized test cases (case_arith, case_atomic, etc.)
+4. **aa30 QUICKSTART**: User-friendly quick reference
+5. **ff72 examples**: Numbered example progression
+6. **8631 debug tools**: debug_extraction.py
+7. **3f34 utilities**: check_codegen.py, check_install.py
+8. **0fbe fixtures**: fixture_kernels.py
+
+### Skip Entirely:
+- 25e7, 5d09, a4fd, 7288, 4b76, 3576, 3a5b - No unique valuable features
 
 ## Session Log
-- (initial): Merge workflow initialized, ready to begin P1 with branch 12c4
+- Session 1: Phase 1 complete - analyzed all 16 branches
+  - Tested pipelines from 12c4, 9177, 8631 (all work)
+  - Created detailed notes for Tier 1 branches
+  - Quick scanned Tier 2-4 branches
+  - Identified 12c4 as base + 8 merge candidates
+  - Ready to start Phase 2
 
