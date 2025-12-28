@@ -1,0 +1,9 @@
+{
+  "kernel_name": "test_loops",
+  "module_name": "__main__",
+  "module_hash": "8525206",
+  "device": "cpu",
+  "cache_path": "/home/ubuntu/.cache/warp/1.10.1/wp___main___8525206",
+  "cpp_file": "/workspace/data/test_cases/test_loops.cpp",
+  "py_file": "/workspace/data/test_cases/test_loops.py"
+}
