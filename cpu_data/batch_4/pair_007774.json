@@ -1,0 +1,13 @@
+{
+  "python_source": "@wp.kernel\ndef mat_hbslqf(m: wp.array(dtype=wp.mat33), out: wp.array(dtype=wp.mat33)):\n    tid = wp.tid()\n    out[tid] = wp.transpose(m[tid])\n",
+  "cpp_forward": "void mat_hbslqf_960c0294_cpu_kernel_forward(\n    wp::launch_bounds_t dim,\n    size_t task_index,\n    wp_args_mat_hbslqf_960c0294 *_wp_args)\n{\n    //---------\n    // argument vars\n    wp::array_t<wp::mat_t<3, 3, wp::float32>> var_m = _wp_args->m;\n    wp::array_t<wp::mat_t<3, 3, wp::float32>> var_out = _wp_args->out;\n    //---------\n    // primal vars\n    wp::int32 var_0;\n    wp::mat_t<3, 3, wp::float32>* var_1;\n    wp::mat_t<3, 3, wp::float32> var_2;\n    wp::mat_t<3, 3, wp::float32> var_3;\n    //---------\n    // forward\n    // def mat_hbslqf(m: wp.array(dtype=wp.mat33), out: wp.array(dtype=wp.mat33)):            <L 27>\n    // tid = wp.tid()                                                                         <L 28>\n    var_0 = builtin_tid1d();\n    // out[tid] = wp.transpose(m[tid])                                                        <L 29>\n    var_1 = wp::address(var_m, var_0);\n    var_3 = wp::load(var_1);\n    var_2 = wp::transpose(var_3);\n    wp::array_store(var_out, var_0, var_2);\n}",
+  "metadata": {
+    "kernel_name": "mat_hbslqf",
+    "category": "matrix",
+    "description": "Matrix transpose (wp.mat33)",
+    "device": "cpu",
+    "mat_type": "wp.mat33",
+    "operation": "transpose",
+    "seed": 37816
+  }
+}

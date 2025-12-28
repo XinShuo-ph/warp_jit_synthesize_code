@@ -1,0 +1,18 @@
+{
+  "total_pairs": 10000,
+  "category_distribution": {
+    "arithmetic": 1017,
+    "vector": 1043,
+    "matrix": 988,
+    "control_flow": 1028,
+    "math": 919,
+    "atomic": 969,
+    "nested_loop": 999,
+    "multi_conditional": 1026,
+    "combined": 996,
+    "scalar_param": 1015
+  },
+  "generation_time_sec": 104.50276136398315,
+  "pairs_per_second": 95.69125130741757,
+  "seed": 30042
+}

@@ -1,0 +1,12 @@
+{
+  "python_source": "@wp.kernel\ndef ctrl_ietika(a: wp.array(dtype=float), out: wp.array(dtype=float)):\n    tid = wp.tid()\n    total = float(0.0)\n    for i in range(2):\n        total = total + a[tid]\n    out[tid] = total\n",
+  "cpp_forward": "void ctrl_ietika_9db67f91_cpu_kernel_forward(\n    wp::launch_bounds_t dim,\n    size_t task_index,\n    wp_args_ctrl_ietika_9db67f91 *_wp_args)\n{\n    //---------\n    // argument vars\n    wp::array_t<wp::float32> var_a = _wp_args->a;\n    wp::array_t<wp::float32> var_out = _wp_args->out;\n    //---------\n    // primal vars\n    wp::int32 var_0;\n    const wp::float32 var_1 = 0.0;\n    wp::float32 var_2;\n    const wp::int32 var_3 = 0;\n    wp::float32* var_4;\n    wp::float32 var_5;\n    wp::float32 var_6;\n    const wp::int32 var_7 = 1;\n    wp::float32* var_8;\n    wp::float32 var_9;\n    wp::float32 var_10;\n    //---------\n    // forward\n    // def ctrl_ietika(a: wp.array(dtype=float), out: wp.array(dtype=float)):                 <L 34>\n    // tid = wp.tid()                                                                         <L 35>\n    var_0 = builtin_tid1d();\n    // total = float(0.0)                                                                     <L 36>\n    var_2 = wp::float(var_1);\n    // for i in range(2):                                                                     <L 37>\n    // total = total + a[tid]                                                                 <L 38>\n    var_4 = wp::address(var_a, var_0);\n    var_6 = wp::load(var_4);\n    var_5 = wp::add(var_2, var_6);\n    var_8 = wp::address(var_a, var_0);\n    var_10 = wp::load(var_8);\n    var_9 = wp::add(var_5, var_10);\n    // out[tid] = total                                                                       <L 39>\n    wp::array_store(var_out, var_0, var_9);\n}",
+  "metadata": {
+    "kernel_name": "ctrl_ietika",
+    "category": "control_flow",
+    "description": "Loop sum (2 iterations)",
+    "device": "cpu",
+    "pattern": "loop_sum",
+    "seed": 33786
+  }
+}

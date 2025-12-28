@@ -1,0 +1,14 @@
+{
+  "python_source": "@wp.kernel\ndef math_tlwuiy(a: wp.array(dtype=float), out: wp.array(dtype=float)):\n    tid = wp.tid()\n    out[tid] = wp.sqrt(wp.abs(a[tid]))\n",
+  "cpp_forward": "void math_tlwuiy_76905b20_cpu_kernel_forward(\n    wp::launch_bounds_t dim,\n    size_t task_index,\n    wp_args_math_tlwuiy_76905b20 *_wp_args)\n{\n    //---------\n    // argument vars\n    wp::array_t<wp::float32> var_a = _wp_args->a;\n    wp::array_t<wp::float32> var_out = _wp_args->out;\n    //---------\n    // primal vars\n    wp::int32 var_0;\n    wp::float32* var_1;\n    wp::float32 var_2;\n    wp::float32 var_3;\n    wp::float32 var_4;\n    //---------\n    // forward\n    // def math_tlwuiy(a: wp.array(dtype=float), out: wp.array(dtype=float)):                 <L 52>\n    // tid = wp.tid()                                                                         <L 53>\n    var_0 = builtin_tid1d();\n    // out[tid] = wp.sqrt(wp.abs(a[tid]))                                                     <L 54>\n    var_1 = wp::address(var_a, var_0);\n    var_3 = wp::load(var_1);\n    var_2 = wp::abs(var_3);\n    var_4 = wp::sqrt(var_2);\n    wp::array_store(var_out, var_0, var_4);\n}",
+  "metadata": {
+    "kernel_name": "math_tlwuiy",
+    "category": "math",
+    "description": "Math functions: sqrt",
+    "device": "cpu",
+    "functions": [
+      "sqrt"
+    ],
+    "seed": 35598
+  }
+}
