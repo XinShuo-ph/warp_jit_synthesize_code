@@ -1,46 +1,37 @@
 # Merge State
-- **Phase**: P1
-- **Current Branch**: 12c4 (first in queue)
-- **Branches Completed**: []
-- **Status**: ready_for_next
+- **Phase**: Completed
+- **Current Branch**: Merged (cursor/merge-...)
+- **Branches Completed**: All 16
+- **Status**: done
 
 ## Next Action
-1. Create merge_notes directory:
-   ```bash
-   mkdir -p merge_notes
-   ```
-2. Start analyzing branch 12c4:
-   ```bash
-   git show origin/cursor/following-instructions-md-12c4:jit/notes/data_stats.md
-   git ls-tree --name-only -r origin/cursor/following-instructions-md-12c4 | grep -E '\.(py|md)$' | head -30
-   ```
-3. Test pipeline from 12c4
-4. Document findings in `merge_notes/12c4_notes.md`
-
-Note: You are on a `cursor/merge-...` branch created by Cursor agent.
-
-## Branch Queue (from branch_progresses.md)
-### Tier 1 - Must Process
-- [ ] 12c4 (10,727 pairs)
-- [ ] 9177 (10,320 pairs)
-- [ ] 8631 (10,101 pairs)
-
-### Tier 2 - Process for Features
-- [ ] 82cf (775 pairs, README)
-- [ ] aa30 (628 pairs, QUICKSTART)
-- [ ] ff72 (371 pairs, clean docs)
-- [ ] 3576 (239 pairs, test categories)
-- [ ] 3a5b (100 pairs)
-
-### Tier 3-4 - Quick Scan
-- [ ] 25e7, 5d09, a4fd, 0fbe, 7288, 3f34, 4b76, d623
+- Push changes to remote (handled by environment).
 
 ## Key Findings This Session
-(none yet)
+- 12c4 was the best base (full pipeline, clean structure).
+- 9177 added valuable kernel types (nested, multi_cond, combined, scalar_param).
+- 82cf provided validation/analysis tools and README.
+- aa30 provided QUICKSTART.md.
+- ff72 provided resume capability for batch generator.
+- Various Tier 3/4 branches contributed examples.
 
 ## Merge Decisions Made
-(none yet)
+- [x] Base: 12c4
+- [x] Generator: Merged 9177 types into 12c4's functional style.
+- [x] Batch Generator: Added resume capability from ff72 to 12c4's version.
+- [x] Tools: Added check_codegen.py (3f34), validate/analyze (82cf).
+- [x] Docs: Used 82cf's README and aa30's QUICKSTART.
+- [x] Examples: Aggregated unique examples from multiple branches.
+- [x] Tests: Verified pipeline and IR extraction.
 
 ## Session Log
-- (initial): Merge workflow initialized, ready to begin P1 with branch 12c4
-
+- P1: Analyzed all 16 branches, created notes.
+- P2: Initialized from 12c4.
+- P2: Merged 9177 generator types.
+- P2: Merged 82cf tools and README.
+- P2: Merged aa30 QUICKSTART.
+- P2: Merged ff72 batch generator resume logic.
+- P2: Merged 3f34 check_codegen tool.
+- P2: Merged examples from 25e7, 5d09, 7288, d623.
+- P2: Fixed imports in test files.
+- Final Validation: Pipeline runs, tests pass.
