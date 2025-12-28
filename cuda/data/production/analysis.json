@@ -1,0 +1,75 @@
+{
+  "total_pairs": 1000,
+  "categories": {
+    "atomic": 168,
+    "arithmetic": 175,
+    "control_flow": 155,
+    "math": 171,
+    "matrix": 163,
+    "vector": 168
+  },
+  "patterns": {
+    "extern_c_global": 1000,
+    "grid_stride_loop": 1000,
+    "shared_memory": 1000,
+    "atomics": 168,
+    "matrices": 163,
+    "vectors": 223
+  },
+  "operations": {
+    "abs": 237,
+    " + ": 193,
+    " * ": 179,
+    "min": 116,
+    "if": 92,
+    "cos": 87,
+    "log": 83,
+    "max": 80,
+    "exp": 76,
+    "sin": 73,
+    "sqrt": 71,
+    "for": 63,
+    " - ": 55,
+    "length": 54,
+    "normalize": 54,
+    "add": 49,
+    "dot": 46,
+    " / ": 35,
+    "cross": 14
+  },
+  "python_lines": {
+    "min": 4,
+    "max": 10,
+    "avg": 5.03,
+    "median": 4
+  },
+  "cuda_lines": {
+    "min": 30,
+    "max": 65,
+    "avg": 36.836,
+    "median": 35
+  },
+  "python_chars": {
+    "min": 124,
+    "max": 294,
+    "avg": 175.69,
+    "median": 166
+  },
+  "cuda_chars": {
+    "min": 1241,
+    "max": 2656,
+    "avg": 1575.943,
+    "median": 1517
+  },
+  "operation_count": {
+    "min": 0,
+    "max": 8,
+    "avg": 1.657,
+    "median": 1
+  },
+  "category_balance": {
+    "min": 155,
+    "max": 175,
+    "std_dev": 6.342099196813483
+  }
+}

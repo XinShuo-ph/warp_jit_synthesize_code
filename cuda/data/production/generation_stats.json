@@ -1,0 +1,14 @@
+{
+  "total_pairs": 1000,
+  "generation_time_seconds": 1.8467392921447754,
+  "pairs_per_second": 541.4949496410048,
+  "categories": {
+    "atomic": 168,
+    "arithmetic": 175,
+    "control_flow": 155,
+    "math": 171,
+    "matrix": 163,
+    "vector": 168
+  },
+  "device": "cuda"
+}

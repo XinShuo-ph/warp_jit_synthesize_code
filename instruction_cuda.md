@@ -103,6 +103,16 @@ cuda/
 - `notes/cuda_vs_cpu.md`: Performance expectations, differences
 - Sample CUDA IR data (50-100 pairs) in `data/samples/`
 
+### M6: Production Dataset Generation
+**Goal**: Generate large-scale, production-ready CUDA IR dataset for LLM training
+**Deliverables**:
+- `data/production/` - 1000+ high-quality CUDA IR pairs
+- `code/synthesis/quality_validator.py` - Dataset quality validation
+- `code/synthesis/dataset_analyzer.py` - Statistical analysis tool
+- `notes/dataset_statistics.md` - Comprehensive dataset documentation
+- Dataset diversity: balanced categories, varied complexity
+- Quality metrics: syntax validation, pattern coverage, distribution analysis
+
 ---
 
 ## Task Breakdown Rules

@@ -1,0 +1,18 @@
+{
+  "total_files": 1000,
+  "valid": 1000,
+  "invalid": 0,
+  "errors_by_file": {},
+  "category_counts": {
+    "atomic": 168,
+    "arithmetic": 175,
+    "control_flow": 155,
+    "math": 171,
+    "matrix": 163,
+    "vector": 168
+  },
+  "duplicates": [],
+  "error_types": {},
+  "success": true,
+  "valid_percentage": 100.0
+}
