@@ -1,4 +1,5 @@
 # Merge State
+- **Working Branch**: (run `git branch --show-current` and record here)
 - **Phase**: P1
 - **Current Branch**: 12c4 (first in queue)
 - **Branches Completed**: []
@@ -17,7 +18,7 @@
 3. Test pipeline from 12c4
 4. Document findings in `merge_notes/12c4_notes.md`
 
-Note: You are on a `cursor/merge-...` branch created by Cursor agent.
+**First action**: Run `git branch --show-current` and record the branch name above.
 
 ## Branch Queue (from branch_progresses.md)
 ### Tier 1 - Must Process
