@@ -1,0 +1,25 @@
+# CUDA Dataset Statistics
+
+## Overview
+- **Total Size**: 207.85 MB
+- **Total Training Pairs**: 50,005
+- **Total Files**: 101
+- **Average Pair Size**: 4.26 KB
+
+## Code Size Distribution
+- **Python Source (avg)**: 271 bytes
+- **IR Code (avg)**: 3872 bytes
+- **Python Source (min/max)**: 178 / 426 bytes
+- **IR Code (min/max)**: 1466 / 14924 bytes
+
+## Kernel Type Distribution
+- **cuda_arith**: 5,001 pairs (10.0%)
+- **cuda_reduce**: 5,001 pairs (10.0%)
+- **cuda_stencil**: 5,001 pairs (10.0%)
+- **cuda_vec**: 5,001 pairs (10.0%)
+- **cuda_scan**: 5,001 pairs (10.0%)
+- **cuda_matmul**: 5,000 pairs (10.0%)
+- **cuda_condreduce**: 5,000 pairs (10.0%)
+- **cuda_warpmath**: 5,000 pairs (10.0%)
+- **cuda_nested**: 5,000 pairs (10.0%)
+- **cuda_complex**: 5,000 pairs (10.0%)
