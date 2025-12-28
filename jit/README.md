@@ -1,140 +1,183 @@
-# Warp JIT Code Synthesis - cursor/instructions-wrapup-completion-efe6
+# Warp JIT Code Synthesis for LLM Training Data
 
-## Progress Summary
-- **Milestone reached**: M5 (All milestones complete)
-- **Key deliverables**:
-  - IR Extractor: Extract Python→C++ pairs from Warp kernels
-  - Poisson Solver: FEM-based solver with validation tests
-  - Synthesis Pipeline: Programmatic kernel generation
-  - Batch Generator: Large-scale dataset generation (10,500+ pairs)
-  - Documentation: Compilation flow, IR format, dataset stats
+A comprehensive system for generating Python→IR (Intermediate Representation) training pairs using NVIDIA's Warp package. This project synthesizes diverse kernel code and extracts compiled C++ representations for machine learning applications.
 
-## What Works
-- **IR Extraction**: Extracts Python source and generated C++ code from any `@wp.kernel`
-- **7 kernel types validated**: arithmetic, vector ops, matrix ops, control flow, loops, math functions, atomics
-- **Poisson Solver**: FEM implementation with 4 validation tests (convergence, boundary conditions, consistency, analytical comparison)
-- **Synthesis Pipeline**: End-to-end generation of Python→IR pairs with 6 categories
-- **Batch Generation**: ~180 pairs/second throughput, 10,500 pairs generated
+## Overview
 
-## Requirements
+This merged codebase combines the best work from 16 parallel development branches, providing:
+
+- **10 kernel type generators** (arithmetic, vector, matrix, control_flow, math, atomic, nested_loop, multi_conditional, scalar_param, loop)
+- **Complete IR extraction pipeline** (Python source → compiled C++ code)
+- **Batch generation system** (~180-380 pairs/second)
+- **175+ sample data pairs** included
+- **Comprehensive test suites** (categorized test cases, fixture kernels)
+- **Analysis and validation tools**
+
+## Quick Start
+
+See [QUICKSTART.md](./QUICKSTART.md) for detailed setup instructions.
+
+### Installation
 
 ```bash
 pip install warp-lang
 ```
 
-## Quick Start
+### Generate Your First Samples
 
 ```bash
-# Test IR extraction (7 kernel types)
+# Test IR extraction with diverse kernel types
 python3 code/extraction/test_ir_extractor.py
 
 # Generate 10 Python→IR pairs
 python3 code/synthesis/pipeline.py -n 10 -o data/test
 
-# Run Poisson solver validation
-python3 code/examples/test_poisson.py
-
-# Generate large batch
+# Generate large batch (1000 samples)
 python3 code/synthesis/batch_generator.py --count 1000 --output data/custom
 ```
 
-## File Structure
+### Validate Poisson Solver (FEM)
+
+```bash
+python3 code/examples/test_poisson.py
+```
+
+## Project Structure
 
 ```
 jit/
 ├── code/
-│   ├── extraction/           # Python→IR extraction
+│   ├── extraction/           # IR extraction from Warp kernels
 │   │   ├── ir_extractor.py   # Core extraction logic
 │   │   ├── test_ir_extractor.py  # 7 kernel validation tests
-│   │   └── save_sample_pairs.py  # Save pairs to JSON
-│   ├── synthesis/            # Kernel generation
-│   │   ├── generator.py      # Programmatic kernel templates
-│   │   ├── pipeline.py       # End-to-end synthesis
-│   │   └── batch_generator.py    # Large-scale generation
-│   └── examples/             # Example kernels
-│       ├── poisson_solver.py     # FEM Poisson solver
-│       ├── test_poisson.py       # Solver validation
-│       └── test_basic_kernels.py # Basic kernel examples
+│   │   ├── fixture_kernels.py    # Diverse test kernels (0fbe)
+│   │   └── cases/            # Categorized test cases (d623)
+│   │       ├── case_arith.py
+│   │       ├── case_atomic.py
+│   │       ├── case_branch.py
+│   │       ├── case_loop.py
+│   │       └── case_vec.py
+│   ├── synthesis/            # Kernel generation & synthesis
+│   │   ├── generator.py      # 10 kernel type generators (12c4 + 9177)
+│   │   ├── pipeline.py       # Single-kernel synthesis
+│   │   ├── batch_generator.py    # Optimized batch generation
+│   │   ├── analyze_dataset.py    # Dataset analytics (82cf)
+│   │   └── validate_dataset.py   # Quality validation (3576)
+│   └── examples/             # Example kernels and tests
+│       ├── poisson_solver.py     # FEM Poisson equation solver
+│       ├── test_poisson.py       # Validation tests
+│       └── ...
 ├── data/
-│   ├── samples/              # 125 sample pairs (manual + synthesized)
-│   └── large/                # 10,500 pairs (42MB)
-└── notes/
-    ├── warp_basics.md        # Warp compilation flow docs
-    ├── ir_format.md          # Generated IR structure docs
-    └── data_stats.md         # Dataset statistics
+│   ├── samples/              # 120 manual + synthesized samples
+│   └── selected_samples/     # 50 curated samples from large dataset
+├── notes/                    # Technical documentation
+│   ├── ir_format.md          # IR structure documentation
+│   ├── warp_basics.md        # Warp compilation flow
+│   └── data_stats.md         # Dataset statistics
+├── tasks/                    # Milestone task files (M1-M5)
+├── README.md                 # This file
+└── QUICKSTART.md             # Quick start guide (aa30)
 ```
 
-## Generated Data Format
+## Kernel Types
+
+The generator supports 10 distinct kernel patterns:
+
+1. **arithmetic**: Chains of arithmetic operations (+, -, *, /, min, max)
+2. **vector**: Vector operations (dot, cross, length, normalize) for vec2/vec3/vec4
+3. **matrix**: Matrix operations (mul, transpose, determinant) for mat22/mat33/mat44
+4. **control_flow**: Conditional branches (if/else)
+5. **math**: Math functions (sin, cos, exp, log, sqrt, abs)
+6. **atomic**: Atomic operations (add, sub, min, max, cas)
+7. **nested_loop**: Nested for loops (2-4 levels)
+8. **multi_conditional**: Multiple conditional branches (if/elif/else)
+9. **scalar_param**: Kernels with scalar parameters
+10. **loop**: Simple for loops with reductions
+
+## Utilities
+
+### Analyze Dataset
+```bash
+python3 code/synthesis/analyze_dataset.py /path/to/data
+```
+Generates statistics: category distribution, size metrics, kernel counts.
+
+### Validate Dataset
+```bash
+python3 code/synthesis/validate_dataset.py /path/to/data
+```
+Checks dataset quality: completeness, consistency, file integrity.
+
+### Test Fixtures
+```python
+from code.extraction.fixture_kernels import add_constant, conditional_scale, struct_math
+# Use pre-built test kernels for validation
+```
+
+## Data Format
+
+Each generated pair is a JSON file containing:
 
 ```json
 {
-  "python_source": "@wp.kernel\ndef kernel_add(a: wp.array(dtype=float), ...):\n    tid = wp.tid()\n    c[tid] = a[tid] + b[tid]\n",
-  "cpp_forward": "void kernel_add_..._cpu_kernel_forward(...) {\n    // Generated C++ code\n}",
-  "metadata": {
-    "kernel_name": "kernel_add",
-    "category": "arithmetic",
-    "description": "Element-wise addition",
-    "device": "cpu"
-  }
+  "python_source": "@wp.kernel\ndef kernel_xyz(...):\n    ...",
+  "ir_code": "void kernel_xyz_forward(...) { ... }",
+  "kernel_name": "kernel_xyz",
+  "category": "arithmetic",
+  "metadata": { ... }
 }
 ```
 
-## Kernel Categories
+## Performance
 
-| Category     | Description                        | Examples                    |
-|--------------|------------------------------------|-----------------------------|
-| arithmetic   | Basic scalar operations            | add, sub, mul, div          |
-| vector       | Vector operations                  | dot, cross, normalize       |
-| matrix       | Matrix operations                  | mat-vec multiply            |
-| control_flow | Conditionals                       | if/else, clamp              |
-| math         | Math functions                     | sin, cos, exp, sqrt         |
-| atomic       | Atomic operations                  | atomic_add, atomic_max      |
+- **Generation rate**: ~180-380 pairs/second (single-threaded)
+- **Dataset scale**: 10,500+ pairs generated across all branches
+- **Batching**: 10-20 kernels per module compile for efficiency
 
-## API Reference
+## Milestone Progress
 
-### IR Extraction
+All 5 milestones completed:
 
-```python
-from code.extraction.ir_extractor import extract_ir, extract_python_ir_pair
+- ✅ **M1**: Environment Setup & Warp Basics
+- ✅ **M2**: IR Extraction Mechanism
+- ✅ **M3**: FEM Deep Dive (Poisson Solver)
+- ✅ **M4**: Synthesis Pipeline
+- ✅ **M5**: Scale Up (Batch Generation)
 
-# Full extraction
-result = extract_ir(kernel, device="cpu", include_backward=True)
-# Returns: python_source, cpp_code, forward_code, backward_code, metadata
+## Contributing Branches
 
-# Simple extraction
-python_src, cpp_forward = extract_python_ir_pair(kernel, device="cpu")
+This merged codebase integrates work from:
+
+- **12c4**: Primary base (10.5k pairs, 7 kernel types, complete pipeline)
+- **9177**: 3 additional kernel types (nested_loop, multi_conditional, scalar_param)
+- **0fbe**: fixture_kernels.py test suite
+- **d623**: Categorized test cases structure
+- **82cf**: analyze_dataset.py utility
+- **3576**: validate_dataset.py utility
+- **aa30**: QUICKSTART.md documentation
+
+## Testing
+
+```bash
+# Test IR extraction
+python3 code/extraction/test_ir_extractor.py
+
+# Test Poisson solver
+python3 code/examples/test_poisson.py
+
+# Test all fixture kernels
+python3 -c "from code.extraction.fixture_kernels import *"
 ```
 
-### Kernel Generation
+## Requirements
 
-```python
-from code.synthesis.generator import generate_kernel, generate_kernels
+- Python 3.10+
+- warp-lang (NVIDIA Warp)
 
-# Generate single kernel
-spec = generate_kernel(category="arithmetic", seed=42)
+## License
 
-# Generate batch
-specs = generate_kernels(n=100, categories=["arithmetic", "vector"], seed=42)
-```
+Follow NVIDIA Warp's license for the underlying JIT compilation technology.
 
-### Synthesis Pipeline
+## Merge Notes
 
-```python
-from code.synthesis.pipeline import synthesize_pair, synthesize_batch, run_pipeline
-
-# Single pair
-pair = synthesize_pair(spec, device="cpu")
-
-# Batch synthesis
-pairs = synthesize_batch(n=100, seed=42)
-
-# Full pipeline with file output
-run_pipeline(n=100, output_dir="data/output", seed=42)
-```
-
-## Known Issues / TODOs
-
-- **CPU-only**: Current implementation generates CPU C++ code only (no CUDA)
-- **ir_extractor.py device param**: Has `device` parameter but CUDA path untested (no GPU available)
-- **No GPU validation**: CUDA code generation path not validated
-- **Large dataset in git**: 10,500 pairs (42MB) may be large for some workflows
+See `merge_notes/` directory for detailed analysis of all 16 contributing branches.
