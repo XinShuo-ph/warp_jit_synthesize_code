@@ -369,6 +369,51 @@ def {name}(values: wp.array(dtype=float), result: wp.array(dtype=float)):
     )
 
 
+def generate_combined_kernel(seed: int | None = None) -> KernelSpec:
+    """Generate a kernel combining loop + conditional + math patterns.
+    
+    Merged from branch ff72 - provides complex multi-pattern kernels.
+    """
+    if seed is not None:
+        random.seed(seed)
+    
+    name = random_name("combined")
+    
+    # Combine loop, conditional, and math
+    func1 = random.choice(list(UNARY_OPS.keys()))
+    func2 = random.choice(list(UNARY_OPS.keys()))
+    cmp_op = random.choice(list(COMPARISON_OPS.keys()))
+    threshold = round(random.uniform(0.0, 1.0), 2)
+    loop_bound = random.randint(2, 5)
+    
+    # Build expressions using templates
+    expr1 = UNARY_OPS[func1].format(x="val")
+    expr2 = UNARY_OPS[func2].format(x="val")
+    cmp_expr = COMPARISON_OPS[cmp_op].format(x="val", y=str(threshold))
+    
+    source = f'''@wp.kernel
+def {name}(x: wp.array(dtype=float), y: wp.array(dtype=float)):
+    tid = wp.tid()
+    val = x[tid]
+    acc = float(0.0)
+    for j in range({loop_bound}):
+        if {cmp_expr}:
+            acc = acc + {expr1}
+        else:
+            acc = acc + {expr2}
+    y[tid] = acc
+'''
+    
+    return KernelSpec(
+        name=name,
+        category="combined",
+        source=source,
+        arg_types={"x": "wp.array(dtype=float)", "y": "wp.array(dtype=float)"},
+        description=f"Combined: loop({loop_bound}x) + conditional + math({func1}/{func2})",
+        metadata={"loop_bound": loop_bound, "func1": func1, "func2": func2, "comparison": cmp_op, "seed": seed}
+    )
+
+
 # Generator dispatch table
 GENERATORS = {
     "arithmetic": generate_arithmetic_kernel,
@@ -377,6 +422,7 @@ GENERATORS = {
     "control_flow": generate_control_flow_kernel,
     "math": generate_math_kernel,
     "atomic": generate_atomic_kernel,
+    "combined": generate_combined_kernel,
 }
 
 
