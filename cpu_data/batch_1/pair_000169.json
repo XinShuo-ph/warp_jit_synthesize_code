@@ -1,0 +1,12 @@
+{
+  "python_source": "@wp.kernel\ndef arith_otawqq(a: wp.array(dtype=float), b: wp.array(dtype=float), c: wp.array(dtype=float)):\n    tid = wp.tid()\n    var_0 = wp.min(a[tid], b[tid])\n    var_1 = var_0 - b[tid]\n    var_2 = wp.sin(var_1)\n    c[tid] = var_2\n",
+  "cpp_forward": "void arith_otawqq_1a61c48d_cpu_kernel_forward(\n    wp::launch_bounds_t dim,\n    size_t task_index,\n    wp_args_arith_otawqq_1a61c48d *_wp_args)\n{\n    //---------\n    // argument vars\n    wp::array_t<wp::float32> var_a = _wp_args->a;\n    wp::array_t<wp::float32> var_b = _wp_args->b;\n    wp::array_t<wp::float32> var_c = _wp_args->c;\n    //---------\n    // primal vars\n    wp::int32 var_0;\n    wp::float32* var_1;\n    wp::float32* var_2;\n    wp::float32 var_3;\n    wp::float32 var_4;\n    wp::float32 var_5;\n    wp::float32* var_6;\n    wp::float32 var_7;\n    wp::float32 var_8;\n    wp::float32 var_9;\n    //---------\n    // forward\n    // def arith_otawqq(a: wp.array(dtype=float), b: wp.array(dtype=float), c: wp.array(dtype=float)):       <L 74>\n    // tid = wp.tid()                                                                         <L 75>\n    var_0 = builtin_tid1d();\n    // var_0 = wp.min(a[tid], b[tid])                                                         <L 76>\n    var_1 = wp::address(var_a, var_0);\n    var_2 = wp::address(var_b, var_0);\n    var_4 = wp::load(var_1);\n    var_5 = wp::load(var_2);\n    var_3 = wp::min(var_4, var_5);\n    // var_1 = var_0 - b[tid]                                                                 <L 77>\n    var_6 = wp::address(var_b, var_0);\n    var_8 = wp::load(var_6);\n    var_7 = wp::sub(var_3, var_8);\n    // var_2 = wp.sin(var_1)                                                                  <L 78>\n    var_9 = wp::sin(var_7);\n    // c[tid] = var_2                                                                         <L 79>\n    wp::array_store(var_c, var_0, var_9);\n}",
+  "metadata": {
+    "kernel_name": "arith_otawqq",
+    "category": "arithmetic",
+    "description": "Arithmetic kernel with 3 operations",
+    "device": "cpu",
+    "num_ops": 3,
+    "seed": 211
+  }
+}

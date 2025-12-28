@@ -1,0 +1,16 @@
+{
+  "python_source": "@wp.kernel\ndef math_yztpkk(a: wp.array(dtype=float), out: wp.array(dtype=float)):\n    tid = wp.tid()\n    out[tid] = wp.abs(wp.sqrt(wp.abs(wp.log(wp.abs(a[tid]) + 1.0))))\n",
+  "cpp_forward": "void math_yztpkk_0a69713e_cpu_kernel_forward(\n    wp::launch_bounds_t dim,\n    size_t task_index,\n    wp_args_math_yztpkk_0a69713e *_wp_args)\n{\n    //---------\n    // argument vars\n    wp::array_t<wp::float32> var_a = _wp_args->a;\n    wp::array_t<wp::float32> var_out = _wp_args->out;\n    //---------\n    // primal vars\n    wp::int32 var_0;\n    wp::float32* var_1;\n    wp::float32 var_2;\n    wp::float32 var_3;\n    const wp::float32 var_4 = 1.0;\n    wp::float32 var_5;\n    wp::float32 var_6;\n    wp::float32 var_7;\n    wp::float32 var_8;\n    wp::float32 var_9;\n    //---------\n    // forward\n    // def math_yztpkk(a: wp.array(dtype=float), out: wp.array(dtype=float)):                 <L 61>\n    // tid = wp.tid()                                                                         <L 62>\n    var_0 = builtin_tid1d();\n    // out[tid] = wp.abs(wp.sqrt(wp.abs(wp.log(wp.abs(a[tid]) + 1.0))))                       <L 63>\n    var_1 = wp::address(var_a, var_0);\n    var_3 = wp::load(var_1);\n    var_2 = wp::abs(var_3);\n    var_5 = wp::add(var_2, var_4);\n    var_6 = wp::log(var_5);\n    var_7 = wp::abs(var_6);\n    var_8 = wp::sqrt(var_7);\n    var_9 = wp::abs(var_8);\n    wp::array_store(var_out, var_0, var_9);\n}",
+  "metadata": {
+    "kernel_name": "math_yztpkk",
+    "category": "math",
+    "description": "Math functions: log, sqrt, abs",
+    "device": "cpu",
+    "functions": [
+      "log",
+      "sqrt",
+      "abs"
+    ],
+    "seed": 2900
+  }
+}
