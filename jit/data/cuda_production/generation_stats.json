@@ -1,0 +1,15 @@
+{
+  "total_pairs": 1000,
+  "category_distribution": {
+    "arithmetic": 169,
+    "vector": 181,
+    "matrix": 153,
+    "control_flow": 166,
+    "math": 170,
+    "atomic": 161
+  },
+  "generation_time_sec": 5.635041236877441,
+  "pairs_per_second": 177.46099060565746,
+  "seed": 12345,
+  "device": "cuda"
+}
