@@ -1,0 +1,22 @@
+{
+  "total_attempted": 20000,
+  "successful": 20000,
+  "failed": 0,
+  "by_type": {
+    "arithmetic": 1992,
+    "conditional": 2122,
+    "loop": 1994,
+    "math": 1943,
+    "vector": 1945,
+    "atomic": 1918,
+    "nested": 2066,
+    "multi_cond": 1980,
+    "combined": 2008,
+    "scalar_param": 2032
+  },
+  "start_time": 1766962671.6550894,
+  "device": "cuda",
+  "end_time": 1766963139.4739294,
+  "elapsed_seconds": 467.81884002685547,
+  "pairs_per_second": 42.751591617926046
+}

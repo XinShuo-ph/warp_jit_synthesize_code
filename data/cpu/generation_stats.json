@@ -1,0 +1,21 @@
+{
+  "total_attempted": 5000,
+  "successful": 5000,
+  "failed": 0,
+  "by_type": {
+    "arithmetic": 483,
+    "conditional": 512,
+    "loop": 511,
+    "math": 496,
+    "vector": 519,
+    "atomic": 473,
+    "nested": 533,
+    "multi_cond": 485,
+    "combined": 492,
+    "scalar_param": 496
+  },
+  "start_time": 1766962098.5733016,
+  "end_time": 1766962577.3375914,
+  "elapsed_seconds": 478.76428985595703,
+  "pairs_per_second": 10.443552507862105
+}
