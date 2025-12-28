@@ -1,6 +1,14 @@
 import warp as wp
 
 @wp.kernel
-def arithmetic_0005(a: wp.array(dtype=float), b: wp.array(dtype=float), c: wp.array(dtype=float)):
+def loop_0005(matrix: wp.array(dtype=float, ndim=2),
+           vector: wp.array(dtype=float),
+           result: wp.array(dtype=float),
+           n: int):
     i = wp.tid()
-    c[i] = ((a[i] + b[i]) - b[i])
+    
+    sum_val = float(0.0)
+    for j in range(n):
+        sum_val = sum_val + matrix[i, j] * vector[j]
+    
+    result[i] = sum_val

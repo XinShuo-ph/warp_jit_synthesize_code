@@ -18,7 +18,7 @@
 #define builtin_block_dim() wp::block_dim()
 
 
-// /tmp/warp_synthesis_e7p4vel6/temp_kernel_4.py:3
+// /tmp/warp_synthesis_5fy1oss7/temp_kernel_4.py:3
 static wp::float32 helper_4_0(
     wp::float32 var_x)
 {
@@ -37,7 +37,7 @@ static wp::float32 helper_4_0(
 }
 
 
-// /tmp/warp_synthesis_e7p4vel6/temp_kernel_4.py:3
+// /tmp/warp_synthesis_5fy1oss7/temp_kernel_4.py:3
 static void adj_helper_4_0(
     wp::float32 var_x,
     wp::float32 & adj_x,

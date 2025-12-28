@@ -1,6 +1,12 @@
 import warp as wp
 
+@wp.func
+def helper_7(x: float) -> float:
+    return wp.sqrt(wp.abs(x))
+
 @wp.kernel
-def arithmetic_0007(a: wp.array(dtype=float), b: wp.array(dtype=float), c: wp.array(dtype=float)):
+def function_0007(data: wp.array(dtype=float),
+           output: wp.array(dtype=float)):
     i = wp.tid()
-    c[i] = ((a[i] * b[i]) - b[i])
+    val = data[i]
+    output[i] = helper_7(val)

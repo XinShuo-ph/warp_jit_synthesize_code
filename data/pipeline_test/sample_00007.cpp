@@ -17,78 +17,114 @@
 
 #define builtin_block_dim() wp::block_dim()
 
-struct wp_args_arithmetic_0007_5ad39396 {
-    wp::array_t<wp::float32> a;
-    wp::array_t<wp::float32> b;
-    wp::array_t<wp::float32> c;
+
+// /tmp/warp_synthesis_5fy1oss7/temp_kernel_7.py:3
+static wp::float32 helper_7_0(
+    wp::float32 var_x)
+{
+    //---------
+    // primal vars
+    wp::float32 var_0;
+    wp::float32 var_1;
+    //---------
+    // forward
+    // def helper_7(x: float) -> float:                                                       <L 4>
+    // return wp.sqrt(wp.abs(x))                                                              <L 5>
+    var_0 = wp::abs(var_x);
+    var_1 = wp::sqrt(var_0);
+    return var_1;
+}
+
+
+// /tmp/warp_synthesis_5fy1oss7/temp_kernel_7.py:3
+static void adj_helper_7_0(
+    wp::float32 var_x,
+    wp::float32 & adj_x,
+    wp::float32 & adj_ret)
+{
+    //---------
+    // primal vars
+    wp::float32 var_0;
+    wp::float32 var_1;
+    //---------
+    // dual vars
+    wp::float32 adj_0 = {};
+    wp::float32 adj_1 = {};
+    //---------
+    // forward
+    // def helper_7(x: float) -> float:                                                       <L 4>
+    // return wp.sqrt(wp.abs(x))                                                              <L 5>
+    var_0 = wp::abs(var_x);
+    var_1 = wp::sqrt(var_0);
+    goto label0;
+    //---------
+    // reverse
+    label0:;
+    adj_1 += adj_ret;
+    wp::adj_sqrt(var_0, var_1, adj_0, adj_1);
+    wp::adj_abs(var_x, adj_x, adj_0);
+    // adj: return wp.sqrt(wp.abs(x))                                                         <L 5>
+    // adj: def helper_7(x: float) -> float:                                                  <L 4>
+    return;
+}
+
+struct wp_args_function_0007_8a54812b {
+    wp::array_t<wp::float32> data;
+    wp::array_t<wp::float32> output;
 };
 
 
-void arithmetic_0007_5ad39396_cpu_kernel_forward(
+void function_0007_8a54812b_cpu_kernel_forward(
     wp::launch_bounds_t dim,
     size_t task_index,
-    wp_args_arithmetic_0007_5ad39396 *_wp_args)
+    wp_args_function_0007_8a54812b *_wp_args)
 {
     //---------
     // argument vars
-    wp::array_t<wp::float32> var_a = _wp_args->a;
-    wp::array_t<wp::float32> var_b = _wp_args->b;
-    wp::array_t<wp::float32> var_c = _wp_args->c;
+    wp::array_t<wp::float32> var_data = _wp_args->data;
+    wp::array_t<wp::float32> var_output = _wp_args->output;
     //---------
     // primal vars
     wp::int32 var_0;
     wp::float32* var_1;
-    wp::float32* var_2;
+    wp::float32 var_2;
     wp::float32 var_3;
     wp::float32 var_4;
-    wp::float32 var_5;
-    wp::float32* var_6;
-    wp::float32 var_7;
-    wp::float32 var_8;
     //---------
     // forward
-    // def arithmetic_0007(a: wp.array(dtype=float), b: wp.array(dtype=float), c: wp.array(dtype=float)):       <L 4>
-    // i = wp.tid()                                                                           <L 5>
+    // def function_0007(data: wp.array(dtype=float),                                         <L 8>
+    // i = wp.tid()                                                                           <L 10>
     var_0 = builtin_tid1d();
-    // c[i] = ((a[i] * b[i]) - b[i])                                                          <L 6>
-    var_1 = wp::address(var_a, var_0);
-    var_2 = wp::address(var_b, var_0);
-    var_4 = wp::load(var_1);
-    var_5 = wp::load(var_2);
-    var_3 = wp::mul(var_4, var_5);
-    var_6 = wp::address(var_b, var_0);
-    var_8 = wp::load(var_6);
-    var_7 = wp::sub(var_3, var_8);
-    wp::array_store(var_c, var_0, var_7);
+    // val = data[i]                                                                          <L 11>
+    var_1 = wp::address(var_data, var_0);
+    var_3 = wp::load(var_1);
+    var_2 = wp::copy(var_3);
+    // output[i] = helper_7(val)                                                              <L 12>
+    var_4 = helper_7_0(var_2);
+    wp::array_store(var_output, var_0, var_4);
 }
 
 
 
-void arithmetic_0007_5ad39396_cpu_kernel_backward(
+void function_0007_8a54812b_cpu_kernel_backward(
     wp::launch_bounds_t dim,
     size_t task_index,
-    wp_args_arithmetic_0007_5ad39396 *_wp_args,
-    wp_args_arithmetic_0007_5ad39396 *_wp_adj_args)
+    wp_args_function_0007_8a54812b *_wp_args,
+    wp_args_function_0007_8a54812b *_wp_adj_args)
 {
     //---------
     // argument vars
-    wp::array_t<wp::float32> var_a = _wp_args->a;
-    wp::array_t<wp::float32> var_b = _wp_args->b;
-    wp::array_t<wp::float32> var_c = _wp_args->c;
-    wp::array_t<wp::float32> adj_a = _wp_adj_args->a;
-    wp::array_t<wp::float32> adj_b = _wp_adj_args->b;
-    wp::array_t<wp::float32> adj_c = _wp_adj_args->c;
+    wp::array_t<wp::float32> var_data = _wp_args->data;
+    wp::array_t<wp::float32> var_output = _wp_args->output;
+    wp::array_t<wp::float32> adj_data = _wp_adj_args->data;
+    wp::array_t<wp::float32> adj_output = _wp_adj_args->output;
     //---------
     // primal vars
     wp::int32 var_0;
     wp::float32* var_1;
-    wp::float32* var_2;
+    wp::float32 var_2;
     wp::float32 var_3;
     wp::float32 var_4;
-    wp::float32 var_5;
-    wp::float32* var_6;
-    wp::float32 var_7;
-    wp::float32 var_8;
     //---------
     // dual vars
     wp::int32 adj_0 = {};
@@ -96,36 +132,28 @@ void arithmetic_0007_5ad39396_cpu_kernel_backward(
     wp::float32 adj_2 = {};
     wp::float32 adj_3 = {};
     wp::float32 adj_4 = {};
-    wp::float32 adj_5 = {};
-    wp::float32 adj_6 = {};
-    wp::float32 adj_7 = {};
-    wp::float32 adj_8 = {};
     //---------
     // forward
-    // def arithmetic_0007(a: wp.array(dtype=float), b: wp.array(dtype=float), c: wp.array(dtype=float)):       <L 4>
-    // i = wp.tid()                                                                           <L 5>
+    // def function_0007(data: wp.array(dtype=float),                                         <L 8>
+    // i = wp.tid()                                                                           <L 10>
     var_0 = builtin_tid1d();
-    // c[i] = ((a[i] * b[i]) - b[i])                                                          <L 6>
-    var_1 = wp::address(var_a, var_0);
-    var_2 = wp::address(var_b, var_0);
-    var_4 = wp::load(var_1);
-    var_5 = wp::load(var_2);
-    var_3 = wp::mul(var_4, var_5);
-    var_6 = wp::address(var_b, var_0);
-    var_8 = wp::load(var_6);
-    var_7 = wp::sub(var_3, var_8);
-    // wp::array_store(var_c, var_0, var_7);
+    // val = data[i]                                                                          <L 11>
+    var_1 = wp::address(var_data, var_0);
+    var_3 = wp::load(var_1);
+    var_2 = wp::copy(var_3);
+    // output[i] = helper_7(val)                                                              <L 12>
+    var_4 = helper_7_0(var_2);
+    // wp::array_store(var_output, var_0, var_4);
     //---------
     // reverse
-    wp::adj_array_store(var_c, var_0, var_7, adj_c, adj_0, adj_7);
-    wp::adj_sub(var_3, var_8, adj_3, adj_6, adj_7);
-    wp::adj_address(var_b, var_0, adj_b, adj_0, adj_6);
-    wp::adj_mul(var_4, var_5, adj_1, adj_2, adj_3);
-    wp::adj_address(var_b, var_0, adj_b, adj_0, adj_2);
-    wp::adj_address(var_a, var_0, adj_a, adj_0, adj_1);
-    // adj: c[i] = ((a[i] * b[i]) - b[i])                                                     <L 6>
-    // adj: i = wp.tid()                                                                      <L 5>
-    // adj: def arithmetic_0007(a: wp.array(dtype=float), b: wp.array(dtype=float), c: wp.array(dtype=float)):  <L 4>
+    wp::adj_array_store(var_output, var_0, var_4, adj_output, adj_0, adj_4);
+    adj_helper_7_0(var_2, adj_2, adj_4);
+    // adj: output[i] = helper_7(val)                                                         <L 12>
+    wp::adj_copy(var_3, adj_1, adj_2);
+    wp::adj_address(var_data, var_0, adj_data, adj_0, adj_1);
+    // adj: val = data[i]                                                                     <L 11>
+    // adj: i = wp.tid()                                                                      <L 10>
+    // adj: def function_0007(data: wp.array(dtype=float),                                    <L 8>
     return;
 }
 
@@ -134,9 +162,9 @@ void arithmetic_0007_5ad39396_cpu_kernel_backward(
 extern "C" {
 
 // Python CPU entry points
-WP_API void arithmetic_0007_5ad39396_cpu_forward(
+WP_API void function_0007_8a54812b_cpu_forward(
     wp::launch_bounds_t dim,
-    wp_args_arithmetic_0007_5ad39396 *_wp_args)
+    wp_args_function_0007_8a54812b *_wp_args)
 {
     wp::tile_shared_storage_t tile_mem;
 #if defined(WP_ENABLE_TILES_IN_STACK_MEMORY)
@@ -145,7 +173,7 @@ WP_API void arithmetic_0007_5ad39396_cpu_forward(
 
     for (size_t task_index = 0; task_index < dim.size; ++task_index)
     {
-        arithmetic_0007_5ad39396_cpu_kernel_forward(dim, task_index, _wp_args);
+        function_0007_8a54812b_cpu_kernel_forward(dim, task_index, _wp_args);
     }
 }
 
@@ -155,10 +183,10 @@ WP_API void arithmetic_0007_5ad39396_cpu_forward(
 
 extern "C" {
 
-WP_API void arithmetic_0007_5ad39396_cpu_backward(
+WP_API void function_0007_8a54812b_cpu_backward(
     wp::launch_bounds_t dim,
-    wp_args_arithmetic_0007_5ad39396 *_wp_args,
-    wp_args_arithmetic_0007_5ad39396 *_wp_adj_args)
+    wp_args_function_0007_8a54812b *_wp_args,
+    wp_args_function_0007_8a54812b *_wp_adj_args)
 {
     wp::tile_shared_storage_t tile_mem;
 #if defined(WP_ENABLE_TILES_IN_STACK_MEMORY)
@@ -167,7 +195,7 @@ WP_API void arithmetic_0007_5ad39396_cpu_backward(
 
     for (size_t task_index = 0; task_index < dim.size; ++task_index)
     {
-        arithmetic_0007_5ad39396_cpu_kernel_backward(dim, task_index, _wp_args, _wp_adj_args);
+        function_0007_8a54812b_cpu_kernel_backward(dim, task_index, _wp_args, _wp_adj_args);
     }
 }
 

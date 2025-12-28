@@ -17,17 +17,17 @@
 
 #define builtin_block_dim() wp::block_dim()
 
-struct wp_args_conditional_0009_c008d964 {
+struct wp_args_conditional_0009_76414315 {
     wp::array_t<wp::float32> data;
     wp::float32 threshold;
     wp::array_t<wp::float32> output;
 };
 
 
-void conditional_0009_c008d964_cpu_kernel_forward(
+void conditional_0009_76414315_cpu_kernel_forward(
     wp::launch_bounds_t dim,
     size_t task_index,
-    wp_args_conditional_0009_c008d964 *_wp_args)
+    wp_args_conditional_0009_76414315 *_wp_args)
 {
     //---------
     // argument vars
@@ -40,13 +40,13 @@ void conditional_0009_c008d964_cpu_kernel_forward(
     wp::float32* var_1;
     wp::float32 var_2;
     wp::float32 var_3;
-    const wp::float32 var_4 = 0.0;
-    bool var_5;
+    bool var_4;
+    const wp::float32 var_5 = 2.0;
     wp::float32 var_6;
     const wp::float32 var_7 = 0.5;
     wp::float32 var_8;
     bool var_9;
-    const wp::float32 var_10 = 2.0;
+    const wp::float32 var_10 = 0.5;
     wp::float32 var_11;
     //---------
     // forward
@@ -57,36 +57,36 @@ void conditional_0009_c008d964_cpu_kernel_forward(
     var_1 = wp::address(var_data, var_0);
     var_3 = wp::load(var_1);
     var_2 = wp::copy(var_3);
-    // if val < 0.0:                                                                          <L 10>
-    var_5 = (var_2 < var_4);
-    if (var_5) {
-        // output[i] = -val                                                                   <L 11>
-        var_6 = wp::neg(var_2);
+    // if val < threshold:                                                                    <L 10>
+    var_4 = (var_2 < var_threshold);
+    if (var_4) {
+        // output[i] = val * 2.0                                                              <L 11>
+        var_6 = wp::mul(var_2, var_5);
         wp::array_store(var_output, var_0, var_6);
     }
-    if (!var_5) {
+    if (!var_4) {
         // elif val < threshold * 0.5:                                                        <L 12>
         var_8 = wp::mul(var_threshold, var_7);
         var_9 = (var_2 < var_8);
         if (var_9) {
-            // output[i] = val * 2.0                                                          <L 13>
-            var_11 = wp::mul(var_2, var_10);
-            wp::array_store(var_output, var_0, var_11);
+            // output[i] = threshold                                                          <L 13>
+            wp::array_store(var_output, var_0, var_threshold);
         }
         if (!var_9) {
-            // output[i] = val                                                                <L 15>
-            wp::array_store(var_output, var_0, var_2);
+            // output[i] = val * 0.5                                                          <L 15>
+            var_11 = wp::mul(var_2, var_10);
+            wp::array_store(var_output, var_0, var_11);
         }
     }
 }
 
 
 
-void conditional_0009_c008d964_cpu_kernel_backward(
+void conditional_0009_76414315_cpu_kernel_backward(
     wp::launch_bounds_t dim,
     size_t task_index,
-    wp_args_conditional_0009_c008d964 *_wp_args,
-    wp_args_conditional_0009_c008d964 *_wp_adj_args)
+    wp_args_conditional_0009_76414315 *_wp_args,
+    wp_args_conditional_0009_76414315 *_wp_adj_args)
 {
     //---------
     // argument vars
@@ -102,13 +102,13 @@ void conditional_0009_c008d964_cpu_kernel_backward(
     wp::float32* var_1;
     wp::float32 var_2;
     wp::float32 var_3;
-    const wp::float32 var_4 = 0.0;
-    bool var_5;
+    bool var_4;
+    const wp::float32 var_5 = 2.0;
     wp::float32 var_6;
     const wp::float32 var_7 = 0.5;
     wp::float32 var_8;
     bool var_9;
-    const wp::float32 var_10 = 2.0;
+    const wp::float32 var_10 = 0.5;
     wp::float32 var_11;
     //---------
     // dual vars
@@ -116,8 +116,8 @@ void conditional_0009_c008d964_cpu_kernel_backward(
     wp::float32 adj_1 = {};
     wp::float32 adj_2 = {};
     wp::float32 adj_3 = {};
-    wp::float32 adj_4 = {};
-    bool adj_5 = {};
+    bool adj_4 = {};
+    wp::float32 adj_5 = {};
     wp::float32 adj_6 = {};
     wp::float32 adj_7 = {};
     wp::float32 adj_8 = {};
@@ -133,48 +133,48 @@ void conditional_0009_c008d964_cpu_kernel_backward(
     var_1 = wp::address(var_data, var_0);
     var_3 = wp::load(var_1);
     var_2 = wp::copy(var_3);
-    // if val < 0.0:                                                                          <L 10>
-    var_5 = (var_2 < var_4);
-    if (var_5) {
-        // output[i] = -val                                                                   <L 11>
-        var_6 = wp::neg(var_2);
+    // if val < threshold:                                                                    <L 10>
+    var_4 = (var_2 < var_threshold);
+    if (var_4) {
+        // output[i] = val * 2.0                                                              <L 11>
+        var_6 = wp::mul(var_2, var_5);
         // wp::array_store(var_output, var_0, var_6);
     }
-    if (!var_5) {
+    if (!var_4) {
         // elif val < threshold * 0.5:                                                        <L 12>
         var_8 = wp::mul(var_threshold, var_7);
         var_9 = (var_2 < var_8);
         if (var_9) {
-            // output[i] = val * 2.0                                                          <L 13>
-            var_11 = wp::mul(var_2, var_10);
-            // wp::array_store(var_output, var_0, var_11);
+            // output[i] = threshold                                                          <L 13>
+            // wp::array_store(var_output, var_0, var_threshold);
         }
         if (!var_9) {
-            // output[i] = val                                                                <L 15>
-            // wp::array_store(var_output, var_0, var_2);
+            // output[i] = val * 0.5                                                          <L 15>
+            var_11 = wp::mul(var_2, var_10);
+            // wp::array_store(var_output, var_0, var_11);
         }
     }
     //---------
     // reverse
-    if (!var_5) {
+    if (!var_4) {
         if (!var_9) {
-            wp::adj_array_store(var_output, var_0, var_2, adj_output, adj_0, adj_2);
-            // adj: output[i] = val                                                           <L 15>
-        }
-        if (var_9) {
             wp::adj_array_store(var_output, var_0, var_11, adj_output, adj_0, adj_11);
             wp::adj_mul(var_2, var_10, adj_2, adj_10, adj_11);
-            // adj: output[i] = val * 2.0                                                     <L 13>
+            // adj: output[i] = val * 0.5                                                     <L 15>
+        }
+        if (var_9) {
+            wp::adj_array_store(var_output, var_0, var_threshold, adj_output, adj_0, adj_threshold);
+            // adj: output[i] = threshold                                                     <L 13>
         }
         wp::adj_mul(var_threshold, var_7, adj_threshold, adj_7, adj_8);
         // adj: elif val < threshold * 0.5:                                                   <L 12>
     }
-    if (var_5) {
+    if (var_4) {
         wp::adj_array_store(var_output, var_0, var_6, adj_output, adj_0, adj_6);
-        wp::adj_neg(var_2, adj_2, adj_6);
-        // adj: output[i] = -val                                                              <L 11>
+        wp::adj_mul(var_2, var_5, adj_2, adj_5, adj_6);
+        // adj: output[i] = val * 2.0                                                         <L 11>
     }
-    // adj: if val < 0.0:                                                                     <L 10>
+    // adj: if val < threshold:                                                               <L 10>
     wp::adj_copy(var_3, adj_1, adj_2);
     wp::adj_address(var_data, var_0, adj_data, adj_0, adj_1);
     // adj: val = data[i]                                                                     <L 8>
@@ -188,9 +188,9 @@ void conditional_0009_c008d964_cpu_kernel_backward(
 extern "C" {
 
 // Python CPU entry points
-WP_API void conditional_0009_c008d964_cpu_forward(
+WP_API void conditional_0009_76414315_cpu_forward(
     wp::launch_bounds_t dim,
-    wp_args_conditional_0009_c008d964 *_wp_args)
+    wp_args_conditional_0009_76414315 *_wp_args)
 {
     wp::tile_shared_storage_t tile_mem;
 #if defined(WP_ENABLE_TILES_IN_STACK_MEMORY)
@@ -199,7 +199,7 @@ WP_API void conditional_0009_c008d964_cpu_forward(
 
     for (size_t task_index = 0; task_index < dim.size; ++task_index)
     {
-        conditional_0009_c008d964_cpu_kernel_forward(dim, task_index, _wp_args);
+        conditional_0009_76414315_cpu_kernel_forward(dim, task_index, _wp_args);
     }
 }
 
@@ -209,10 +209,10 @@ WP_API void conditional_0009_c008d964_cpu_forward(
 
 extern "C" {
 
-WP_API void conditional_0009_c008d964_cpu_backward(
+WP_API void conditional_0009_76414315_cpu_backward(
     wp::launch_bounds_t dim,
-    wp_args_conditional_0009_c008d964 *_wp_args,
-    wp_args_conditional_0009_c008d964 *_wp_adj_args)
+    wp_args_conditional_0009_76414315 *_wp_args,
+    wp_args_conditional_0009_76414315 *_wp_adj_args)
 {
     wp::tile_shared_storage_t tile_mem;
 #if defined(WP_ENABLE_TILES_IN_STACK_MEMORY)
@@ -221,7 +221,7 @@ WP_API void conditional_0009_c008d964_cpu_backward(
 
     for (size_t task_index = 0; task_index < dim.size; ++task_index)
     {
-        conditional_0009_c008d964_cpu_kernel_backward(dim, task_index, _wp_args, _wp_adj_args);
+        conditional_0009_76414315_cpu_kernel_backward(dim, task_index, _wp_args, _wp_adj_args);
     }
 }
 

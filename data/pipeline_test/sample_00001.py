@@ -1,17 +1,9 @@
 import warp as wp
 
 @wp.kernel
-def reduction_0001(data: wp.array(dtype=float),
-           result: wp.array(dtype=float),
-           n: int):
-    tid = wp.tid()
-    
-    # Local reduction (simplified for demonstration)
-    local_result = float(0.0) if tid < n else float(0.0)
-    
-    for i in range(tid, n, 1):
-        val = data[i]
-        local_result = local_result + val * val
-        break  # Simplified
-    
-    result[tid] = local_result
+def math_0001(data: wp.array(dtype=float),
+           scale: float,
+           output: wp.array(dtype=float)):
+    i = wp.tid()
+    val = data[i] * scale
+    output[i] = wp.log(wp.abs(val) + 1.0)

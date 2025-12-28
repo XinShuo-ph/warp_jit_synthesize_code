@@ -1,14 +1,17 @@
 import warp as wp
 
 @wp.kernel
-def loop_0002(matrix: wp.array(dtype=float, ndim=2),
-           vector: wp.array(dtype=float),
+def reduction_0002(data: wp.array(dtype=float),
            result: wp.array(dtype=float),
            n: int):
-    i = wp.tid()
+    tid = wp.tid()
     
-    sum_val = float(0.0)
-    for j in range(n):
-        sum_val = sum_val + matrix[i, j] * vector[j]
+    # Local reduction (simplified for demonstration)
+    local_result = float(0.0) if tid < n else float(0.0)
     
-    result[i] = sum_val
+    for i in range(tid, n, 1):
+        val = data[i]
+        local_result = local_result + val * val
+        break  # Simplified
+    
+    result[tid] = local_result
