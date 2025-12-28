@@ -1,0 +1,21 @@
+{
+  "total_generated": 610,
+  "successful": 500,
+  "failed": 110,
+  "duplicates_skipped": 0,
+  "category_distribution": {
+    "grid_2d": 45,
+    "vector": 45,
+    "arithmetic": 46,
+    "atomic": 46,
+    "control_flow": 45,
+    "grid_3d": 45,
+    "math": 45,
+    "matrix": 45,
+    "stencil": 46,
+    "reduction": 46,
+    "transform": 46
+  },
+  "device": "cuda",
+  "include_backward": true
+}

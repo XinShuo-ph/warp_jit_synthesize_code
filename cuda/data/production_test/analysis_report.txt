@@ -1,0 +1,67 @@
+================================================================================
+CUDA KERNEL DATASET ANALYSIS
+================================================================================
+Dataset: /workspace/cuda/data/production_test
+Total kernels: 20
+
+CATEGORY DISTRIBUTION
+--------------------------------------------------------------------------------
+  grid_2d             :    2 ( 10.0%)
+  control_flow        :    2 ( 10.0%)
+  arithmetic          :    2 ( 10.0%)
+  grid_3d             :    2 ( 10.0%)
+  transform           :    2 ( 10.0%)
+  atomic              :    2 ( 10.0%)
+  matrix              :    2 ( 10.0%)
+  vector              :    2 ( 10.0%)
+  reduction           :    2 ( 10.0%)
+  stencil             :    1 (  5.0%)
+  math                :    1 (  5.0%)
+
+BACKWARD PASS COVERAGE
+--------------------------------------------------------------------------------
+  Total kernels:        20
+  With backward pass:   20
+  Coverage:             100.0%
+
+CUDA PATTERN USAGE
+--------------------------------------------------------------------------------
+  blockDim            :   20 (100.0%)
+  blockIdx            :   20 (100.0%)
+  threadIdx           :   20 (100.0%)
+  gridDim             :   20 (100.0%)
+  shared_memory       :   20 (100.0%)
+  grid_stride         :   20 (100.0%)
+  atomic_ops          :    4 ( 20.0%)
+  syncthreads         :    0 (  0.0%)
+
+DEVICE DISTRIBUTION
+--------------------------------------------------------------------------------
+  cuda                :   20 (100.0%)
+
+COMPLEXITY METRICS
+--------------------------------------------------------------------------------
+  Python source length (chars):
+    min       :      139
+    max       :      612
+    mean      :      254
+    median    :      180
+  IR forward length (chars):
+    min       :     1245
+    max       :     8038
+    mean      :     2473
+    median    :     1552
+
+TOP 10 OPERATIONS
+--------------------------------------------------------------------------------
+   1. wp.sqrt                  :    3
+   2. wp.atomic_add            :    2
+   3. wp.atomic_min            :    2
+   4. wp.cos                   :    1
+   5. wp.abs                   :    1
+   6. wp.normalize             :    1
+   7. wp.max                   :    1
+   8. wp.sin                   :    1
+   9. wp.length                :    1
+
+================================================================================
