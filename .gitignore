@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Large generated artifacts (do not commit)
+artifacts/
+
+# Warp caches
+.warp_cache/
