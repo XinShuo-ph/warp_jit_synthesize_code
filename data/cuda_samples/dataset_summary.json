@@ -1,0 +1,17 @@
+{
+  "total_samples": 50,
+  "device": "cuda",
+  "categories": {
+    "arithmetic": 5,
+    "vector": 5,
+    "matrix": 5,
+    "control_flow": 5,
+    "math": 5,
+    "atomic": 5,
+    "nested_loop": 5,
+    "multi_conditional": 5,
+    "combined": 5,
+    "scalar_param": 5
+  },
+  "output_directory": "/workspace/data/cuda_samples"
+}

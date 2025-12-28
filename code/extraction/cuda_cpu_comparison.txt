@@ -1,0 +1,75 @@
+======================================================================
+CPU FORWARD KERNEL
+======================================================================
+void test_simple_arithmetic_cuda__locals__add_kernel_9a2b476f_cpu_kernel_forward(
+    wp::launch_bounds_t dim,
+    size_t task_index,
+    wp_args_test_simple_arithmetic_cuda__locals__add_kernel_9a2b476f *_wp_args)
+{
+    //---------
+    // argument vars
+    wp::array_t<wp::float32> var_a = _wp_args->a;
+    wp::array_t<wp::float32> var_b = _wp_args->b;
+    wp::array_t<wp::float32> var_out = _wp_args->out;
+    //---------
+    // primal vars
+    wp::int32 var_0;
+    wp::float32* var_1;
+    wp::float32* var_2;
+    wp::float32 var_3;
+    wp::float32 var_4;
+    wp::float32 var_5;
+    //---------
+    // forward
+    // def add_kernel(a: wp.array(dtype=float),                                               <L 16>
+    // tid = wp.tid()                                                                         <L 19>
+    var_0 = builtin_tid1d();
+    // out[tid] = a[tid] + b[tid]                                                             <L 20>
+    var_1 = wp::address(var_a, var_0);
+    var_2 = wp::address(var_b, var_0);
+    var_4 = wp::load(var_1);
+    var_5 = wp::load(var_2);
+    var_3 = wp::add(var_4, var_5);
+    wp::array_store(var_out, var_0, var_3);
+}
+
+======================================================================
+CUDA FORWARD KERNEL
+======================================================================
+void test_simple_arithmetic_cuda__locals__add_kernel_9a2b476f_cuda_kernel_forward(
+    wp::launch_bounds_t dim,
+    wp::array_t<wp::float32> var_a,
+    wp::array_t<wp::float32> var_b,
+    wp::array_t<wp::float32> var_out)
+{
+    wp::tile_shared_storage_t tile_mem;
+
+    for (size_t _idx = static_cast<size_t>(blockDim.x) * static_cast<size_t>(blockIdx.x) + static_cast<size_t>(threadIdx.x);
+         _idx < dim.size;
+         _idx += static_cast<size_t>(blockDim.x) * static_cast<size_t>(gridDim.x))
+    {
+            // reset shared memory allocator
+        wp::tile_shared_storage_t::init();
+
+        //---------
+        // primal vars
+        wp::int32 var_0;
+        wp::float32* var_1;
+        wp::float32* var_2;
+        wp::float32 var_3;
+        wp::float32 var_4;
+        wp::float32 var_5;
+        //---------
+        // forward
+        // def add_kernel(a: wp.array(dtype=float),                                               <L 16>
+        // tid = wp.tid()                                                                         <L 19>
+        var_0 = builtin_tid1d();
+        // out[tid] = a[tid] + b[tid]                                                             <L 20>
+        var_1 = wp::address(var_a, var_0);
+        var_2 = wp::address(var_b, var_0);
+        var_4 = wp::load(var_1);
+        var_5 = wp::load(var_2);
+        var_3 = wp::add(var_4, var_5);
+        wp::array_store(var_out, var_0, var_3);
+    }
+}

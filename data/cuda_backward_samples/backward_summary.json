@@ -1,0 +1,16 @@
+{
+  "total_samples": 10,
+  "includes_backward": true,
+  "devices": [
+    "cpu",
+    "cuda"
+  ],
+  "categories": {
+    "arithmetic": 2,
+    "vector": 2,
+    "matrix": 2,
+    "control_flow": 2,
+    "math": 2
+  },
+  "output_directory": "/workspace/data/cuda_backward_samples"
+}
