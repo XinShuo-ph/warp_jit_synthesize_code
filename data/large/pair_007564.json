@@ -1,0 +1,12 @@
+{
+  "python_source": "@wp.kernel\ndef arith_pactga(a: wp.array(dtype=float), b: wp.array(dtype=float), c: wp.array(dtype=float)):\n    tid = wp.tid()\n    var_0 = a[tid] / (b[tid] + 0.0001)\n    var_1 = wp.min(var_0, b[tid])\n    var_2 = wp.max(var_1, b[tid])\n    c[tid] = var_2\n",
+  "cpp_forward": "void arith_pactga_4734b3ad_cpu_kernel_forward(\n    wp::launch_bounds_t dim,\n    size_t task_index,\n    wp_args_arith_pactga_4734b3ad *_wp_args)\n{\n    //---------\n    // argument vars\n    wp::array_t<wp::float32> var_a = _wp_args->a;\n    wp::array_t<wp::float32> var_b = _wp_args->b;\n    wp::array_t<wp::float32> var_c = _wp_args->c;\n    //---------\n    // primal vars\n    wp::int32 var_0;\n    wp::float32* var_1;\n    wp::float32* var_2;\n    const wp::float32 var_3 = 0.0001;\n    wp::float32 var_4;\n    wp::float32 var_5;\n    wp::float32 var_6;\n    wp::float32 var_7;\n    wp::float32* var_8;\n    wp::float32 var_9;\n    wp::float32 var_10;\n    wp::float32* var_11;\n    wp::float32 var_12;\n    wp::float32 var_13;\n    //---------\n    // forward\n    // def arith_pactga(a: wp.array(dtype=float), b: wp.array(dtype=float), c: wp.array(dtype=float)):       <L 27>\n    // tid = wp.tid()                                                                         <L 28>\n    var_0 = builtin_tid1d();\n    // var_0 = a[tid] / (b[tid] + 0.0001)                                                     <L 29>\n    var_1 = wp::address(var_a, var_0);\n    var_2 = wp::address(var_b, var_0);\n    var_5 = wp::load(var_2);\n    var_4 = wp::add(var_5, var_3);\n    var_7 = wp::load(var_1);\n    var_6 = wp::div(var_7, var_4);\n    // var_1 = wp.min(var_0, b[tid])                                                          <L 30>\n    var_8 = wp::address(var_b, var_0);\n    var_10 = wp::load(var_8);\n    var_9 = wp::min(var_6, var_10);\n    // var_2 = wp.max(var_1, b[tid])                                                          <L 31>\n    var_11 = wp::address(var_b, var_0);\n    var_13 = wp::load(var_11);\n    var_12 = wp::max(var_9, var_13);\n    // c[tid] = var_2                                                                         <L 32>\n    wp::array_store(var_c, var_0, var_12);\n}",
+  "metadata": {
+    "kernel_name": "arith_pactga",
+    "category": "arithmetic",
+    "description": "Arithmetic kernel with 3 operations",
+    "device": "cpu",
+    "num_ops": 3,
+    "seed": 7606
+  }
+}

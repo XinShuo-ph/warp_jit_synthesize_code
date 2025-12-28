@@ -1,0 +1,12 @@
+{
+  "python_source": "@wp.kernel\ndef ctrl_gfsmjk(a: wp.array(dtype=float), lo: float, hi: float, out: wp.array(dtype=float)):\n    tid = wp.tid()\n    val = a[tid]\n    if val < lo:\n        out[tid] = lo\n    elif val > hi:\n        out[tid] = hi\n    else:\n        out[tid] = val\n",
+  "cpp_forward": "void ctrl_gfsmjk_791a0df2_cpu_kernel_forward(\n    wp::launch_bounds_t dim,\n    size_t task_index,\n    wp_args_ctrl_gfsmjk_791a0df2 *_wp_args)\n{\n    //---------\n    // argument vars\n    wp::array_t<wp::float32> var_a = _wp_args->a;\n    wp::float32 var_lo = _wp_args->lo;\n    wp::float32 var_hi = _wp_args->hi;\n    wp::array_t<wp::float32> var_out = _wp_args->out;\n    //---------\n    // primal vars\n    wp::int32 var_0;\n    wp::float32* var_1;\n    wp::float32 var_2;\n    wp::float32 var_3;\n    bool var_4;\n    bool var_5;\n    //---------\n    // forward\n    // def ctrl_gfsmjk(a: wp.array(dtype=float), lo: float, hi: float, out: wp.array(dtype=float)):       <L 43>\n    // tid = wp.tid()                                                                         <L 44>\n    var_0 = builtin_tid1d();\n    // val = a[tid]                                                                           <L 45>\n    var_1 = wp::address(var_a, var_0);\n    var_3 = wp::load(var_1);\n    var_2 = wp::copy(var_3);\n    // if val < lo:                                                                           <L 46>\n    var_4 = (var_2 < var_lo);\n    if (var_4) {\n        // out[tid] = lo                                                                      <L 47>\n        wp::array_store(var_out, var_0, var_lo);\n    }\n    if (!var_4) {\n        // elif val > hi:                                                                     <L 48>\n        var_5 = (var_2 > var_hi);\n        if (var_5) {\n            // out[tid] = hi                                                                  <L 49>\n            wp::array_store(var_out, var_0, var_hi);\n        }\n        if (!var_5) {\n            // out[tid] = val                                                                 <L 51>\n            wp::array_store(var_out, var_0, var_2);\n        }\n    }\n}",
+  "metadata": {
+    "kernel_name": "ctrl_gfsmjk",
+    "category": "control_flow",
+    "description": "Clamp values between lo and hi",
+    "device": "cpu",
+    "pattern": "clamp",
+    "seed": 7748
+  }
+}
