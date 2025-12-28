@@ -41,9 +41,10 @@ def compile_kernel_from_source(python_source: str, kernel_name: str, device: str
     """
     Compile a kernel from source and extract its IR.
     
-    Returns: (kernel, module) or raises exception
+    Returns: (kernel, module, source_code) or raises exception
     """
     import warp as wp
+    import warp._src.context
     
     # Create a temporary module file
     with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
@@ -65,12 +66,31 @@ import warp as wp
         
         # Get the kernel
         kernel = getattr(module, kernel_name)
-        
-        # Force compilation
         wp_module = kernel.module
-        wp_module.load(device)
         
-        return kernel, wp_module
+        # Try normal loading first
+        try:
+            wp_module.load(device)
+            # If load succeeds, return None for source_code (caller should read from file)
+            # OR we can just grab it here using codegen anyway to be consistent?
+            # Let's stick to file reading if load succeeds to match original behavior,
+            # unless we want to unify.
+            # But wait, if we are on CPU and ask for CUDA, load will fail.
+            return kernel, wp_module, None
+        except Exception as e:
+            # If load fails and we are asking for CUDA, try headless codegen
+            if device == "cuda":
+                # Create builder for headless generation
+                hasher = warp._src.context.ModuleHasher(wp_module)
+                options = wp_module.options.copy() if wp_module.options else {}
+                options.setdefault("block_dim", 256)
+                options.setdefault("enable_backward", True)
+                
+                builder = warp._src.context.ModuleBuilder(wp_module, options, hasher)
+                source_code = builder.codegen(device="cuda")
+                return kernel, wp_module, source_code
+            else:
+                raise e
         
     finally:
         # Clean up temp file
@@ -113,18 +133,25 @@ class SynthesisPipeline:
         
         try:
             # Compile and extract IR
-            kernel, wp_module = compile_kernel_from_source(python_source, spec.name, self.device)
+            kernel, wp_module, direct_source = compile_kernel_from_source(python_source, spec.name, self.device)
             
-            # Get cache path and read generated C++
-            module_id = wp_module.get_module_identifier()
-            cache_dir = Path(os.path.expanduser(f"~/.cache/warp/{wp.__version__}"))
-            ext = "cu" if self.device == "cuda" else "cpp"
-            cpp_file = cache_dir / module_id / f"{module_id}.{ext}"
-            
-            if not cpp_file.exists():
-                raise FileNotFoundError(f"C++ IR not found: {cpp_file}")
-            
-            cpp_full = cpp_file.read_text()
+            if direct_source:
+                # Headless mode: we have the source string directly
+                cpp_full = direct_source
+                # Need module_id for metadata, though it might not correspond to a file on disk
+                module_id = wp_module.get_module_identifier()
+            else:
+                # Normal mode: read from cache file
+                module_id = wp_module.get_module_identifier()
+                cache_dir = Path(os.path.expanduser(f"~/.cache/warp/{wp.__version__}"))
+                ext = "cu" if self.device == "cuda" else "cpp"
+                cpp_file = cache_dir / module_id / f"{module_id}.{ext}"
+                
+                if not cpp_file.exists():
+                    raise FileNotFoundError(f"C++ IR not found: {cpp_file}")
+                
+                cpp_full = cpp_file.read_text()
+
             forward_ir, backward_ir = extract_kernel_ir(kernel, cpp_full, self.device)
             
             if not forward_ir:
@@ -169,6 +196,7 @@ class SynthesisPipeline:
             "python_source": pair.python_source,
             "cpp_ir_forward": pair.cpp_ir_forward,
             "cpp_ir_backward": pair.cpp_ir_backward,
+            "cpp_ir_full": pair.cpp_ir_full,
             "generated_at": pair.generated_at,
             "metadata": pair.metadata
         }

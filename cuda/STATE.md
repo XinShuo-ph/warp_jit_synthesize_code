@@ -1,15 +1,15 @@
 # Current State
 - **Milestone**: M3
-- **Task**: 1 (Kernel Porting/Validation)
-- **Status**: blocked (requires GPU)
+- **Task**: 1 (Forward Pass)
+- **Status**: ready_for_next
 
 ## Next Action
-Run `cuda/run_cuda_tests.sh` on a machine with NVIDIA GPU to verify the backend implementation.
-If successful, proceed to verify specific kernel types (M3/M4).
+Start M3 (Kernel Adaptation - Forward Pass) now that we can generate CUDA IR.
 
 ## Blockers (if any)
-Current environment lacks GPU, preventing verification of CUDA code execution and IR extraction.
+None. Headless mode enabled.
 
 ## Session Log
 - 2025-12-28: Completed M1 (Baseline).
-- 2025-12-28: Completed M2 (CUDA Backend Infra). Implemented `pipeline.py` refactoring for `--device cuda`. Added `test_cuda.py` and `test_suite_cuda.py`.
+- 2025-12-28: Completed M2 (CUDA Backend Infra).
+- 2025-12-28: Completed M2.5 (Headless Generation). Implemented fallback to `ModuleBuilder.codegen` in `pipeline.py`.

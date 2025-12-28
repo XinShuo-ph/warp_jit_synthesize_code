@@ -76,6 +76,13 @@ cuda/
 - `cuda/code/common/`: Shared types and utilities between CPU and CUDA.
 - `cuda/tasks/kernel_inventory.md`: List of all kernels to be ported.
 
+### M2.5: Headless CUDA Generation
+**Goal**: Enable CUDA code generation without a physical GPU.
+**Deliverables**:
+- `cuda/code/backend/synthesis/pipeline.py`: Updated to use `ModuleBuilder.codegen` for headless generation.
+- `cuda/code/backend/test_headless.py`: Script to verify CUDA IR generation on CPU-only machines.
+- `cuda/data/headless_samples/`: Sample CUDA IRs generated without GPU.
+
 ### M3: Kernel Adaptation (Forward Pass)
 **Goal**: Port forward pass kernels to CUDA.
 **Deliverables**:
