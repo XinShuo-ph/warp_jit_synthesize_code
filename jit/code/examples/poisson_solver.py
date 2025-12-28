@@ -5,7 +5,10 @@ Solves: -∇²u = f on [0,1]² with homogeneous Dirichlet BCs.
 Test case: u = sin(πx)sin(πy) implies f = 2π²sin(πx)sin(πy)
 """
 import sys
-sys.path.insert(0, "/workspace/warp_repo/warp/examples/fem")
+# Add warp fem examples to path for bsr_cg utility
+import warp
+warp_examples_fem = str(__import__('pathlib').Path(warp.__file__).parent / 'examples' / 'fem')
+sys.path.insert(0, warp_examples_fem)
 
 import numpy as np
 import warp as wp
