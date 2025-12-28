@@ -1,0 +1,25 @@
+# CPU Dataset Statistics
+
+## Overview
+- **Total Size**: 200.25 MB
+- **Total Training Pairs**: 71,505
+- **Total Files**: 144
+- **Average Pair Size**: 2.87 KB
+
+## Code Size Distribution
+- **Python Source (avg)**: 216 bytes
+- **IR Code (avg)**: 2557 bytes
+- **Python Source (min/max)**: 159 / 317 bytes
+- **IR Code (min/max)**: 1043 / 9889 bytes
+
+## Kernel Type Distribution
+- **arith**: 7,151 pairs (10.0%)
+- **cond**: 7,151 pairs (10.0%)
+- **loop**: 7,151 pairs (10.0%)
+- **math**: 7,151 pairs (10.0%)
+- **vec**: 7,151 pairs (10.0%)
+- **atomic**: 7,150 pairs (10.0%)
+- **nested**: 7,150 pairs (10.0%)
+- **multicond**: 7,150 pairs (10.0%)
+- **combined**: 7,150 pairs (10.0%)
+- **scalar**: 7,150 pairs (10.0%)
