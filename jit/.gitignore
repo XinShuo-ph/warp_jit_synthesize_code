@@ -1,6 +1,10 @@
 __pycache__/
 *.pyc
 *.pyo
-data/
+# Ignore large generated data, but keep samples
+data/cuda_training/
+data/cpu/
+data/cuda/
+data/large/
 *.egg-info/
 .eggs/

@@ -37,14 +37,26 @@ This is the correct design since the same Python kernel works on both CPU and CU
 - [x] Create README.md with usage instructions
 - **Done when**: Complete test suite ready for user ✓
 
+## P5: CUDA Data Production ✓
+
+- [x] Create dedicated cuda_pipeline.py
+- [x] Generate 10,000 CUDA Python→IR pairs
+- [x] Create validate_cuda_data.py
+- [x] Validate all generated data (100% success)
+- [x] Document statistics
+- **Done when**: 10,000+ pairs generated and validated ✓
+
 ## Summary
 
-All development complete. User should run on GPU machine:
+All phases complete:
+- P1-P4: CUDA backend development
+- P5: 10,000 CUDA training pairs generated
 
+Commands for data generation:
 ```bash
-# Run CUDA test suite
-python3 tests/test_cuda.py
+# Generate CUDA data (no GPU required!)
+python3 code/synthesis/cuda_pipeline.py -n 10000 -o data/cuda_training
 
-# Generate CUDA samples
-python3 code/synthesis/pipeline.py --device cuda -n 100 -o data/cuda
+# Validate data
+python3 code/synthesis/validate_cuda_data.py data/cuda_training
 ```

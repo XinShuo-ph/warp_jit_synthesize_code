@@ -1,7 +1,9 @@
 # CUDA Backend Development
 
 ## Objective
-Adapt the current production CPU code to support CUDA GPU backend. Since no GPU device is available to the agent, provide concise code and test commands for the user to run on an actual GPU device.
+Adapt the current production CPU code to support CUDA GPU backend and generate CUDA IR training data.
+
+**Key Insight**: CUDA IR code generation does NOT require an actual GPU. Warp's code generator can produce CUDA C++ code on any machine - only execution requires a GPU. This means we can generate large-scale CUDA training datasets without GPU access.
 
 ---
 
@@ -151,6 +153,45 @@ Process each kernel type one at a time:
 
 **Done when**: Complete test suite ready for user to run on GPU
 
+### P5: CUDA Data Production
+**Goal**: Generate large-scale CUDA IR training dataset (no GPU required)
+
+**Key Insight**: CUDA IR generation is purely a code generation step - Warp compiles Python kernels to CUDA C++ code without needing a GPU. Only kernel *execution* requires a GPU.
+
+**Tasks**:
+1. Create dedicated CUDA production pipeline (`code/synthesis/cuda_pipeline.py`)
+2. Generate 10,000+ CUDA Python→IR pairs
+3. Validate generated data quality (check for `_cuda_kernel_forward` in output)
+4. Create data statistics report
+5. Compare CPU vs CUDA dataset characteristics
+
+**Production Script**:
+```bash
+# Generate CUDA training data (works without GPU!)
+python3 code/synthesis/pipeline.py --device cuda -n 10000 -o data/cuda_training
+
+# Or use batch generator for better performance
+python3 code/synthesis/batch_generator.py --device cuda -n 10000 -o data/cuda_large
+```
+
+**Validation Checks**:
+```python
+# Verify CUDA IR is properly generated
+import json
+from pathlib import Path
+
+data_dir = Path("data/cuda_training")
+for f in data_dir.glob("*.json"):
+    data = json.load(open(f))
+    assert "_cuda_kernel_forward" in data["cpp_forward"]
+    assert data["metadata"]["device"] == "cuda"
+```
+
+**Done when**: 
+- 10,000+ CUDA Python→IR pairs generated
+- All pairs validated (contain proper CUDA IR)
+- Data statistics documented
+
 ---
 
 ## Iteration Protocol
@@ -244,8 +285,9 @@ Before marking any kernel complete:
 | P2: CUDA Analysis | ~30k | Study Warp, document differences |
 | P3: Per Kernel | ~15k each | Adapt + test script (~150k total) |
 | P4: Pipeline | ~30k | Integration, final test suite |
+| P5: Data Production | ~50k | Generate 10k+ CUDA pairs, validate |
 
-**Estimated total**: 230-280k tokens (3-5 sessions)
+**Estimated total**: 280-330k tokens (4-6 sessions)
 
 If blocked for >20k tokens on same issue:
 1. Document the blocker in CUDA_STATE.md
@@ -268,22 +310,24 @@ If blocked for >20k tokens on same issue:
 
 ## Anti-Patterns (Avoid)
 
-- ❌ Running CUDA code without GPU (will fail)
-- ❌ Generating large CUDA datasets (user will generate)
+- ❌ Trying to *execute* CUDA kernels without GPU (will fail)
 - ❌ Breaking CPU functionality while adding CUDA
 - ❌ Skipping test script creation
 - ❌ Starting new kernel before completing current one
 - ❌ Over-engineering device abstraction
 - ❌ Leaving code in broken state at session end
 
+**Note**: CUDA IR *generation* works without a GPU - only execution requires one.
+
 ---
 
 ## Success Criteria
 
 Development is complete when:
-1. All 10 kernel types have CUDA-compatible generators
+1. All kernel types have CUDA-compatible generators
 2. `pipeline.py` supports `--device cuda` flag
 3. Comprehensive test suite in `tests/`
 4. Clear user documentation for GPU testing
 5. No regression in CPU functionality
 6. `CUDA_STATE.md` shows all kernels completed
+7. **P5**: 10,000+ CUDA Python→IR pairs generated and validated

@@ -1,0 +1,16 @@
+{
+  "total_attempted": 10000,
+  "total_generated": 10000,
+  "failed": 0,
+  "success_rate": 1.0,
+  "category_distribution": {
+    "arithmetic": 1696,
+    "vector": 1704,
+    "matrix": 1669,
+    "control_flow": 1671,
+    "math": 1667,
+    "atomic": 1593
+  },
+  "duration_seconds": 18.560475826263428,
+  "pairs_per_second": 538.7792906607389
+}
