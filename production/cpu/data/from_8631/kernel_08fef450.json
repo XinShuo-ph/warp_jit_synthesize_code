@@ -1,0 +1,35 @@
+{
+  "name": "kernel_08fef450",
+  "python_source": "@wp.kernel\ndef kernel_08fef450(data: wp.array(dtype=float)):\n    tid = wp.tid()\n    v0 = data[tid]\n    v1 = 0.0\n    v2 = 1.0\n    tmp = 0.0\n    tmp = tmp\n    v1 = v2\n    v2 = wp.exp(0.57)\n    v0 = (v1 * wp.sin((v1 + 0.26 / v2 + 0.27)))\n    data[tid] = v0\n",
+  "ir": [
+    "// Block 0",
+    "// def kernel_08fef450(data: wp.array(dtype=float)):                                      <L 4>",
+    "// tid = wp.tid()                                                                         <L 5>",
+    "var_0 = builtin_tid1d();",
+    "// v0 = data[tid]                                                                         <L 6>",
+    "var_1 = wp::address(var_data, var_0);",
+    "var_3 = wp::load(var_1);",
+    "var_2 = wp::copy(var_3);",
+    "// v1 = 0.0                                                                               <L 7>",
+    "// v2 = 1.0                                                                               <L 8>",
+    "// tmp = 0.0                                                                              <L 9>",
+    "// tmp = tmp                                                                              <L 10>",
+    "var_7 = wp::copy(var_6);",
+    "// v1 = v2                                                                                <L 11>",
+    "var_8 = wp::copy(var_5);",
+    "// v2 = wp.exp(0.57)                                                                      <L 12>",
+    "var_10 = wp::exp(var_9);",
+    "// v0 = (v1 * wp.sin((v1 + 0.26 / v2 + 0.27)))                                            <L 13>",
+    "var_12 = wp::div(var_11, var_10);",
+    "var_13 = wp::add(var_8, var_12);",
+    "var_15 = wp::add(var_13, var_14);",
+    "var_16 = wp::sin(var_15);",
+    "var_17 = wp::mul(var_8, var_16);",
+    "// data[tid] = v0                                                                         <L 14>",
+    "wp::array_store(var_data, var_0, var_17);"
+  ],
+  "args": {
+    "data": "array<class 'warp._src.types.float32'>"
+  },
+  "id": "kernel_08fef450"
+}

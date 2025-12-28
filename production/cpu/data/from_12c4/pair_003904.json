@@ -1,0 +1,13 @@
+{
+  "python_source": "@wp.kernel\ndef vec_tqoimb(a: wp.array(dtype=wp.vec2), b: wp.array(dtype=wp.vec2), out: wp.array(dtype=wp.vec2)):\n    tid = wp.tid()\n    out[tid] = wp.normalize(a[tid])\n",
+  "cpp_forward": "void vec_tqoimb_46b423e8_cpu_kernel_forward(\n    wp::launch_bounds_t dim,\n    size_t task_index,\n    wp_args_vec_tqoimb_46b423e8 *_wp_args)\n{\n    //---------\n    // argument vars\n    wp::array_t<wp::vec_t<2, wp::float32>> var_a = _wp_args->a;\n    wp::array_t<wp::vec_t<2, wp::float32>> var_b = _wp_args->b;\n    wp::array_t<wp::vec_t<2, wp::float32>> var_out = _wp_args->out;\n    //---------\n    // primal vars\n    wp::int32 var_0;\n    wp::vec_t<2, wp::float32>* var_1;\n    wp::vec_t<2, wp::float32> var_2;\n    wp::vec_t<2, wp::float32> var_3;\n    //---------\n    // forward\n    // def vec_tqoimb(a: wp.array(dtype=wp.vec2), b: wp.array(dtype=wp.vec2), out: wp.array(dtype=wp.vec2)):       <L 33>\n    // tid = wp.tid()                                                                         <L 34>\n    var_0 = builtin_tid1d();\n    // out[tid] = wp.normalize(a[tid])                                                        <L 35>\n    var_1 = wp::address(var_a, var_0);\n    var_3 = wp::load(var_1);\n    var_2 = wp::normalize(var_3);\n    wp::array_store(var_out, var_0, var_2);\n}",
+  "metadata": {
+    "kernel_name": "vec_tqoimb",
+    "category": "vector",
+    "description": "Vector kernel: normalize on wp.vec2",
+    "device": "cpu",
+    "vec_type": "wp.vec2",
+    "operation": "normalize",
+    "seed": 3946
+  }
+}

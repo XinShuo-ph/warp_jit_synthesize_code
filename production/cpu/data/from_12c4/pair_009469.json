@@ -1,0 +1,12 @@
+{
+  "python_source": "@wp.kernel\ndef ctrl_vnlmgu(a: wp.array(dtype=float), b: wp.array(dtype=float), out: wp.array(dtype=float)):\n    tid = wp.tid()\n    diff = a[tid] - b[tid]\n    if diff < 0.0:\n        out[tid] = -diff\n    else:\n        out[tid] = diff\n",
+  "cpp_forward": "void ctrl_vnlmgu_01923368_cpu_kernel_forward(\n    wp::launch_bounds_t dim,\n    size_t task_index,\n    wp_args_ctrl_vnlmgu_01923368 *_wp_args)\n{\n    //---------\n    // argument vars\n    wp::array_t<wp::float32> var_a = _wp_args->a;\n    wp::array_t<wp::float32> var_b = _wp_args->b;\n    wp::array_t<wp::float32> var_out = _wp_args->out;\n    //---------\n    // primal vars\n    wp::int32 var_0;\n    wp::float32* var_1;\n    wp::float32* var_2;\n    wp::float32 var_3;\n    wp::float32 var_4;\n    wp::float32 var_5;\n    const wp::float32 var_6 = 0.0;\n    bool var_7;\n    wp::float32 var_8;\n    //---------\n    // forward\n    // def ctrl_vnlmgu(a: wp.array(dtype=float), b: wp.array(dtype=float), out: wp.array(dtype=float)):       <L 59>\n    // tid = wp.tid()                                                                         <L 60>\n    var_0 = builtin_tid1d();\n    // diff = a[tid] - b[tid]                                                                 <L 61>\n    var_1 = wp::address(var_a, var_0);\n    var_2 = wp::address(var_b, var_0);\n    var_4 = wp::load(var_1);\n    var_5 = wp::load(var_2);\n    var_3 = wp::sub(var_4, var_5);\n    // if diff < 0.0:                                                                         <L 62>\n    var_7 = (var_3 < var_6);\n    if (var_7) {\n        // out[tid] = -diff                                                                   <L 63>\n        var_8 = wp::neg(var_3);\n        wp::array_store(var_out, var_0, var_8);\n    }\n    if (!var_7) {\n        // out[tid] = diff                                                                    <L 65>\n        wp::array_store(var_out, var_0, var_3);\n    }\n}",
+  "metadata": {
+    "kernel_name": "ctrl_vnlmgu",
+    "category": "control_flow",
+    "description": "Absolute difference",
+    "device": "cpu",
+    "pattern": "abs_diff",
+    "seed": 9511
+  }
+}

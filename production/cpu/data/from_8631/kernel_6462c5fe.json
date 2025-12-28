@@ -1,0 +1,43 @@
+{
+  "name": "kernel_6462c5fe",
+  "python_source": "@wp.kernel\ndef kernel_6462c5fe(data: wp.array(dtype=float)):\n    tid = wp.tid()\n    v0 = data[tid]\n    v1 = 0.0\n    v2 = 1.0\n    tmp = 0.0\n    v1 = v1\n    v0 = tmp\n    tmp = (0.12 / v2)\n    v0 = 0.95\n    v2 = wp.sin(0.10)\n    v0 = 0.85\n    tmp = ((wp.exp(tmp + 0.28) * tmp) * v1)\n    v2 = wp.exp((0.22 / wp.abs(v0 + 0.34)))\n    data[tid] = v0\n",
+  "ir": [
+    "// Block 0",
+    "// def kernel_6462c5fe(data: wp.array(dtype=float)):                                      <L 4>",
+    "// tid = wp.tid()                                                                         <L 5>",
+    "var_0 = builtin_tid1d();",
+    "// v0 = data[tid]                                                                         <L 6>",
+    "var_1 = wp::address(var_data, var_0);",
+    "var_3 = wp::load(var_1);",
+    "var_2 = wp::copy(var_3);",
+    "// v1 = 0.0                                                                               <L 7>",
+    "// v2 = 1.0                                                                               <L 8>",
+    "// tmp = 0.0                                                                              <L 9>",
+    "// v1 = v1                                                                                <L 10>",
+    "var_7 = wp::copy(var_4);",
+    "// v0 = tmp                                                                               <L 11>",
+    "var_8 = wp::copy(var_6);",
+    "// tmp = (0.12 / v2)                                                                      <L 12>",
+    "var_10 = wp::div(var_9, var_5);",
+    "// v0 = 0.95                                                                              <L 13>",
+    "// v2 = wp.sin(0.10)                                                                      <L 14>",
+    "var_13 = wp::sin(var_12);",
+    "// v0 = 0.85                                                                              <L 15>",
+    "// tmp = ((wp.exp(tmp + 0.28) * tmp) * v1)                                                <L 16>",
+    "var_16 = wp::add(var_10, var_15);",
+    "var_17 = wp::exp(var_16);",
+    "var_18 = wp::mul(var_17, var_10);",
+    "var_19 = wp::mul(var_18, var_7);",
+    "// v2 = wp.exp((0.22 / wp.abs(v0 + 0.34)))                                                <L 17>",
+    "var_22 = wp::add(var_14, var_21);",
+    "var_23 = wp::abs(var_22);",
+    "var_24 = wp::div(var_20, var_23);",
+    "var_25 = wp::exp(var_24);",
+    "// data[tid] = v0                                                                         <L 18>",
+    "wp::array_store(var_data, var_0, var_14);"
+  ],
+  "args": {
+    "data": "array<class 'warp._src.types.float32'>"
+  },
+  "id": "kernel_6462c5fe"
+}

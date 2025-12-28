@@ -1,0 +1,31 @@
+{
+  "name": "kernel_09c10e51",
+  "python_source": "@wp.kernel\ndef kernel_09c10e51(data: wp.array(dtype=float)):\n    tid = wp.tid()\n    v0 = data[tid]\n    v1 = 0.0\n    v2 = 1.0\n    tmp = 0.0\n    v2 = wp.exp(wp.sin(v0))\n    v1 = v1\n    tmp = 0.03\n    v1 = wp.abs(0.86)\n    data[tid] = v0\n",
+  "ir": [
+    "// Block 0",
+    "// def kernel_09c10e51(data: wp.array(dtype=float)):                                      <L 4>",
+    "// tid = wp.tid()                                                                         <L 5>",
+    "var_0 = builtin_tid1d();",
+    "// v0 = data[tid]                                                                         <L 6>",
+    "var_1 = wp::address(var_data, var_0);",
+    "var_3 = wp::load(var_1);",
+    "var_2 = wp::copy(var_3);",
+    "// v1 = 0.0                                                                               <L 7>",
+    "// v2 = 1.0                                                                               <L 8>",
+    "// tmp = 0.0                                                                              <L 9>",
+    "// v2 = wp.exp(wp.sin(v0))                                                                <L 10>",
+    "var_7 = wp::sin(var_2);",
+    "var_8 = wp::exp(var_7);",
+    "// v1 = v1                                                                                <L 11>",
+    "var_9 = wp::copy(var_4);",
+    "// tmp = 0.03                                                                             <L 12>",
+    "// v1 = wp.abs(0.86)                                                                      <L 13>",
+    "var_12 = wp::abs(var_11);",
+    "// data[tid] = v0                                                                         <L 14>",
+    "wp::array_store(var_data, var_0, var_2);"
+  ],
+  "args": {
+    "data": "array<class 'warp._src.types.float32'>"
+  },
+  "id": "kernel_09c10e51"
+}

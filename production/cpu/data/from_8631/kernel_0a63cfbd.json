@@ -1,0 +1,28 @@
+{
+  "name": "kernel_0a63cfbd",
+  "python_source": "@wp.kernel\ndef kernel_0a63cfbd(data: wp.array(dtype=float)):\n    tid = wp.tid()\n    v0 = data[tid]\n    v1 = 0.0\n    v2 = 1.0\n    tmp = 0.0\n    v2 = 0.72\n    v2 = wp.abs(v1)\n    tmp = (v1 * v2)\n    data[tid] = v0\n",
+  "ir": [
+    "// Block 0",
+    "// def kernel_0a63cfbd(data: wp.array(dtype=float)):                                      <L 4>",
+    "// tid = wp.tid()                                                                         <L 5>",
+    "var_0 = builtin_tid1d();",
+    "// v0 = data[tid]                                                                         <L 6>",
+    "var_1 = wp::address(var_data, var_0);",
+    "var_3 = wp::load(var_1);",
+    "var_2 = wp::copy(var_3);",
+    "// v1 = 0.0                                                                               <L 7>",
+    "// v2 = 1.0                                                                               <L 8>",
+    "// tmp = 0.0                                                                              <L 9>",
+    "// v2 = 0.72                                                                              <L 10>",
+    "// v2 = wp.abs(v1)                                                                        <L 11>",
+    "var_8 = wp::abs(var_4);",
+    "// tmp = (v1 * v2)                                                                        <L 12>",
+    "var_9 = wp::mul(var_4, var_8);",
+    "// data[tid] = v0                                                                         <L 13>",
+    "wp::array_store(var_data, var_0, var_2);"
+  ],
+  "args": {
+    "data": "array<class 'warp._src.types.float32'>"
+  },
+  "id": "kernel_0a63cfbd"
+}

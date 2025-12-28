@@ -1,0 +1,34 @@
+{
+  "name": "kernel_6366eaa8",
+  "python_source": "@wp.kernel\ndef kernel_6366eaa8(data: wp.array(dtype=float)):\n    tid = wp.tid()\n    v0 = data[tid]\n    v1 = 0.0\n    v2 = 1.0\n    tmp = 0.0\n    tmp = v1\n    v1 = v2\n    v2 = (tmp / wp.abs((v2 + 0.97 - v0 + 0.22)))\n    v1 = 0.59\n    data[tid] = v0\n",
+  "ir": [
+    "// Block 0",
+    "// def kernel_6366eaa8(data: wp.array(dtype=float)):                                      <L 4>",
+    "// tid = wp.tid()                                                                         <L 5>",
+    "var_0 = builtin_tid1d();",
+    "// v0 = data[tid]                                                                         <L 6>",
+    "var_1 = wp::address(var_data, var_0);",
+    "var_3 = wp::load(var_1);",
+    "var_2 = wp::copy(var_3);",
+    "// v1 = 0.0                                                                               <L 7>",
+    "// v2 = 1.0                                                                               <L 8>",
+    "// tmp = 0.0                                                                              <L 9>",
+    "// tmp = v1                                                                               <L 10>",
+    "var_7 = wp::copy(var_4);",
+    "// v1 = v2                                                                                <L 11>",
+    "var_8 = wp::copy(var_5);",
+    "// v2 = (tmp / wp.abs((v2 + 0.97 - v0 + 0.22)))                                           <L 12>",
+    "var_10 = wp::add(var_5, var_9);",
+    "var_11 = wp::sub(var_10, var_2);",
+    "var_13 = wp::add(var_11, var_12);",
+    "var_14 = wp::abs(var_13);",
+    "var_15 = wp::div(var_7, var_14);",
+    "// v1 = 0.59                                                                              <L 13>",
+    "// data[tid] = v0                                                                         <L 14>",
+    "wp::array_store(var_data, var_0, var_2);"
+  ],
+  "args": {
+    "data": "array<class 'warp._src.types.float32'>"
+  },
+  "id": "kernel_6366eaa8"
+}
