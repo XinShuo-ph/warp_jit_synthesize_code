@@ -68,6 +68,9 @@ def extract_ir(kernel, device: str = "cpu", include_backward: bool = True) -> di
     
     return {
         "python_source": python_source,
+        # Device-specific generated source (CPU C++ or CUDA C++/CUDA)
+        "generated_code": cpp_code,
+        # Back-compat key name (historically called cpp_code even for CUDA)
         "cpp_code": cpp_code,
         "kernel_name": kernel_name,
         "forward_code": forward_code,

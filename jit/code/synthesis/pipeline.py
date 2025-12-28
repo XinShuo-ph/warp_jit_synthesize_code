@@ -142,6 +142,9 @@ def synthesize_pair(spec: KernelSpec, device: str = "cpu") -> dict[str, Any] | N
         
         return {
             "python_source": spec.source,
+            # "generated_forward" is device-specific (CPU C++ or CUDA C++/CUDA).
+            "generated_forward": ir["forward_code"],
+            # Back-compat: older datasets used "cpp_forward" even for CUDA.
             "cpp_forward": ir["forward_code"],
             "metadata": {
                 "kernel_name": spec.name,
@@ -208,7 +211,8 @@ def run_pipeline(
     n: int = 100,
     output_dir: str = "/workspace/jit/data/samples",
     categories: list[str] | None = None,
-    seed: int = 42
+    seed: int = 42,
+    device: str = "cpu",
 ):
     """
     Run the full synthesis pipeline.
@@ -225,11 +229,12 @@ def run_pipeline(
     print(f"Generating {n} kernel pairs...")
     print(f"Categories: {categories or 'all'}")
     print(f"Seed: {seed}")
+    print(f"Device: {device}")
     print()
     
     wp.init()
     
-    pairs = synthesize_batch(n, categories, seed)
+    pairs = synthesize_batch(n, categories, seed, device=device)
     
     print(f"\nSuccessfully synthesized: {len(pairs)}/{n} pairs")
     
@@ -254,12 +259,13 @@ if __name__ == "__main__":
     import argparse
     
     parser = argparse.ArgumentParser()
-    parser.add_argument("-n", type=int, default=100, help="Number of pairs to generate")
+    parser.add_argument("-n", "--count", dest="n", type=int, default=100, help="Number of pairs to generate")
     parser.add_argument("-o", "--output", default="/workspace/jit/data/samples", help="Output directory")
     parser.add_argument("-s", "--seed", type=int, default=42, help="Random seed")
+    parser.add_argument("--device", choices=["cpu", "cuda"], default="cpu", help="Target device for code generation")
     parser.add_argument("-c", "--categories", nargs="+", choices=list(GENERATORS.keys()), 
                         help="Categories to generate")
     
     args = parser.parse_args()
     
-    run_pipeline(args.n, args.output, args.categories, args.seed)
+    run_pipeline(args.n, args.output, args.categories, args.seed, device=args.device)

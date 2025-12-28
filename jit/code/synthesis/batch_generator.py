@@ -39,7 +39,8 @@ def batch_source_hash(sources: list[str]) -> str:
 def compile_kernel_batch(
     specs: list[KernelSpec], 
     batch_id: int,
-    temp_dir: Path
+    temp_dir: Path,
+    device: str = "cpu",
 ) -> list[dict[str, Any]]:
     """
     Compile a batch of kernels from a single module.
@@ -89,11 +90,11 @@ def compile_kernel_batch(
             options.setdefault("mode", "release")
             
             builder = ctx.ModuleBuilder(kernel_module, options, hasher)
-            cpp_code = builder.codegen("cpu")
+            cpp_code = builder.codegen(device)
             
             # Extract forward function
             mangled_name = kernel.get_mangled_name()
-            forward_func_name = f"{mangled_name}_cpu_kernel_forward"
+            forward_func_name = f"{mangled_name}_{device}_kernel_forward"
             
             import re
             pattern = rf'void {re.escape(forward_func_name)}\s*\([^)]*\)\s*\{{'
@@ -121,12 +122,14 @@ def compile_kernel_batch(
             
             pairs.append({
                 "python_source": kernel_spec.source,
+                "generated_forward": forward_code,
+                # Back-compat key name (historically used even for CUDA)
                 "cpp_forward": forward_code,
                 "metadata": {
                     "kernel_name": kernel_spec.name,
                     "category": kernel_spec.category,
                     "description": kernel_spec.description,
-                    "device": "cpu",
+                    "device": device,
                     **kernel_spec.metadata
                 }
             })
@@ -145,7 +148,8 @@ def generate_batch(
     output_dir: str | Path,
     seed: int = 42,
     chunk_size: int = 100,
-    start_index: int = 0
+    start_index: int = 0,
+    device: str = "cpu",
 ) -> dict[str, Any]:
     """
     Generate n Python→IR pairs in batches.
@@ -179,6 +183,7 @@ def generate_batch(
     file_index = start_index
     
     print(f"Generating {n} pairs in chunks of {chunk_size}...")
+    print(f"Device: {device}")
     
     while total_generated < n:
         # Generate a chunk of kernel specs
@@ -194,7 +199,7 @@ def generate_batch(
         chunk_pairs = []
         for batch_start in range(0, len(specs), KERNELS_PER_MODULE):
             batch_specs = specs[batch_start:batch_start + KERNELS_PER_MODULE]
-            pairs = compile_kernel_batch(batch_specs, batch_id, temp_dir)
+            pairs = compile_kernel_batch(batch_specs, batch_id, temp_dir, device=device)
             chunk_pairs.extend(pairs)
             batch_id += 1
         
@@ -237,7 +242,8 @@ def generate_batch(
 def run_large_scale_generation(
     n: int = 10000,
     output_dir: str = "/workspace/jit/data/large",
-    seed: int = 42
+    seed: int = 42,
+    device: str = "cpu",
 ):
     """Run large-scale pair generation."""
     print("=" * 60)
@@ -246,9 +252,10 @@ def run_large_scale_generation(
     print(f"Target: {n} pairs")
     print(f"Output: {output_dir}")
     print(f"Seed: {seed}")
+    print(f"Device: {device}")
     print()
     
-    stats = generate_batch(n, output_dir, seed, chunk_size=500)
+    stats = generate_batch(n, output_dir, seed, chunk_size=500, device=device)
     
     print("\n" + "=" * 60)
     print("Generation Complete")
@@ -270,7 +277,8 @@ if __name__ == "__main__":
     parser.add_argument("-n", type=int, default=10000, help="Number of pairs to generate")
     parser.add_argument("-o", "--output", default="/workspace/jit/data/large", help="Output directory")
     parser.add_argument("-s", "--seed", type=int, default=42, help="Random seed")
+    parser.add_argument("--device", choices=["cpu", "cuda"], default="cpu", help="Target device for code generation")
     
     args = parser.parse_args()
     
-    run_large_scale_generation(args.n, args.output, args.seed)
+    run_large_scale_generation(args.n, args.output, args.seed, device=args.device)

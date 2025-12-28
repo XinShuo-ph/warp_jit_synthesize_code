@@ -70,6 +70,27 @@ jit/
 - `python -m pytest jit/tests/test_cpu_smoke.py -q` passes
 - `python jit/code/synthesis/pipeline.py --device cpu --count 5 --output jit/data/test_cpu` succeeds
 
+### P0.5: Produce CUDA IR/Generated Code **Without a GPU**
+**Goal**: Produce CUDA-targeted generated code / intermediate output in a **toolchain-only** environment (no GPU required).
+
+**Notes**:
+- This is expected to work if CUDA compilation components (e.g. **NVRTC**) are installed, even if no GPU is present.
+- If CUDA toolchain is missing, the probe/tests must **skip cleanly** with a clear message.
+
+**Deliverables**:
+- `jit/code/validation/cuda_codegen_probe.py`: standalone “can we codegen CUDA?” probe
+- `jit/tests/test_cuda_codegen_no_gpu.py`: pytest that validates CUDA codegen when available
+- `jit/code/synthesis/pipeline.py` and `jit/code/synthesis/batch_generator.py` accept `--device {cpu,cuda}` and can emit CUDA generated code when toolchain exists
+
+**Done when**:
+- `python -m pytest jit/tests/test_cpu_smoke.py -q` passes
+- `python -m pytest jit/tests/test_cuda_codegen_no_gpu.py -q` either **passes** (toolchain present) or **skips** (toolchain absent) without failing the suite
+- On a CUDA-toolchain machine (GPU optional), this succeeds:
+  ```bash
+  python jit/code/validation/cuda_codegen_probe.py
+  python jit/code/synthesis/pipeline.py --device cuda --count 3 --output jit/data/test_cuda_codegen
+  ```
+
 ### P1: Introduce CUDA Plumbing (No GPU Required)
 **Goal**: Make device selection a first-class option across extractor + pipeline + batch tools.
 
