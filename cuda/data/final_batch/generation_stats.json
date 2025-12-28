@@ -1,0 +1,20 @@
+{
+  "total_pairs": 100,
+  "category_distribution": {
+    "arithmetic": 9,
+    "vector": 11,
+    "matrix": 11,
+    "control_flow": 14,
+    "math": 8,
+    "atomic": 13,
+    "reduction": 12,
+    "stencil": 11,
+    "transform": 11
+  },
+  "backward_count": 100,
+  "generation_time_sec": 0.5704202651977539,
+  "pairs_per_second": 175.30933962406104,
+  "seed": 1000,
+  "device": "cuda",
+  "include_backward": true
+}

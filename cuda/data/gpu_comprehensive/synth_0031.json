@@ -1,0 +1,12 @@
+{
+  "python_source": "@wp.kernel\ndef reduce_viewqq(input: wp.array(dtype=float), output: wp.array(dtype=float)):\n    tid = wp.tid()\n    wp.atomic_min(output, 0, input[tid])\n",
+  "ir_forward": "void reduce_viewqq_eff7b14c_cuda_kernel_forward(\n    wp::launch_bounds_t dim,\n    wp::array_t<wp::float32> var_input,\n    wp::array_t<wp::float32> var_output)\n{\n    wp::tile_shared_storage_t tile_mem;\n\n    for (size_t _idx = static_cast<size_t>(blockDim.x) * static_cast<size_t>(blockIdx.x) + static_cast<size_t>(threadIdx.x);\n         _idx < dim.size;\n         _idx += static_cast<size_t>(blockDim.x) * static_cast<size_t>(gridDim.x))\n    {\n            // reset shared memory allocator\n        wp::tile_shared_storage_t::init();\n\n        //---------\n        // primal vars\n        wp::int32 var_0;\n        const wp::int32 var_1 = 0;\n        wp::float32* var_2;\n        wp::float32 var_3;\n        wp::float32 var_4;\n        //---------\n        // forward\n        // def reduce_viewqq(input: wp.array(dtype=float), output: wp.array(dtype=float)):        <L 4>\n        // tid = wp.tid()                                                                         <L 5>\n        var_0 = builtin_tid1d();\n        // wp.atomic_min(output, 0, input[tid])                                                   <L 6>\n        var_2 = wp::address(var_input, var_0);\n        var_4 = wp::load(var_2);\n        var_3 = wp::atomic_min(var_output, var_1, var_4);\n    }\n}",
+  "metadata": {
+    "kernel_name": "reduce_viewqq",
+    "category": "reduction",
+    "description": "Parallel min reduction",
+    "device": "cuda",
+    "operation": "min",
+    "seed": 331
+  }
+}
