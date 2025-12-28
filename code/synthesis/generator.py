@@ -369,7 +369,127 @@ def {name}(values: wp.array(dtype=float), result: wp.array(dtype=float)):
     )
 
 
-# Generator dispatch table
+# Additional generators merged from branch 9177
+
+def generate_nested_loop_kernel(seed: int | None = None) -> KernelSpec:
+    """Generate a kernel with nested loops."""
+    if seed is not None:
+        random.seed(seed)
+    
+    name = random_name("nested")
+    outer = random.randint(2, 4)
+    inner = random.randint(2, 4)
+    
+    source = f'''@wp.kernel
+def {name}(data: wp.array(dtype=float), out: wp.array(dtype=float)):
+    tid = wp.tid()
+    total = float(0.0)
+    for i in range({outer}):
+        for j in range({inner}):
+            total = total + data[tid] * float(i * j + 1)
+    out[tid] = total
+'''
+    
+    return KernelSpec(
+        name=name,
+        category="nested_loop",
+        source=source,
+        arg_types={"data": "wp.array(dtype=float)", "out": "wp.array(dtype=float)"},
+        description=f"Nested loop kernel ({outer}x{inner} iterations)",
+        metadata={"outer_iterations": outer, "inner_iterations": inner, "seed": seed}
+    )
+
+
+def generate_multi_conditional_kernel(seed: int | None = None) -> KernelSpec:
+    """Generate a kernel with multiple conditional branches."""
+    if seed is not None:
+        random.seed(seed)
+    
+    name = random_name("multicond")
+    thresholds = sorted([random.uniform(-5, 5) for _ in range(3)])
+    scales = [round(random.uniform(0.5, 3.0), 2) for _ in range(4)]
+    
+    source = f'''@wp.kernel
+def {name}(x: wp.array(dtype=float), out: wp.array(dtype=float)):
+    tid = wp.tid()
+    val = x[tid]
+    if val < {thresholds[0]:.2f}:
+        out[tid] = val * {scales[0]}
+    elif val < {thresholds[1]:.2f}:
+        out[tid] = val * {scales[1]}
+    elif val < {thresholds[2]:.2f}:
+        out[tid] = val * {scales[2]}
+    else:
+        out[tid] = val * {scales[3]}
+'''
+    
+    return KernelSpec(
+        name=name,
+        category="multi_conditional",
+        source=source,
+        arg_types={"x": "wp.array(dtype=float)", "out": "wp.array(dtype=float)"},
+        description=f"Multi-branch conditional with {len(thresholds)} thresholds",
+        metadata={"thresholds": thresholds, "scales": scales, "seed": seed}
+    )
+
+
+def generate_combined_kernel(seed: int | None = None) -> KernelSpec:
+    """Generate a kernel combining loops, conditionals, and math functions."""
+    if seed is not None:
+        random.seed(seed)
+    
+    name = random_name("combined")
+    iterations = random.randint(2, 5)
+    threshold = round(random.uniform(-2, 2), 2)
+    func = random.choice(["wp.sin", "wp.cos", "wp.exp", "wp.abs"])
+    
+    source = f'''@wp.kernel
+def {name}(a: wp.array(dtype=float), b: wp.array(dtype=float), out: wp.array(dtype=float)):
+    tid = wp.tid()
+    acc = float(0.0)
+    for i in range({iterations}):
+        if a[tid] * float(i) > {threshold}:
+            acc = acc + {func}(b[tid])
+        else:
+            acc = acc + b[tid]
+    out[tid] = acc
+'''
+    
+    return KernelSpec(
+        name=name,
+        category="combined",
+        source=source,
+        arg_types={"a": "wp.array(dtype=float)", "b": "wp.array(dtype=float)", "out": "wp.array(dtype=float)"},
+        description=f"Combined loop+conditional+{func}",
+        metadata={"iterations": iterations, "threshold": threshold, "function": func, "seed": seed}
+    )
+
+
+def generate_scalar_param_kernel(seed: int | None = None) -> KernelSpec:
+    """Generate a kernel with scalar parameters."""
+    if seed is not None:
+        random.seed(seed)
+    
+    name = random_name("scalar")
+    op = random.choice(["+", "-", "*"])
+    
+    source = f'''@wp.kernel
+def {name}(x: wp.array(dtype=float), out: wp.array(dtype=float), scale: float, offset: float):
+    tid = wp.tid()
+    out[tid] = x[tid] {op} scale + offset
+'''
+    
+    return KernelSpec(
+        name=name,
+        category="scalar_param",
+        source=source,
+        arg_types={"x": "wp.array(dtype=float)", "out": "wp.array(dtype=float)", "scale": "float", "offset": "float"},
+        description=f"Kernel with scalar parameters using {op}",
+        metadata={"operation": op, "seed": seed}
+    )
+
+
+# Generator dispatch table (10 kernel types)
 GENERATORS = {
     "arithmetic": generate_arithmetic_kernel,
     "vector": generate_vector_kernel,
@@ -377,6 +497,11 @@ GENERATORS = {
     "control_flow": generate_control_flow_kernel,
     "math": generate_math_kernel,
     "atomic": generate_atomic_kernel,
+    # Additional types from branch 9177
+    "nested_loop": generate_nested_loop_kernel,
+    "multi_conditional": generate_multi_conditional_kernel,
+    "combined": generate_combined_kernel,
+    "scalar_param": generate_scalar_param_kernel,
 }
 
 
