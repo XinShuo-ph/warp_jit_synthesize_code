@@ -188,6 +188,83 @@ def extract_ir(kernel, device: str = "cpu", include_backward: bool = True) -> di
 
 ---
 
+### P5: CUDA Production Pipeline
+**Goal**: Create a dedicated CUDA batch generation pipeline for large-scale IR dataset production (no GPU required)
+
+**Key Insight**: Warp's code generation system can produce CUDA IR code without an actual GPU device. This phase creates a production-ready pipeline to generate large CUDA IR datasets on any machine.
+
+**Tasks**:
+
+1. Create `code/synthesis/cuda_batch_generator.py`:
+   - Dedicated CUDA batch generator with checkpointing
+   - Support for all 10 kernel types
+   - Configurable forward/backward pass inclusion
+   - Progress tracking and resumption
+   - Parallel generation for speed
+
+2. Create `code/synthesis/cuda_dataset_stats.py`:
+   - Analyze generated CUDA dataset
+   - Report distribution by kernel type
+   - Validate IR structure (forward/backward present)
+   - Check for CUDA-specific markers
+
+3. Generate production dataset:
+   ```bash
+   # Generate 1000 CUDA IR pairs with backward pass
+   python3 jit/code/synthesis/cuda_batch_generator.py \
+       --count 1000 \
+       --output jit/data/cuda_production \
+       --backward \
+       --checkpoint
+   ```
+
+4. Validate production dataset:
+   ```bash
+   python3 jit/code/synthesis/cuda_dataset_stats.py jit/data/cuda_production
+   ```
+
+5. Create sample dataset for git (100 pairs max):
+   - Keep small subset in `data/cuda_samples/`
+   - Document how to generate full dataset
+
+**Code Template** for `cuda_batch_generator.py`:
+```python
+#!/usr/bin/env python3
+"""CUDA IR Batch Generator - Produces CUDA IR pairs without GPU."""
+import argparse
+from pathlib import Path
+from generator import generate_kernel, GENERATORS
+from pipeline import compile_kernel_from_source, extract_ir_from_kernel
+
+def generate_cuda_batch(count, output_dir, include_backward=True, checkpoint=True):
+    """Generate CUDA IR pairs in batches with checkpointing."""
+    # Implementation here
+    pass
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="CUDA IR Batch Generator")
+    parser.add_argument("--count", type=int, default=1000)
+    parser.add_argument("--output", type=str, required=True)
+    parser.add_argument("--backward", action="store_true")
+    parser.add_argument("--checkpoint", action="store_true")
+    # ...
+```
+
+**Validation Criteria**:
+1. Generator produces valid CUDA IR without GPU
+2. All 10 kernel types represented in output
+3. Both forward and backward passes included (when --backward)
+4. Checkpointing allows resumption after interruption
+5. Dataset statistics tool validates output
+
+**Done when**: 
+- `cuda_batch_generator.py` can produce 1000+ CUDA IR pairs
+- Dataset statistics tool validates all pairs
+- Sample dataset (100 pairs) in git
+- Documentation for large-scale generation
+
+---
+
 ## Kernel Type Reference
 
 | # | Kernel Type | Forward | Backward | Notes |
@@ -237,8 +314,9 @@ Before marking any iteration complete:
 | P2: Total (~20 iters) | ~160k | All kernel types, both passes |
 | P3: Pipeline | ~30k | Modify pipeline, test |
 | P4: Tests | ~40k | Create test suite |
+| P5: Production | ~50k | Batch generator, stats tool, dataset |
 
-**Estimated total**: 250-300k tokens (3-5 sessions)
+**Estimated total**: 300-350k tokens (4-6 sessions)
 
 ---
 
@@ -286,3 +364,12 @@ Phase 4 is complete when:
 4. Sample CUDA pairs in `data/cuda_samples/`
 5. `notes/cuda_notes.md` documents CPU vs CUDA differences
 6. README with instructions for GPU testing
+
+Phase 5 is complete when:
+1. `cuda_batch_generator.py` produces CUDA IR without GPU
+2. All 10 kernel types represented in generated dataset
+3. Forward + backward passes included
+4. Checkpointing supports resumption
+5. `cuda_dataset_stats.py` validates dataset
+6. Sample dataset (≤100 pairs) committed to git
+7. Documentation for large-scale generation
