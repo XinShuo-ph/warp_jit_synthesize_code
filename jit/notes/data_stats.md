@@ -1,19 +1,23 @@
 # Dataset Statistics
 
-## Large Dataset (/workspace/jit/data/large/)
-- **Total pairs**: 10,500
-- **Size on disk**: 42 MB
-- **Generation time**: 58.5 seconds (~180 pairs/sec)
+## Sample Dataset (/workspace/jit/data/samples/)
+- **Total pairs**: 50
+- **Seed**: 42
+- **Generation**: Synthesized via pipeline.py
 
 ## Category Distribution
 | Category     | Count | Percentage |
 |--------------|-------|------------|
-| vector       | 1,782 | 17.0%      |
-| arithmetic   | 1,773 | 16.9%      |
-| control_flow | 1,765 | 16.8%      |
-| math         | 1,748 | 16.6%      |
-| matrix       | 1,743 | 16.6%      |
-| atomic       | 1,689 | 16.1%      |
+| vector       | 12    | 24.0%      |
+| matrix       | 8     | 16.0%      |
+| combined     | 7     | 14.0%      |
+| arithmetic   | 6     | 12.0%      |
+| atomic       | 6     | 12.0%      |
+| control_flow | 6     | 12.0%      |
+| math         | 5     | 10.0%      |
 
-## Sample Dataset (/workspace/jit/data/samples/)
-- **Total pairs**: 125 (manual + synthesized)
+## Notes
+- Sample data included for testing/validation
+- Use `batch_generator.py` for large-scale generation (10k+ pairs)
+- Generation rate: ~180 pairs/second on CPU
+- 7 kernel types available (merged from ff72)

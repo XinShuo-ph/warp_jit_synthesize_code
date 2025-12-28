@@ -1,4 +1,6 @@
-# Warp JIT Code Synthesis - cursor/instructions-wrapup-completion-efe6
+# Warp JIT Code Synthesis
+
+> Merged from 16 branches - production-ready Python→IR training data generation
 
 ## Progress Summary
 - **Milestone reached**: M5 (All milestones complete)
@@ -13,7 +15,7 @@
 - **IR Extraction**: Extracts Python source and generated C++ code from any `@wp.kernel`
 - **7 kernel types validated**: arithmetic, vector ops, matrix ops, control flow, loops, math functions, atomics
 - **Poisson Solver**: FEM implementation with 4 validation tests (convergence, boundary conditions, consistency, analytical comparison)
-- **Synthesis Pipeline**: End-to-end generation of Python→IR pairs with 6 categories
+- **Synthesis Pipeline**: End-to-end generation of Python→IR pairs with 7 categories
 - **Batch Generation**: ~180 pairs/second throughput, 10,500 pairs generated
 
 ## Requirements
@@ -86,9 +88,10 @@ jit/
 | arithmetic   | Basic scalar operations            | add, sub, mul, div          |
 | vector       | Vector operations                  | dot, cross, normalize       |
 | matrix       | Matrix operations                  | mat-vec multiply            |
-| control_flow | Conditionals                       | if/else, clamp              |
+| control_flow | Conditionals and loops             | if/else, clamp, for loops   |
 | math         | Math functions                     | sin, cos, exp, sqrt         |
 | atomic       | Atomic operations                  | atomic_add, atomic_max      |
+| combined     | Multi-pattern kernels              | loop + conditional + math   |
 
 ## API Reference
 
