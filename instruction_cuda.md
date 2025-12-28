@@ -146,6 +146,69 @@ tests/
 
 **Done when**: All components have CUDA support and test suite is ready
 
+### M3: CUDA Code Generation Without GPU
+**Goal**: Generate CUDA IR code without requiring GPU hardware by leveraging warp's internal codegen APIs
+
+**Key Discovery**: Warp's `ModuleBuilder.codegen('cuda')` can generate CUDA code after the module is loaded for CPU. The internal AST and adjoint structures are device-agnostic.
+
+**Approach**:
+1. Create kernel from Python source
+2. Load module for CPU first (populates internal structures: adjoint, AST, etc.)
+3. Use `ModuleBuilder` to generate CUDA code via `codegen('cuda')`
+4. Extract forward/backward functions from generated CUDA code
+
+**Tasks**:
+
+#### Task 1: Create `cuda_codegen.py`
+Create a new module that generates CUDA code without GPU:
+```python
+from warp._src import codegen, context
+
+def generate_cuda_ir(kernel, options=None):
+    """Generate CUDA IR from a kernel without requiring GPU."""
+    # 1. Load for CPU first
+    kernel.module.load('cpu')
+    
+    # 2. Build with ModuleBuilder
+    options = options or {'mode': 'release', 'block_dim': 256}
+    hasher = context.ModuleHasher(kernel.module)
+    builder = context.ModuleBuilder(kernel.module, options, hasher)
+    builder.build_kernel(kernel)
+    
+    # 3. Generate CUDA code
+    cuda_code = builder.codegen('cuda')
+    return cuda_code
+```
+
+#### Task 2: Create `cuda_pipeline.py`
+End-to-end pipeline for generating Python→CUDA IR pairs:
+- Generate kernel spec
+- Compile to Python source
+- Load kernel for CPU
+- Generate CUDA IR via ModuleBuilder
+- Extract forward/backward functions
+- Save as JSON with `device: "cuda"`
+
+#### Task 3: Validate CUDA Output
+- Verify CUDA-specific patterns exist:
+  - `extern "C" __global__ void`
+  - `_cuda_kernel_forward`
+  - CUDA thread indexing (`blockDim.x * blockIdx.x + threadIdx.x`)
+  - `wp::tile_shared_storage_t`
+- Compare structure with CPU output
+
+#### Task 4: Batch Generation
+Update batch generator to support CUDA codegen without GPU:
+```bash
+python jit/code/synthesis/cuda_pipeline.py --count 100 --output jit/data/cuda
+```
+
+**Done when**:
+- CUDA IR generation works without GPU
+- All 10 kernel types generate valid CUDA IR
+- Pipeline produces Python→CUDA IR pairs
+- Output validated for CUDA-specific patterns
+
 ---
 
 ## Iteration Template
@@ -311,3 +374,11 @@ M2 Complete when:
 - Test suite ready for GPU execution
 - `tests/run_gpu_tests.sh` script prepared
 - All changes documented in `CUDA_STATE.md`
+
+M3 Complete when:
+- `cuda_codegen.py` generates CUDA IR without GPU
+- `cuda_pipeline.py` produces Python→CUDA IR pairs
+- All 10 kernel types generate valid CUDA IR
+- CUDA-specific patterns validated in output
+- Batch generation works for CUDA without GPU
+- Sample CUDA data committed to `jit/data/cuda/`

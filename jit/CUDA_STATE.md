@@ -1,7 +1,7 @@
 # CUDA Development State
-- **Milestone**: M2
-- **Task**: Complete - CUDA backend adaptation done
-- **Status**: ready_for_gpu_testing
+- **Milestone**: M3
+- **Task**: Complete - CUDA codegen without GPU
+- **Status**: complete
 
 ## Base Selection
 Selected `cursor/agent-work-merge-process-bc08` as base branch because:
@@ -71,8 +71,50 @@ python3 -m pytest jit/tests/test_cuda_kernels.py -v
 | Thread Index | `task_index` parameter | `blockDim.x * blockIdx.x + threadIdx.x` |
 | Pattern | `_cpu_kernel_forward` | `_cuda_kernel_forward` |
 
+### M3: CUDA Codegen Without GPU ✓
+
+**Key Discovery**: Warp's `ModuleBuilder.codegen('cuda')` can generate CUDA code 
+after loading the module for CPU. The internal AST and adjoint structures are 
+device-agnostic.
+
+#### Files Created
+- `code/extraction/cuda_codegen.py` - Core CUDA codegen without GPU
+  - `generate_cuda_ir()` - Generate CUDA code from kernel
+  - `extract_cuda_functions()` - Extract forward/backward functions
+  - `validate_cuda_ir()` - Validate CUDA patterns
+- `code/synthesis/cuda_pipeline.py` - Full CUDA synthesis pipeline
+  - Generates Python→CUDA IR pairs without GPU
+  - All 10 kernel types supported
+  - Includes forward and backward passes
+
+#### Validation Results
+All CUDA-specific patterns verified:
+- ✓ `__global__ void` decorator
+- ✓ `_cuda_kernel_forward` function names
+- ✓ `_cuda_kernel_backward` function names
+- ✓ CUDA thread indexing (`blockDim.x * blockIdx.x + threadIdx.x`)
+- ✓ `wp::tile_shared_storage_t` shared memory
+- ✓ Grid-stride loop pattern
+- ✓ CUDA header macros
+
+#### Generated Data
+- `data/cuda/` - 10 sample CUDA IR pairs (all kernel types)
+- Stats: 100% success rate for all 10 kernel types
+
+## Commands
+```bash
+# Generate CUDA IR without GPU
+python3 jit/code/extraction/cuda_codegen.py --validate
+
+# Generate batch of CUDA pairs
+python3 jit/code/synthesis/cuda_pipeline.py --count 100 --output jit/data/cuda
+```
+
 ## Session Log
 - Session 1: Copied bc08 branch code to jit/, validated CPU baseline
 - Session 1: Adapted ir_extractor.py and pipeline.py for CUDA support
 - Session 1: Created test suite and GPU validation scripts
 - Session 1: Verified CPU tests pass, CUDA tests properly skip when no GPU
+- Session 1: Discovered CUDA codegen works without GPU via ModuleBuilder
+- Session 1: Created cuda_codegen.py and cuda_pipeline.py
+- Session 1: Generated 10 validated CUDA IR pairs (all kernel types)

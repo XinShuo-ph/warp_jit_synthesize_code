@@ -1,0 +1,18 @@
+{
+  "total_generated": 10,
+  "successful": 10,
+  "failed": 0,
+  "by_type": {
+    "arithmetic": 1,
+    "conditional": 1,
+    "loop": 1,
+    "math": 1,
+    "vector": 1,
+    "atomic": 1,
+    "nested": 1,
+    "multi_cond": 1,
+    "combined": 1,
+    "scalar_param": 1
+  },
+  "device": "cuda"
+}
