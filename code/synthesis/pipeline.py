@@ -9,18 +9,26 @@ import json
 import tempfile
 import importlib.util
 import hashlib
+import random
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 from dataclasses import asdict
 
 # Add parent directory for imports
 sys.path.insert(0, str(Path(__file__).parent.parent / "extraction"))
 
 import warp as wp
-from generator import generate_kernel, generate_kernels, KernelSpec, GENERATORS
+try:
+    from .generator import KernelGenerator, KernelSpec
+except ImportError:
+    from generator import KernelGenerator, KernelSpec
 
 wp.set_module_options({"enable_backward": False})
 
+KERNEL_CATEGORIES = [
+    "arithmetic", "conditional", "loop", "math", "vector", 
+    "atomic", "nested", "multi_cond", "combined", "scalar_param", "random_math"
+]
 
 def kernel_source_hash(source: str) -> str:
     """Generate a short hash of kernel source."""
@@ -58,13 +66,15 @@ def compile_kernel_from_source(source: str, kernel_name: str) -> Any:
     try:
         spec.loader.exec_module(module)
     except Exception as e:
-        del sys.modules[module_name]
+        if module_name in sys.modules:
+            del sys.modules[module_name]
         raise RuntimeError(f"Failed to load module: {e}")
     
     # Get kernel from module
     kernel = getattr(module, kernel_name, None)
     if kernel is None:
-        del sys.modules[module_name]
+        if module_name in sys.modules:
+            del sys.modules[module_name]
         raise RuntimeError(f"Kernel {kernel_name} not found in module")
     
     return kernel
@@ -83,7 +93,11 @@ def extract_ir_from_kernel(kernel, device: str = "cpu") -> dict[str, str]:
     options.setdefault("mode", "release")
     
     builder = ctx.ModuleBuilder(module, options, hasher)
-    cpp_code = builder.codegen(device)
+    try:
+        cpp_code = builder.codegen(device)
+    except Exception as e:
+        print(f"Codegen failed: {e}")
+        return {"full_cpp": "", "forward_code": None}
     
     # Extract just the forward kernel function
     mangled_name = kernel.get_mangled_name()
@@ -120,15 +134,15 @@ def extract_ir_from_kernel(kernel, device: str = "cpu") -> dict[str, str]:
     }
 
 
-def synthesize_pair(spec: KernelSpec, device: str = "cpu") -> dict[str, Any] | None:
+def synthesize_pair(source: str, name: str, category: str, device: str = "cpu") -> dict[str, Any] | None:
     """
-    Synthesize a Python→IR pair from a kernel specification.
+    Synthesize a Python→IR pair from a kernel source.
     
     Returns None if compilation fails.
     """
     try:
         # Compile kernel
-        kernel = compile_kernel_from_source(spec.source, spec.name)
+        kernel = compile_kernel_from_source(source, name)
         
         # Force compilation by triggering module load
         # (Module will be built on first reference to kernel internals)
@@ -141,19 +155,17 @@ def synthesize_pair(spec: KernelSpec, device: str = "cpu") -> dict[str, Any] | N
             return None
         
         return {
-            "python_source": spec.source,
+            "python_source": source,
             "cpp_forward": ir["forward_code"],
             "metadata": {
-                "kernel_name": spec.name,
-                "category": spec.category,
-                "description": spec.description,
+                "kernel_name": name,
+                "category": category,
                 "device": device,
-                **spec.metadata
             }
         }
     
     except Exception as e:
-        print(f"  Failed to synthesize {spec.name}: {e}")
+        print(f"  Failed to synthesize {name}: {e}")
         return None
 
 
@@ -165,26 +177,28 @@ def synthesize_batch(
 ) -> list[dict[str, Any]]:
     """
     Synthesize a batch of Python→IR pairs.
-    
-    Args:
-        n: Number of pairs to generate
-        categories: Optional list of categories to sample from
-        seed: Random seed for reproducibility
-        device: Target device for IR generation
-    
-    Returns:
-        List of successfully synthesized pairs
     """
-    specs = generate_kernels(n, categories, seed)
+    gen = KernelGenerator(seed=seed)
     pairs = []
     
-    for i, spec in enumerate(specs):
+    if categories is None:
+        categories = KERNEL_CATEGORIES
+    
+    for i in range(n):
         if (i + 1) % 10 == 0:
             print(f"  Synthesizing {i + 1}/{n}...")
         
-        pair = synthesize_pair(spec, device)
-        if pair is not None:
-            pairs.append(pair)
+        cat = random.choice(categories)
+        try:
+            spec = gen.generate(cat)
+            source = gen.to_python_source(spec)
+            
+            pair = synthesize_pair(source, spec.name, cat, device)
+            if pair is not None:
+                pairs.append(pair)
+        except Exception as e:
+            print(f"Error generating kernel: {e}")
+            continue
     
     return pairs
 
@@ -212,12 +226,6 @@ def run_pipeline(
 ):
     """
     Run the full synthesis pipeline.
-    
-    Args:
-        n: Number of pairs to generate
-        output_dir: Directory to save pairs
-        categories: Optional list of categories
-        seed: Random seed
     """
     print("=" * 60)
     print("Warp Kernel Synthesis Pipeline")
@@ -257,7 +265,7 @@ if __name__ == "__main__":
     parser.add_argument("-n", type=int, default=100, help="Number of pairs to generate")
     parser.add_argument("-o", "--output", default="/workspace/jit/data/samples", help="Output directory")
     parser.add_argument("-s", "--seed", type=int, default=42, help="Random seed")
-    parser.add_argument("-c", "--categories", nargs="+", choices=list(GENERATORS.keys()), 
+    parser.add_argument("-c", "--categories", nargs="+", choices=KERNEL_CATEGORIES, 
                         help="Categories to generate")
     
     args = parser.parse_args()

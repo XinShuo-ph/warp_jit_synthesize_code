@@ -1,68 +1,34 @@
-"""
-Kernel Generator: Programmatically generate varied warp kernels.
-
-Generates Python kernel source code with variations in:
-- Operations: arithmetic, vector, matrix, control flow
-- Data types: float, vec2, vec3, vec4, mat22, mat33, mat44
-- Patterns: element-wise, reductions, stencils
-"""
+"""Programmatic kernel generator for varied Python→IR pairs."""
 import random
 import string
-from typing import Any
 from dataclasses import dataclass, field
+from typing import List, Optional
+import textwrap
 
 
 @dataclass
 class KernelSpec:
     """Specification for a generated kernel."""
     name: str
-    category: str
-    source: str
-    arg_types: dict[str, str]
-    description: str
-    metadata: dict[str, Any] = field(default_factory=dict)
+    params: List[tuple]  # [(name, type_str), ...]
+    body_lines: List[str]
+    uses_tid: bool = True
+    helper_funcs: List[str] = field(default_factory=list)
+    source: str = ""
+    category: str = "unknown"
 
 
-# Type definitions
-SCALAR_TYPES = ["float"]
+# Type specifications
+SCALAR_TYPES = ["float", "int"]
+ARRAY_DTYPES = ["float", "int", "wp.float32", "wp.int32"]
 VECTOR_TYPES = ["wp.vec2", "wp.vec3", "wp.vec4"]
-MATRIX_TYPES = ["wp.mat22", "wp.mat33", "wp.mat44"]
-ALL_TYPES = SCALAR_TYPES + VECTOR_TYPES + MATRIX_TYPES
+MATRIX_TYPES = ["wp.mat22", "wp.mat33"]
 
-
-# Operation templates
-UNARY_OPS = {
-    "neg": "-{x}",
-    "abs": "wp.abs({x})",
-    "sqrt": "wp.sqrt(wp.abs({x}))",
-    "sin": "wp.sin({x})",
-    "cos": "wp.cos({x})",
-    "exp": "wp.exp({x})",
-    "log": "wp.log(wp.abs({x}) + 1.0)",
-}
-
-BINARY_OPS = {
-    "add": "{x} + {y}",
-    "sub": "{x} - {y}",
-    "mul": "{x} * {y}",
-    "div": "{x} / ({y} + 0.0001)",
-    "min": "wp.min({x}, {y})",
-    "max": "wp.max({x}, {y})",
-}
-
-VECTOR_OPS = {
-    "dot": "wp.dot({x}, {y})",
-    "cross": "wp.cross({x}, {y})",  # only vec3
-    "length": "wp.length({x})",
-    "normalize": "wp.normalize({x})",
-}
-
-COMPARISON_OPS = {
-    "lt": "{x} < {y}",
-    "gt": "{x} > {y}",
-    "le": "{x} <= {y}",
-    "ge": "{x} >= {y}",
-}
+# Operations by category
+BINARY_OPS = ["+", "-", "*"]
+COMPARE_OPS = [">", "<", ">=", "<=", "=="]
+MATH_FUNCS = ["wp.sin", "wp.cos", "wp.sqrt", "wp.abs", "wp.exp", "wp.log"]
+VEC_FUNCS = ["wp.length", "wp.normalize", "wp.dot", "wp.cross"]
 
 
 def random_name(prefix: str = "kernel") -> str:
@@ -71,355 +37,335 @@ def random_name(prefix: str = "kernel") -> str:
     return f"{prefix}_{suffix}"
 
 
-def generate_arithmetic_kernel(seed: int | None = None) -> KernelSpec:
-    """Generate a kernel with arithmetic operations."""
-    if seed is not None:
-        random.seed(seed)
+def random_float() -> str:
+    """Generate a random float literal."""
+    val = round(random.uniform(-10, 10), 2)
+    return f"{val}"
+
+
+def random_int() -> str:
+    """Generate a random int literal."""
+    return str(random.randint(1, 100))
+
+
+class KernelGenerator:
+    """Generator for varied warp kernels."""
     
-    name = random_name("arith")
-    num_ops = random.randint(1, 4)
+    def __init__(self, seed: Optional[int] = None):
+        if seed is not None:
+            random.seed(seed)
     
-    # Build operation chain
-    ops = []
-    var_counter = 0
-    
-    for i in range(num_ops):
-        if random.random() < 0.5:
-            # Unary op
-            op_name = random.choice(list(UNARY_OPS.keys()))
-            op_template = UNARY_OPS[op_name]
-            if i == 0:
-                expr = op_template.format(x="a[tid]")
-            else:
-                expr = op_template.format(x=f"var_{var_counter-1}")
-        else:
-            # Binary op
-            op_name = random.choice(list(BINARY_OPS.keys()))
-            op_template = BINARY_OPS[op_name]
-            if i == 0:
-                expr = op_template.format(x="a[tid]", y="b[tid]")
-            else:
-                expr = op_template.format(x=f"var_{var_counter-1}", y="b[tid]")
+    def gen_arithmetic(self) -> KernelSpec:
+        """Generate a simple arithmetic kernel."""
+        name = random_name("arith")
+        op1 = random.choice(BINARY_OPS)
+        op2 = random.choice(BINARY_OPS)
+        const = random_float()
         
-        ops.append(f"    var_{var_counter} = {expr}")
-        var_counter += 1
+        params = [
+            ("a", "wp.array(dtype=float)"),
+            ("b", "wp.array(dtype=float)"),
+            ("out", "wp.array(dtype=float)"),
+        ]
+        
+        body = [
+            "tid = wp.tid()",
+            f"out[tid] = (a[tid] {op1} b[tid]) {op2} {const}",
+        ]
+        
+        return KernelSpec(name=name, params=params, body_lines=body)
     
-    source = f'''@wp.kernel
-def {name}(a: wp.array(dtype=float), b: wp.array(dtype=float), c: wp.array(dtype=float)):
-    tid = wp.tid()
-{chr(10).join(ops)}
-    c[tid] = var_{var_counter-1}
-'''
+    def gen_conditional(self) -> KernelSpec:
+        """Generate a kernel with conditional logic."""
+        name = random_name("cond")
+        cmp_op = random.choice(COMPARE_OPS)
+        threshold = random_float()
+        scale_true = random_float()
+        scale_false = random_float()
+        
+        params = [
+            ("x", "wp.array(dtype=float)"),
+            ("out", "wp.array(dtype=float)"),
+        ]
+        
+        body = [
+            "tid = wp.tid()",
+            f"if x[tid] {cmp_op} {threshold}:",
+            f"    out[tid] = x[tid] * {scale_true}",
+            "else:",
+            f"    out[tid] = x[tid] * {scale_false}",
+        ]
+        
+        return KernelSpec(name=name, params=params, body_lines=body)
     
-    return KernelSpec(
-        name=name,
-        category="arithmetic",
-        source=source,
-        arg_types={"a": "wp.array(dtype=float)", "b": "wp.array(dtype=float)", "c": "wp.array(dtype=float)"},
-        description=f"Arithmetic kernel with {num_ops} operations",
-        metadata={"num_ops": num_ops, "seed": seed}
-    )
+    def gen_loop(self) -> KernelSpec:
+        """Generate a kernel with a loop."""
+        name = random_name("loop")
+        iterations = random.randint(2, 8)
+        op = random.choice(BINARY_OPS)
+        
+        params = [
+            ("arr", "wp.array(dtype=float)"),
+            ("out", "wp.array(dtype=float)"),
+        ]
+        
+        body = [
+            "tid = wp.tid()",
+            "acc = float(0.0)",
+            f"for i in range({iterations}):",
+            f"    acc = acc {op} arr[tid] * float(i + 1)",
+            "out[tid] = acc",
+        ]
+        
+        return KernelSpec(name=name, params=params, body_lines=body)
+    
+    def gen_math_func(self) -> KernelSpec:
+        """Generate a kernel using math functions."""
+        name = random_name("math")
+        func1 = random.choice(MATH_FUNCS)
+        func2 = random.choice(MATH_FUNCS)
+        scale = random_float()
+        
+        params = [
+            ("x", "wp.array(dtype=float)"),
+            ("out", "wp.array(dtype=float)"),
+        ]
+        
+        body = [
+            "tid = wp.tid()",
+            f"val = {func1}(x[tid] * {scale})",
+            f"out[tid] = {func2}(val)",
+        ]
+        
+        return KernelSpec(name=name, params=params, body_lines=body)
+    
+    def gen_vector(self) -> KernelSpec:
+        """Generate a kernel with vector operations."""
+        name = random_name("vec")
+        dt = random_float()
+        
+        params = [
+            ("pos", "wp.array(dtype=wp.vec3)"),
+            ("vel", "wp.array(dtype=wp.vec3)"),
+            ("acc", "wp.array(dtype=wp.vec3)"),
+        ]
+        
+        body = [
+            "tid = wp.tid()",
+            f"dt = {dt}",
+            "new_vel = vel[tid] + acc[tid] * dt",
+            "pos[tid] = pos[tid] + new_vel * dt",
+            "vel[tid] = new_vel",
+        ]
+        
+        return KernelSpec(name=name, params=params, body_lines=body)
+    
+    def gen_atomic(self) -> KernelSpec:
+        """Generate a kernel with atomic operations."""
+        name = random_name("atomic")
+        scale = random_float()
+        
+        params = [
+            ("values", "wp.array(dtype=float)"),
+            ("result", "wp.array(dtype=float)"),
+        ]
+        
+        body = [
+            "tid = wp.tid()",
+            f"wp.atomic_add(result, 0, values[tid] * {scale})",
+        ]
+        
+        return KernelSpec(name=name, params=params, body_lines=body)
+    
+    def gen_nested_loop(self) -> KernelSpec:
+        """Generate a kernel with nested loops."""
+        name = random_name("nested")
+        outer = random.randint(2, 4)
+        inner = random.randint(2, 4)
+        
+        params = [
+            ("data", "wp.array(dtype=float)"),
+            ("out", "wp.array(dtype=float)"),
+        ]
+        
+        body = [
+            "tid = wp.tid()",
+            "total = float(0.0)",
+            f"for i in range({outer}):",
+            f"    for j in range({inner}):",
+            "        total = total + data[tid] * float(i * j + 1)",
+            "out[tid] = total",
+        ]
+        
+        return KernelSpec(name=name, params=params, body_lines=body)
+    
+    def gen_multi_conditional(self) -> KernelSpec:
+        """Generate a kernel with multiple conditions."""
+        name = random_name("multicond")
+        t1, t2 = sorted([float(random_float()), float(random_float())])
+        
+        params = [
+            ("x", "wp.array(dtype=float)"),
+            ("out", "wp.array(dtype=float)"),
+        ]
+        
+        body = [
+            "tid = wp.tid()",
+            "val = x[tid]",
+            f"if val < {t1}:",
+            "    out[tid] = val * 0.5",
+            f"elif val < {t2}:",
+            "    out[tid] = val * 1.0",
+            "else:",
+            "    out[tid] = val * 2.0",
+        ]
+        
+        return KernelSpec(name=name, params=params, body_lines=body)
+    
+    def gen_combined(self) -> KernelSpec:
+        """Generate a kernel combining multiple features."""
+        name = random_name("combined")
+        iterations = random.randint(2, 5)
+        threshold = random_float()
+        func = random.choice(MATH_FUNCS)
+        
+        params = [
+            ("a", "wp.array(dtype=float)"),
+            ("b", "wp.array(dtype=float)"),
+            ("out", "wp.array(dtype=float)"),
+        ]
+        
+        body = [
+            "tid = wp.tid()",
+            "acc = float(0.0)",
+            f"for i in range({iterations}):",
+            f"    if a[tid] * float(i) > {threshold}:",
+            f"        acc = acc + {func}(b[tid])",
+            "    else:",
+            "        acc = acc + b[tid]",
+            "out[tid] = acc",
+        ]
+        
+        return KernelSpec(name=name, params=params, body_lines=body)
+    
+    def gen_with_scalar_param(self) -> KernelSpec:
+        """Generate a kernel with scalar parameters."""
+        name = random_name("scalar")
+        op = random.choice(BINARY_OPS)
+        
+        params = [
+            ("x", "wp.array(dtype=float)"),
+            ("out", "wp.array(dtype=float)"),
+            ("scale", "float"),
+            ("offset", "float"),
+        ]
+        
+        body = [
+            "tid = wp.tid()",
+            f"out[tid] = x[tid] {op} scale + offset",
+        ]
+        
+        return KernelSpec(name=name, params=params, body_lines=body)
 
-
-def generate_vector_kernel(seed: int | None = None) -> KernelSpec:
-    """Generate a kernel with vector operations."""
-    if seed is not None:
-        random.seed(seed)
+    def gen_random_expression(self) -> KernelSpec:
+        """Generate a kernel with random expressions."""
+        name = random_name("rand_expr")
+        ops = ['+', '-', '*', '/']
+        funcs = ['wp.sin', 'wp.cos', 'wp.exp', 'wp.abs']
+        vars_list = ['v0', 'v1', 'v2', 'tmp']
+        
+        def expr(depth=0):
+            if depth > 2:
+                return f"{random.choice(vars_list)} + {random.random():.2f}"
+            choice = random.random()
+            if choice < 0.4:
+                op = random.choice(ops)
+                return f"({expr(depth+1)} {op} {expr(depth+1)})"
+            elif choice < 0.7:
+                func = random.choice(funcs)
+                return f"{func}({expr(depth+1)})"
+            else:
+                return random.choice(vars_list) if random.random() < 0.5 else f"{random.random():.2f}"
+                
+        params = [("data", "wp.array(dtype=float)")]
+        
+        body = [
+            "tid = wp.tid()",
+            "v0 = data[tid]",
+            "v1 = 0.0",
+            "v2 = 1.0",
+            "tmp = 0.0"
+        ]
+        
+        for _ in range(random.randint(3, 8)):
+             body.append(f"{random.choice(vars_list)} = {expr()}")
+             
+        body.append("data[tid] = v0")
+        
+        return KernelSpec(name=name, params=params, body_lines=body)
     
-    name = random_name("vec")
-    vec_type = random.choice(["wp.vec2", "wp.vec3", "wp.vec4"])
+    def generate(self, kernel_type: Optional[str] = None) -> KernelSpec:
+        """Generate a kernel of the specified type or random."""
+        generators = {
+            "arithmetic": self.gen_arithmetic,
+            "conditional": self.gen_conditional,
+            "loop": self.gen_loop,
+            "math": self.gen_math_func,
+            "vector": self.gen_vector,
+            "atomic": self.gen_atomic,
+            "nested": self.gen_nested_loop,
+            "multi_cond": self.gen_multi_conditional,
+            "combined": self.gen_combined,
+            "scalar_param": self.gen_with_scalar_param,
+            "random_math": self.gen_random_expression,
+        }
+        
+        if kernel_type is None:
+            kernel_type = random.choice(list(generators.keys()))
+        
+        return generators[kernel_type]()
     
-    # Choose operations based on vector type
-    if vec_type == "wp.vec3":
-        available_ops = ["dot", "cross", "length", "normalize"]
-    else:
-        available_ops = ["dot", "length", "normalize"]
-    
-    op = random.choice(available_ops)
-    
-    if op == "dot":
-        body = "    out[tid] = wp.dot(a[tid], b[tid])"
-        out_type = "float"
-    elif op == "cross":
-        body = "    out[tid] = wp.cross(a[tid], b[tid])"
-        out_type = vec_type
-    elif op == "length":
-        body = "    out[tid] = wp.length(a[tid])"
-        out_type = "float"
-    else:  # normalize
-        body = "    out[tid] = wp.normalize(a[tid])"
-        out_type = vec_type
-    
-    source = f'''@wp.kernel
-def {name}(a: wp.array(dtype={vec_type}), b: wp.array(dtype={vec_type}), out: wp.array(dtype={out_type})):
-    tid = wp.tid()
+    def to_python_source(self, spec: KernelSpec) -> str:
+        """Convert a kernel spec to Python source code."""
+        # Build parameter string
+        param_str = ", ".join(f"{p[0]}: {p[1]}" for p in spec.params)
+        
+        # Build body with proper indentation
+        body = "\n".join("    " + line for line in spec.body_lines)
+        
+        # Combine into kernel definition
+        source = f"""@wp.kernel
+def {spec.name}({param_str}):
 {body}
+"""
+        return source
+
+
+def generate_kernel_module(specs: List[KernelSpec], module_name: str) -> str:
+    """Generate a complete Python module with multiple kernels."""
+    gen = KernelGenerator()
+    
+    header = '''"""Auto-generated warp kernels for training data synthesis."""
+import warp as wp
+
+wp.init()
+
 '''
     
-    return KernelSpec(
-        name=name,
-        category="vector",
-        source=source,
-        arg_types={"a": f"wp.array(dtype={vec_type})", "b": f"wp.array(dtype={vec_type})", "out": f"wp.array(dtype={out_type})"},
-        description=f"Vector kernel: {op} on {vec_type}",
-        metadata={"vec_type": vec_type, "operation": op, "seed": seed}
-    )
-
-
-def generate_matrix_kernel(seed: int | None = None) -> KernelSpec:
-    """Generate a kernel with matrix operations."""
-    if seed is not None:
-        random.seed(seed)
+    kernels = "\n\n".join(gen.to_python_source(spec) for spec in specs)
     
-    name = random_name("mat")
-    size = random.choice([2, 3, 4])
-    mat_type = f"wp.mat{size}{size}"
-    vec_type = f"wp.vec{size}"
-    
-    op = random.choice(["mat_vec", "mat_mat", "transpose"])
-    
-    if op == "mat_vec":
-        source = f'''@wp.kernel
-def {name}(m: wp.array(dtype={mat_type}), v: wp.array(dtype={vec_type}), out: wp.array(dtype={vec_type})):
-    tid = wp.tid()
-    out[tid] = m[tid] * v[tid]
-'''
-        arg_types = {"m": f"wp.array(dtype={mat_type})", "v": f"wp.array(dtype={vec_type})", "out": f"wp.array(dtype={vec_type})"}
-        desc = f"Matrix-vector multiply ({mat_type} * {vec_type})"
-    elif op == "mat_mat":
-        source = f'''@wp.kernel
-def {name}(a: wp.array(dtype={mat_type}), b: wp.array(dtype={mat_type}), out: wp.array(dtype={mat_type})):
-    tid = wp.tid()
-    out[tid] = a[tid] * b[tid]
-'''
-        arg_types = {"a": f"wp.array(dtype={mat_type})", "b": f"wp.array(dtype={mat_type})", "out": f"wp.array(dtype={mat_type})"}
-        desc = f"Matrix-matrix multiply ({mat_type})"
-    else:  # transpose
-        source = f'''@wp.kernel
-def {name}(m: wp.array(dtype={mat_type}), out: wp.array(dtype={mat_type})):
-    tid = wp.tid()
-    out[tid] = wp.transpose(m[tid])
-'''
-        arg_types = {"m": f"wp.array(dtype={mat_type})", "out": f"wp.array(dtype={mat_type})"}
-        desc = f"Matrix transpose ({mat_type})"
-    
-    return KernelSpec(
-        name=name,
-        category="matrix",
-        source=source,
-        arg_types=arg_types,
-        description=desc,
-        metadata={"mat_type": mat_type, "operation": op, "seed": seed}
-    )
-
-
-def generate_control_flow_kernel(seed: int | None = None) -> KernelSpec:
-    """Generate a kernel with control flow (if/for)."""
-    if seed is not None:
-        random.seed(seed)
-    
-    name = random_name("ctrl")
-    pattern = random.choice(["clamp", "abs_diff", "step", "loop_sum", "loop_product"])
-    
-    if pattern == "clamp":
-        source = f'''@wp.kernel
-def {name}(a: wp.array(dtype=float), lo: float, hi: float, out: wp.array(dtype=float)):
-    tid = wp.tid()
-    val = a[tid]
-    if val < lo:
-        out[tid] = lo
-    elif val > hi:
-        out[tid] = hi
-    else:
-        out[tid] = val
-'''
-        arg_types = {"a": "wp.array(dtype=float)", "lo": "float", "hi": "float", "out": "wp.array(dtype=float)"}
-        desc = "Clamp values between lo and hi"
-    
-    elif pattern == "abs_diff":
-        source = f'''@wp.kernel
-def {name}(a: wp.array(dtype=float), b: wp.array(dtype=float), out: wp.array(dtype=float)):
-    tid = wp.tid()
-    diff = a[tid] - b[tid]
-    if diff < 0.0:
-        out[tid] = -diff
-    else:
-        out[tid] = diff
-'''
-        arg_types = {"a": "wp.array(dtype=float)", "b": "wp.array(dtype=float)", "out": "wp.array(dtype=float)"}
-        desc = "Absolute difference"
-    
-    elif pattern == "step":
-        source = f'''@wp.kernel
-def {name}(a: wp.array(dtype=float), threshold: float, out: wp.array(dtype=float)):
-    tid = wp.tid()
-    if a[tid] > threshold:
-        out[tid] = 1.0
-    else:
-        out[tid] = 0.0
-'''
-        arg_types = {"a": "wp.array(dtype=float)", "threshold": "float", "out": "wp.array(dtype=float)"}
-        desc = "Step function"
-    
-    elif pattern == "loop_sum":
-        n_iters = random.randint(2, 5)
-        source = f'''@wp.kernel
-def {name}(a: wp.array(dtype=float), out: wp.array(dtype=float)):
-    tid = wp.tid()
-    total = float(0.0)
-    for i in range({n_iters}):
-        total = total + a[tid]
-    out[tid] = total
-'''
-        arg_types = {"a": "wp.array(dtype=float)", "out": "wp.array(dtype=float)"}
-        desc = f"Loop sum ({n_iters} iterations)"
-    
-    else:  # loop_product
-        n_iters = random.randint(2, 4)
-        source = f'''@wp.kernel
-def {name}(a: wp.array(dtype=float), out: wp.array(dtype=float)):
-    tid = wp.tid()
-    prod = float(1.0)
-    for i in range({n_iters}):
-        prod = prod * a[tid]
-    out[tid] = prod
-'''
-        arg_types = {"a": "wp.array(dtype=float)", "out": "wp.array(dtype=float)"}
-        desc = f"Loop product ({n_iters} iterations)"
-    
-    return KernelSpec(
-        name=name,
-        category="control_flow",
-        source=source,
-        arg_types=arg_types,
-        description=desc,
-        metadata={"pattern": pattern, "seed": seed}
-    )
-
-
-def generate_math_kernel(seed: int | None = None) -> KernelSpec:
-    """Generate a kernel with math functions."""
-    if seed is not None:
-        random.seed(seed)
-    
-    name = random_name("math")
-    num_funcs = random.randint(1, 3)
-    
-    funcs = random.sample(list(UNARY_OPS.keys()), min(num_funcs, len(UNARY_OPS)))
-    
-    # Build expression chain
-    expr = "a[tid]"
-    for func in funcs:
-        template = UNARY_OPS[func]
-        expr = template.format(x=expr)
-    
-    source = f'''@wp.kernel
-def {name}(a: wp.array(dtype=float), out: wp.array(dtype=float)):
-    tid = wp.tid()
-    out[tid] = {expr}
-'''
-    
-    return KernelSpec(
-        name=name,
-        category="math",
-        source=source,
-        arg_types={"a": "wp.array(dtype=float)", "out": "wp.array(dtype=float)"},
-        description=f"Math functions: {', '.join(funcs)}",
-        metadata={"functions": funcs, "seed": seed}
-    )
-
-
-def generate_atomic_kernel(seed: int | None = None) -> KernelSpec:
-    """Generate a kernel with atomic operations."""
-    if seed is not None:
-        random.seed(seed)
-    
-    name = random_name("atom")
-    op = random.choice(["add", "min", "max"])
-    
-    if op == "add":
-        source = f'''@wp.kernel
-def {name}(values: wp.array(dtype=float), result: wp.array(dtype=float)):
-    tid = wp.tid()
-    wp.atomic_add(result, 0, values[tid])
-'''
-        desc = "Atomic add reduction"
-    elif op == "min":
-        source = f'''@wp.kernel
-def {name}(values: wp.array(dtype=float), result: wp.array(dtype=float)):
-    tid = wp.tid()
-    wp.atomic_min(result, 0, values[tid])
-'''
-        desc = "Atomic min reduction"
-    else:  # max
-        source = f'''@wp.kernel
-def {name}(values: wp.array(dtype=float), result: wp.array(dtype=float)):
-    tid = wp.tid()
-    wp.atomic_max(result, 0, values[tid])
-'''
-        desc = "Atomic max reduction"
-    
-    return KernelSpec(
-        name=name,
-        category="atomic",
-        source=source,
-        arg_types={"values": "wp.array(dtype=float)", "result": "wp.array(dtype=float)"},
-        description=desc,
-        metadata={"operation": op, "seed": seed}
-    )
-
-
-# Generator dispatch table
-GENERATORS = {
-    "arithmetic": generate_arithmetic_kernel,
-    "vector": generate_vector_kernel,
-    "matrix": generate_matrix_kernel,
-    "control_flow": generate_control_flow_kernel,
-    "math": generate_math_kernel,
-    "atomic": generate_atomic_kernel,
-}
-
-
-def generate_kernel(category: str | None = None, seed: int | None = None) -> KernelSpec:
-    """
-    Generate a kernel of the specified category.
-    If category is None, randomly choose a category.
-    """
-    if category is None:
-        category = random.choice(list(GENERATORS.keys()))
-    
-    if category not in GENERATORS:
-        raise ValueError(f"Unknown category: {category}. Available: {list(GENERATORS.keys())}")
-    
-    return GENERATORS[category](seed)
-
-
-def generate_kernels(n: int, categories: list[str] | None = None, seed: int | None = None) -> list[KernelSpec]:
-    """Generate n kernels with optional category filtering."""
-    if seed is not None:
-        random.seed(seed)
-    
-    if categories is None:
-        categories = list(GENERATORS.keys())
-    
-    kernels = []
-    for i in range(n):
-        cat = random.choice(categories)
-        spec = generate_kernel(cat, seed=seed + i if seed else None)
-        kernels.append(spec)
-    
-    return kernels
+    return header + kernels
 
 
 if __name__ == "__main__":
-    # Demo: Generate one kernel of each type
-    print("=" * 60)
-    print("Kernel Generator Demo")
-    print("=" * 60)
+    # Demo: generate 10 different kernel types
+    gen = KernelGenerator(seed=42)
     
-    for cat in GENERATORS.keys():
-        spec = generate_kernel(cat, seed=42)
-        print(f"\n--- {cat.upper()} ---")
-        print(f"Name: {spec.name}")
-        print(f"Description: {spec.description}")
-        print(f"Source:\n{spec.source}")
+    print("=== Generated Kernel Examples ===\n")
+    
+    for kernel_type in ["arithmetic", "conditional", "loop", "math", "vector", 
+                        "atomic", "nested", "multi_cond", "combined", "scalar_param"]:
+        spec = gen.generate(kernel_type)
+        source = gen.to_python_source(spec)
+        print(f"--- {kernel_type} ---")
+        print(source)

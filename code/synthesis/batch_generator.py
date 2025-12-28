@@ -24,8 +24,15 @@ import time
 sys.path.insert(0, str(Path(__file__).parent.parent / "extraction"))
 sys.path.insert(0, str(Path(__file__).parent))
 
-from generator import generate_kernel, GENERATORS, KernelSpec
+try:
+    from .generator import KernelGenerator, KernelSpec
+except ImportError:
+    from generator import KernelGenerator, KernelSpec
 
+try:
+    from .pipeline import KERNEL_CATEGORIES
+except ImportError:
+    from pipeline import KERNEL_CATEGORIES
 
 KERNELS_PER_MODULE = 10  # Number of kernels to put in each module file
 
@@ -49,93 +56,104 @@ def compile_kernel_batch(
     import warp as wp
     import warp._src.context as ctx
     
-    # Build module source with all kernels
-    kernel_sources = [spec.source for spec in specs]
-    module_source = "import warp as wp\n\n" + "\n".join(kernel_sources)
+    # Generate combined module source
+    # We need to make sure kernel names are unique in the module, but they should be already
     
-    source_hash = batch_source_hash(kernel_sources)
-    module_name = f"batch_{batch_id}_{source_hash}"
+    header = """import warp as wp
+
+"""
+    
+    # Combine sources
+    sources = [spec.source for spec in specs]
+    combined_source = header + "\n\n".join(sources)
+    
+    # Write to temp file
+    batch_hash = batch_source_hash(sources)
+    module_name = f"batch_{batch_id}_{batch_hash}"
     temp_file = temp_dir / f"{module_name}.py"
     
     with open(temp_file, 'w') as f:
-        f.write(module_source)
+        f.write(combined_source)
     
     # Import module
-    spec_loader = importlib.util.spec_from_file_location(module_name, temp_file)
-    module = importlib.util.module_from_spec(spec_loader)
+    spec_mod = importlib.util.spec_from_file_location(module_name, temp_file)
+    module = importlib.util.module_from_spec(spec_mod)
     sys.modules[module_name] = module
-    
-    try:
-        spec_loader.loader.exec_module(module)
-    except Exception as e:
-        del sys.modules[module_name]
-        return []
     
     pairs = []
     
-    for kernel_spec in specs:
-        try:
-            kernel = getattr(module, kernel_spec.name, None)
-            if kernel is None:
-                continue
-            
-            # Extract IR
-            kernel_module = kernel.module
-            hasher = ctx.ModuleHasher(kernel_module)
-            
-            options = kernel_module.options.copy() if kernel_module.options else {}
-            options.setdefault("block_dim", 256)
-            options.setdefault("enable_backward", False)
-            options.setdefault("mode", "release")
-            
-            builder = ctx.ModuleBuilder(kernel_module, options, hasher)
-            cpp_code = builder.codegen("cpu")
-            
-            # Extract forward function
-            mangled_name = kernel.get_mangled_name()
-            forward_func_name = f"{mangled_name}_cpu_kernel_forward"
-            
-            import re
-            pattern = rf'void {re.escape(forward_func_name)}\s*\([^)]*\)\s*\{{'
-            match = re.search(pattern, cpp_code)
-            
-            if match:
-                start = match.start()
-                brace_count = 0
-                in_function = False
-                end = start
+    try:
+        spec_mod.loader.exec_module(module)
+        
+        # Process each kernel in the batch
+        for i, spec in enumerate(specs):
+            try:
+                kernel_name = spec.name
+                kernel = getattr(module, kernel_name, None)
                 
-                for i, char in enumerate(cpp_code[start:], start):
-                    if char == '{':
-                        brace_count += 1
-                        in_function = True
-                    elif char == '}':
-                        brace_count -= 1
-                        if in_function and brace_count == 0:
-                            end = i + 1
-                            break
+                if kernel is None:
+                    print(f"Kernel {kernel_name} not found in batch module")
+                    continue
                 
-                forward_code = cpp_code[start:end]
-            else:
-                continue
-            
-            pairs.append({
-                "python_source": kernel_spec.source,
-                "cpp_forward": forward_code,
-                "metadata": {
-                    "kernel_name": kernel_spec.name,
-                    "category": kernel_spec.category,
-                    "description": kernel_spec.description,
-                    "device": "cpu",
-                    **kernel_spec.metadata
-                }
-            })
-            
-        except Exception:
-            continue
-    
-    # Cleanup
-    del sys.modules[module_name]
+                # Force compilation
+                _ = kernel.module
+                
+                # Extract IR
+                hasher = ctx.ModuleHasher(kernel.module)
+                options = kernel.module.options.copy() if kernel.module.options else {}
+                options.setdefault("block_dim", 256)
+                options.setdefault("enable_backward", False)
+                options.setdefault("mode", "release")
+                
+                builder = ctx.ModuleBuilder(kernel.module, options, hasher)
+                cpp_code = builder.codegen("cpu")
+                
+                # Extract forward function
+                mangled_name = kernel.get_mangled_name()
+                forward_func_name = f"{mangled_name}_cpu_kernel_forward"
+                
+                import re
+                pattern = rf'void {re.escape(forward_func_name)}\s*\([^)]*\)\s*\{{'
+                match = re.search(pattern, cpp_code)
+                
+                if match:
+                    start = match.start()
+                    brace_count = 0
+                    in_function = False
+                    end = start
+                    
+                    for j, char in enumerate(cpp_code[start:], start):
+                        if char == '{':
+                            brace_count += 1
+                            in_function = True
+                        elif char == '}':
+                            brace_count -= 1
+                            if in_function and brace_count == 0:
+                                end = j + 1
+                                break
+                    
+                    forward_code = cpp_code[start:end]
+                    
+                    # Create pair
+                    pairs.append({
+                        "python_source": spec.source,
+                        "cpp_forward": forward_code,
+                        "metadata": {
+                            "kernel_name": spec.name,
+                            # Try to find category if possible, else 'unknown'
+                            # Since we don't store category in spec, we might need to pass it
+                            "category": spec.category,
+                            "device": "cpu",
+                            "batch_id": batch_id
+                        }
+                    })
+            except Exception as e:
+                print(f"Error processing kernel {spec.name}: {e}")
+                
+    except Exception as e:
+        print(f"Failed to load batch module {module_name}: {e}")
+        if module_name in sys.modules:
+            del sys.modules[module_name]
     
     return pairs
 
@@ -144,21 +162,11 @@ def generate_batch(
     n: int,
     output_dir: str | Path,
     seed: int = 42,
-    chunk_size: int = 100,
+    chunk_size: int = 1000,
     start_index: int = 0
 ) -> dict[str, Any]:
     """
     Generate n Python→IR pairs in batches.
-    
-    Args:
-        n: Total number of pairs to generate
-        output_dir: Directory to save pairs
-        seed: Random seed
-        chunk_size: Number of pairs per save operation
-        start_index: Starting index for file naming (for resumability)
-    
-    Returns:
-        Statistics dict
     """
     import warp as wp
     wp.init()
@@ -172,7 +180,9 @@ def generate_batch(
     random.seed(seed)
     
     total_generated = 0
-    category_counts = {cat: 0 for cat in GENERATORS.keys()}
+    # Initialize counts based on available categories
+    category_counts = {cat: 0 for cat in KERNEL_CATEGORIES}
+    category_counts["unknown"] = 0
     
     start_time = time.time()
     batch_id = 0
@@ -184,28 +194,58 @@ def generate_batch(
         # Generate a chunk of kernel specs
         chunk_n = min(chunk_size, n - total_generated)
         specs = []
+        spec_categories = [] # Keep track of categories
         
         for i in range(chunk_n):
-            cat = random.choice(list(GENERATORS.keys()))
-            spec = generate_kernel(cat, seed=seed + total_generated + i)
-            specs.append(spec)
+            cat = random.choice(KERNEL_CATEGORIES)
+            gen = KernelGenerator(seed=seed + total_generated + i)
+            try:
+                spec = gen.generate(cat)
+                spec.source = gen.to_python_source(spec)
+                spec.category = cat
+                specs.append(spec)
+                spec_categories.append(cat)
+            except Exception as e:
+                print(f"Error generating spec: {e}")
         
         # Process in batches of KERNELS_PER_MODULE
         chunk_pairs = []
         for batch_start in range(0, len(specs), KERNELS_PER_MODULE):
-            batch_specs = specs[batch_start:batch_start + KERNELS_PER_MODULE]
+            batch_end = batch_start + KERNELS_PER_MODULE
+            batch_specs = specs[batch_start:batch_end]
+            # We need to pass categories to compile_kernel_batch or fix it after
+            
             pairs = compile_kernel_batch(batch_specs, batch_id, temp_dir)
+            
+            # Fix categories
+            for k, pair in enumerate(pairs):
+                # This alignment assumes pairs correspond to specs in order
+                # which might not be true if some failed inside compile_kernel_batch
+                # But compile_kernel_batch iterates over specs.
+                # If compile_kernel_batch skips some, we lose alignment.
+                # Better to store category in spec.
+                pass
+            
+            # Since we didn't add category to KernelSpec, let's just rely on metadata
+            # Or add it to metadata in compile_kernel_batch if we could
+            # But compile_kernel_batch takes specs.
+            # I'll rely on the fact that I should have added category to KernelSpec.
+            
             chunk_pairs.extend(pairs)
             batch_id += 1
         
         # Save chunk
-        for pair in chunk_pairs:
+        for i, pair in enumerate(chunk_pairs):
             filename = f"pair_{file_index:06d}.json"
             filepath = output_dir / filename
             
             with open(filepath, 'w') as f:
                 json.dump(pair, f, indent=2)
             
+            # Update category count if possible
+            # pair["metadata"]["category"] is "unknown" currently
+            # We can't easily recover it unless we stored it.
+            # I'll update KernelSpec again to store category.
             category_counts[pair["metadata"]["category"]] += 1
             file_index += 1
         
@@ -248,19 +288,15 @@ def run_large_scale_generation(
     print(f"Seed: {seed}")
     print()
     
-    stats = generate_batch(n, output_dir, seed, chunk_size=500)
-    
-    print("\n" + "=" * 60)
-    print("Generation Complete")
-    print("=" * 60)
-    print(f"Total pairs: {stats['total_pairs']}")
-    print(f"Time: {stats['generation_time_sec']:.1f}s")
-    print(f"Rate: {stats['pairs_per_second']:.1f} pairs/sec")
-    print("\nCategory distribution:")
-    for cat, count in sorted(stats['category_distribution'].items()):
-        print(f"  {cat}: {count}")
-    
-    return stats
+    try:
+        stats = generate_batch(n, output_dir, seed)
+        print("\nSUCCESS")
+    except KeyboardInterrupt:
+        print("\nInterrupted")
+    except Exception as e:
+        print(f"\nFAILED: {e}")
+        import traceback
+        traceback.print_exc()
 
 
 if __name__ == "__main__":
