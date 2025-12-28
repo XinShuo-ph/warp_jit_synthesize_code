@@ -1,14 +1,12 @@
 import warp as wp
 
+@wp.func
+def helper_6(x: float) -> float:
+    return wp.sqrt(wp.abs(x))
+
 @wp.kernel
-def loop_0006(matrix: wp.array(dtype=float, ndim=2),
-           vector: wp.array(dtype=float),
-           result: wp.array(dtype=float),
-           n: int):
+def function_0006(data: wp.array(dtype=float),
+           output: wp.array(dtype=float)):
     i = wp.tid()
-    
-    sum_val = float(0.0)
-    for j in range(n):
-        sum_val = sum_val + matrix[i, j] * vector[j]
-    
-    result[i] = sum_val
+    val = data[i]
+    output[i] = helper_6(val)

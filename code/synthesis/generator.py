@@ -76,8 +76,8 @@ def {name}(a: wp.array(dtype=float), b: wp.array(dtype=float), c: wp.array(dtype
         vec_type = f"wp.vec{dimension}"
         
         operations = [
-            "pos + vel * dt",
-            "wp.normalize(pos + vel * dt)",
+            "pos[i] + vel[i] * dt",
+            "wp.normalize(pos[i] + vel[i] * dt)",
         ]
         op = random.choice(operations)
         

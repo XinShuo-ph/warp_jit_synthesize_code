@@ -4,9 +4,9 @@
   "category": "conditional",
   "complexity": "medium",
   "module_name": "temp_kernel_9",
-  "module_hash": "fb2a258",
+  "module_hash": "31d2f91",
   "python_file": "sample_00009.py",
   "cpp_file": "sample_00009.cpp",
-  "python_size": 331,
-  "cpp_size": 8173
+  "python_size": 348,
+  "cpp_size": 8249
 }

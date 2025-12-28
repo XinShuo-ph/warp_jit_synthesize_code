@@ -1,12 +1,12 @@
 {
   "sample_id": 2,
-  "kernel_name": "loop_0002",
-  "category": "loop",
+  "kernel_name": "reduction_0002",
+  "category": "reduction",
   "complexity": "medium",
   "module_name": "temp_kernel_2",
-  "module_hash": "15f9f6d",
+  "module_hash": "37049c8",
   "python_file": "sample_00002.py",
   "cpp_file": "sample_00002.cpp",
-  "python_size": 339,
-  "cpp_size": 7491
+  "python_size": 444,
+  "cpp_size": 8690
 }

@@ -17,155 +17,188 @@
 
 #define builtin_block_dim() wp::block_dim()
 
-struct wp_args_loop_0002_c151279d {
-    wp::array_t<wp::float32> matrix;
-    wp::array_t<wp::float32> vector;
+struct wp_args_reduction_0002_cc9a000a {
+    wp::array_t<wp::float32> data;
     wp::array_t<wp::float32> result;
     wp::int32 n;
 };
 
 
-void loop_0002_c151279d_cpu_kernel_forward(
+void reduction_0002_cc9a000a_cpu_kernel_forward(
     wp::launch_bounds_t dim,
     size_t task_index,
-    wp_args_loop_0002_c151279d *_wp_args)
+    wp_args_reduction_0002_cc9a000a *_wp_args)
 {
     //---------
     // argument vars
-    wp::array_t<wp::float32> var_matrix = _wp_args->matrix;
-    wp::array_t<wp::float32> var_vector = _wp_args->vector;
+    wp::array_t<wp::float32> var_data = _wp_args->data;
     wp::array_t<wp::float32> var_result = _wp_args->result;
     wp::int32 var_n = _wp_args->n;
     //---------
     // primal vars
     wp::int32 var_0;
-    const wp::float32 var_1 = 0.0;
-    wp::float32 var_2;
-    wp::range_t var_3;
-    wp::int32 var_4;
-    wp::float32* var_5;
-    wp::float32* var_6;
-    wp::float32 var_7;
-    wp::float32 var_8;
-    wp::float32 var_9;
-    wp::float32 var_10;
+    bool var_1;
+    const wp::float32 var_2 = 0.0;
+    wp::float32 var_3;
+    const wp::float32 var_4 = 0.0;
+    wp::float32 var_5;
+    wp::float32 var_6;
+    const wp::int32 var_7 = 1;
+    wp::range_t var_8;
+    wp::int32 var_9;
+    wp::float32* var_10;
+    wp::float32 var_11;
+    wp::float32 var_12;
+    wp::float32 var_13;
+    wp::float32 var_14;
     //---------
     // forward
-    // def loop_0002(matrix: wp.array(dtype=float, ndim=2),                                   <L 4>
-    // i = wp.tid()                                                                           <L 8>
+    // def reduction_0002(data: wp.array(dtype=float),                                        <L 4>
+    // tid = wp.tid()                                                                         <L 7>
     var_0 = builtin_tid1d();
-    // sum_val = float(0.0)                                                                   <L 10>
-    var_2 = wp::float(var_1);
-    // for j in range(n):                                                                     <L 11>
-    var_3 = wp::range(var_n);
+    // local_result = float(0.0) if tid < n else float(0.0)                                   <L 10>
+    var_1 = (var_0 < var_n);
+    if (var_1) {
+        var_3 = wp::float(var_2);
+    }
+    if (!var_1) {
+        var_5 = wp::float(var_4);
+    }
+    var_6 = wp::where(var_1, var_3, var_5);
+    // for i in range(tid, n, 1):                                                             <L 12>
+    var_8 = wp::range(var_0, var_n, var_7);
     start_for_0:;
-        if (iter_cmp(var_3) == 0) goto end_for_0;
-        var_4 = wp::iter_next(var_3);
-        // sum_val = sum_val + matrix[i, j] * vector[j]                                       <L 12>
-        var_5 = wp::address(var_matrix, var_0, var_4);
-        var_6 = wp::address(var_vector, var_4);
-        var_8 = wp::load(var_5);
-        var_9 = wp::load(var_6);
-        var_7 = wp::mul(var_8, var_9);
-        var_10 = wp::add(var_2, var_7);
-        wp::assign(var_2, var_10);
+        if (iter_cmp(var_8) == 0) goto end_for_0;
+        var_9 = wp::iter_next(var_8);
+        // val = data[i]                                                                      <L 13>
+        var_10 = wp::address(var_data, var_9);
+        var_12 = wp::load(var_10);
+        var_11 = wp::copy(var_12);
+        // local_result = local_result + val * val                                            <L 14>
+        var_13 = wp::mul(var_11, var_11);
+        var_14 = wp::add(var_6, var_13);
+        // break  # Simplified                                                                <L 15>
+        wp::assign(var_6, var_14);
+        goto end_for_0;
         goto start_for_0;
     end_for_0:;
-    // result[i] = sum_val                                                                    <L 14>
-    wp::array_store(var_result, var_0, var_2);
+    // result[tid] = local_result                                                             <L 17>
+    wp::array_store(var_result, var_0, var_6);
 }
 
 
 
-void loop_0002_c151279d_cpu_kernel_backward(
+void reduction_0002_cc9a000a_cpu_kernel_backward(
     wp::launch_bounds_t dim,
     size_t task_index,
-    wp_args_loop_0002_c151279d *_wp_args,
-    wp_args_loop_0002_c151279d *_wp_adj_args)
+    wp_args_reduction_0002_cc9a000a *_wp_args,
+    wp_args_reduction_0002_cc9a000a *_wp_adj_args)
 {
     //---------
     // argument vars
-    wp::array_t<wp::float32> var_matrix = _wp_args->matrix;
-    wp::array_t<wp::float32> var_vector = _wp_args->vector;
+    wp::array_t<wp::float32> var_data = _wp_args->data;
     wp::array_t<wp::float32> var_result = _wp_args->result;
     wp::int32 var_n = _wp_args->n;
-    wp::array_t<wp::float32> adj_matrix = _wp_adj_args->matrix;
-    wp::array_t<wp::float32> adj_vector = _wp_adj_args->vector;
+    wp::array_t<wp::float32> adj_data = _wp_adj_args->data;
     wp::array_t<wp::float32> adj_result = _wp_adj_args->result;
     wp::int32 adj_n = _wp_adj_args->n;
     //---------
     // primal vars
     wp::int32 var_0;
-    const wp::float32 var_1 = 0.0;
-    wp::float32 var_2;
-    wp::range_t var_3;
-    wp::int32 var_4;
-    wp::float32* var_5;
-    wp::float32* var_6;
-    wp::float32 var_7;
-    wp::float32 var_8;
-    wp::float32 var_9;
-    wp::float32 var_10;
+    bool var_1;
+    const wp::float32 var_2 = 0.0;
+    wp::float32 var_3;
+    const wp::float32 var_4 = 0.0;
+    wp::float32 var_5;
+    wp::float32 var_6;
+    const wp::int32 var_7 = 1;
+    wp::range_t var_8;
+    wp::int32 var_9;
+    wp::float32* var_10;
+    wp::float32 var_11;
+    wp::float32 var_12;
+    wp::float32 var_13;
+    wp::float32 var_14;
     //---------
     // dual vars
     wp::int32 adj_0 = {};
-    wp::float32 adj_1 = {};
+    bool adj_1 = {};
     wp::float32 adj_2 = {};
-    wp::range_t adj_3 = {};
-    wp::int32 adj_4 = {};
+    wp::float32 adj_3 = {};
+    wp::float32 adj_4 = {};
     wp::float32 adj_5 = {};
     wp::float32 adj_6 = {};
-    wp::float32 adj_7 = {};
-    wp::float32 adj_8 = {};
-    wp::float32 adj_9 = {};
+    wp::int32 adj_7 = {};
+    wp::range_t adj_8 = {};
+    wp::int32 adj_9 = {};
     wp::float32 adj_10 = {};
+    wp::float32 adj_11 = {};
+    wp::float32 adj_12 = {};
+    wp::float32 adj_13 = {};
+    wp::float32 adj_14 = {};
     //---------
     // forward
-    // def loop_0002(matrix: wp.array(dtype=float, ndim=2),                                   <L 4>
-    // i = wp.tid()                                                                           <L 8>
+    // def reduction_0002(data: wp.array(dtype=float),                                        <L 4>
+    // tid = wp.tid()                                                                         <L 7>
     var_0 = builtin_tid1d();
-    // sum_val = float(0.0)                                                                   <L 10>
-    var_2 = wp::float(var_1);
-    // for j in range(n):                                                                     <L 11>
-    var_3 = wp::range(var_n);
-    // result[i] = sum_val                                                                    <L 14>
-    // wp::array_store(var_result, var_0, var_2);
+    // local_result = float(0.0) if tid < n else float(0.0)                                   <L 10>
+    var_1 = (var_0 < var_n);
+    if (var_1) {
+        var_3 = wp::float(var_2);
+    }
+    if (!var_1) {
+        var_5 = wp::float(var_4);
+    }
+    var_6 = wp::where(var_1, var_3, var_5);
+    // for i in range(tid, n, 1):                                                             <L 12>
+    var_8 = wp::range(var_0, var_n, var_7);
+    // result[tid] = local_result                                                             <L 17>
+    // wp::array_store(var_result, var_0, var_6);
     //---------
     // reverse
-    wp::adj_array_store(var_result, var_0, var_2, adj_result, adj_0, adj_2);
-    // adj: result[i] = sum_val                                                               <L 14>
-    var_3 = wp::iter_reverse(var_3);
+    wp::adj_array_store(var_result, var_0, var_6, adj_result, adj_0, adj_6);
+    // adj: result[tid] = local_result                                                        <L 17>
+    var_8 = wp::iter_reverse(var_8);
     start_for_0:;
-        if (iter_cmp(var_3) == 0) goto end_for_0;
-        var_4 = wp::iter_next(var_3);
-    	adj_5 = {};
-    	adj_6 = {};
-    	adj_7 = {};
-    	adj_8 = {};
-    	adj_9 = {};
+        if (iter_cmp(var_8) == 0) goto end_for_0;
+        var_9 = wp::iter_next(var_8);
     	adj_10 = {};
-        // sum_val = sum_val + matrix[i, j] * vector[j]                                       <L 12>
-        var_5 = wp::address(var_matrix, var_0, var_4);
-        var_6 = wp::address(var_vector, var_4);
-        var_8 = wp::load(var_5);
-        var_9 = wp::load(var_6);
-        var_7 = wp::mul(var_8, var_9);
-        var_10 = wp::add(var_2, var_7);
-        wp::assign(var_2, var_10);
-        wp::adj_assign(var_2, var_10, adj_2, adj_10);
-        wp::adj_add(var_2, var_7, adj_2, adj_7, adj_10);
-        wp::adj_mul(var_8, var_9, adj_5, adj_6, adj_7);
-        wp::adj_address(var_vector, var_4, adj_vector, adj_4, adj_6);
-        wp::adj_address(var_matrix, var_0, var_4, adj_matrix, adj_0, adj_4, adj_5);
-        // adj: sum_val = sum_val + matrix[i, j] * vector[j]                                  <L 12>
+    	adj_11 = {};
+    	adj_12 = {};
+    	adj_13 = {};
+    	adj_14 = {};
+        // val = data[i]                                                                      <L 13>
+        var_10 = wp::address(var_data, var_9);
+        var_12 = wp::load(var_10);
+        var_11 = wp::copy(var_12);
+        // local_result = local_result + val * val                                            <L 14>
+        var_13 = wp::mul(var_11, var_11);
+        var_14 = wp::add(var_6, var_13);
+        // break  # Simplified                                                                <L 15>
+        wp::assign(var_6, var_14);
+        goto end_for_0;
+        wp::adj_assign(var_6, var_14, adj_6, adj_14);
+        // adj: break  # Simplified                                                           <L 15>
+        wp::adj_add(var_6, var_13, adj_6, adj_13, adj_14);
+        wp::adj_mul(var_11, var_11, adj_11, adj_11, adj_13);
+        // adj: local_result = local_result + val * val                                       <L 14>
+        wp::adj_copy(var_12, adj_10, adj_11);
+        wp::adj_address(var_data, var_9, adj_data, adj_9, adj_10);
+        // adj: val = data[i]                                                                 <L 13>
     	goto start_for_0;
     end_for_0:;
-    wp::adj_range(var_n, adj_n, adj_3);
-    // adj: for j in range(n):                                                                <L 11>
-    wp::adj_float(var_1, adj_1, adj_2);
-    // adj: sum_val = float(0.0)                                                              <L 10>
-    // adj: i = wp.tid()                                                                      <L 8>
-    // adj: def loop_0002(matrix: wp.array(dtype=float, ndim=2),                              <L 4>
+    wp::adj_range(var_0, var_n, var_7, adj_0, adj_n, adj_7, adj_8);
+    // adj: for i in range(tid, n, 1):                                                        <L 12>
+    wp::adj_where(var_1, var_3, var_5, adj_1, adj_3, adj_5, adj_6);
+    if (!var_1) {
+        wp::adj_float(var_4, adj_4, adj_5);
+    }
+    if (var_1) {
+        wp::adj_float(var_2, adj_2, adj_3);
+    }
+    // adj: local_result = float(0.0) if tid < n else float(0.0)                              <L 10>
+    // adj: tid = wp.tid()                                                                    <L 7>
+    // adj: def reduction_0002(data: wp.array(dtype=float),                                   <L 4>
     return;
 }
 
@@ -174,9 +207,9 @@ void loop_0002_c151279d_cpu_kernel_backward(
 extern "C" {
 
 // Python CPU entry points
-WP_API void loop_0002_c151279d_cpu_forward(
+WP_API void reduction_0002_cc9a000a_cpu_forward(
     wp::launch_bounds_t dim,
-    wp_args_loop_0002_c151279d *_wp_args)
+    wp_args_reduction_0002_cc9a000a *_wp_args)
 {
     wp::tile_shared_storage_t tile_mem;
 #if defined(WP_ENABLE_TILES_IN_STACK_MEMORY)
@@ -185,7 +218,7 @@ WP_API void loop_0002_c151279d_cpu_forward(
 
     for (size_t task_index = 0; task_index < dim.size; ++task_index)
     {
-        loop_0002_c151279d_cpu_kernel_forward(dim, task_index, _wp_args);
+        reduction_0002_cc9a000a_cpu_kernel_forward(dim, task_index, _wp_args);
     }
 }
 
@@ -195,10 +228,10 @@ WP_API void loop_0002_c151279d_cpu_forward(
 
 extern "C" {
 
-WP_API void loop_0002_c151279d_cpu_backward(
+WP_API void reduction_0002_cc9a000a_cpu_backward(
     wp::launch_bounds_t dim,
-    wp_args_loop_0002_c151279d *_wp_args,
-    wp_args_loop_0002_c151279d *_wp_adj_args)
+    wp_args_reduction_0002_cc9a000a *_wp_args,
+    wp_args_reduction_0002_cc9a000a *_wp_adj_args)
 {
     wp::tile_shared_storage_t tile_mem;
 #if defined(WP_ENABLE_TILES_IN_STACK_MEMORY)
@@ -207,7 +240,7 @@ WP_API void loop_0002_c151279d_cpu_backward(
 
     for (size_t task_index = 0; task_index < dim.size; ++task_index)
     {
-        loop_0002_c151279d_cpu_kernel_backward(dim, task_index, _wp_args, _wp_adj_args);
+        reduction_0002_cc9a000a_cpu_kernel_backward(dim, task_index, _wp_args, _wp_adj_args);
     }
 }
 
