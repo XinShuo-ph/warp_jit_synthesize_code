@@ -13,7 +13,8 @@ cuda/
 ├── tasks/                   # Task lists for each milestone
 │   ├── m1_tasks.md
 │   ├── m2_tasks.md
-│   └── ...
+│   ├── m3_tasks.md
+│   └── m4_tasks.md
 ├── code/                    # Implementation code (adapted for CUDA)
 │   ├── common/
 │   ├── kernels/
@@ -88,6 +89,14 @@ cuda/
 - `instructions_gpu_verification.md`: Concise commands for the user to run.
 - `notes/cuda_differences.md`: Summary of changes made for CUDA support.
 
+### M4: Offline CUDA IR Generation
+**Goal**: Enable generation of CUDA intermediate representation (CUDA C++) without a physical GPU.
+**Approach**: Investigate Warp's codegen internals and bypass runtime driver checks.
+**Deliverables**:
+- `code/synthesis/pipeline_offline.py`: Pipeline that generates CUDA source without GPU.
+- `data/offline_cuda/`: Sample generated CUDA files (at least 3 valid `.cu` contents).
+- `notes/offline_generation.md`: Documentation of the technique used.
+
 ---
 
 ## Task Breakdown Rules
@@ -122,6 +131,7 @@ Since **NO GPU** is available:
 | M1 | ~20k | Reproduce CPU baseline |
 | M2 | ~100k | Iterative CUDA adaptation |
 | M3 | ~20k | Finalizing validation tools |
+| M4 | ~40k | Offline IR generation |
 
 ---
 
