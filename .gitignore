@@ -1,0 +1,8 @@
+__pycache__/
+*.py[cod]
+*.so
+.pytest_cache/
+
+# Local/generated samples (keep small samples explicitly if desired)
+jit/data/
+
