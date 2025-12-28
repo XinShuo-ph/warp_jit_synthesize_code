@@ -1,0 +1,9 @@
+{
+  "target_mb": 200,
+  "actual_mb": 200.82411575317383,
+  "total_files": 69001,
+  "total_time_sec": 217.0276997089386,
+  "avg_rate_per_sec": 317.93637444685174,
+  "avg_file_size_kb": 2.9803031047557282,
+  "timestamp": "2025-12-28 22:25:47"
+}

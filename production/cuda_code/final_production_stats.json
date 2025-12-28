@@ -1,0 +1,10 @@
+{
+  "target_mb": 200,
+  "actual_mb": 201.43789958953857,
+  "total_files": 60001,
+  "total_time_sec": 185.64646244049072,
+  "avg_rate_per_sec": 323.200341182011,
+  "avg_file_size_kb": 3.437816189391635,
+  "device": "cuda",
+  "timestamp": "2025-12-28 22:30:12"
+}
