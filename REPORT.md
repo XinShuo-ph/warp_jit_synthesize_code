@@ -1,13 +1,13 @@
 # Technical Report: JIT Code Synthesis Dataset
 
 **Date:** December 2025  
-**Purpose:** Python→C++ training data for LLM code generation
+**Purpose:** Python→C++/CUDA training data for LLM code generation
 
 ---
 
 ## Executive Summary
 
-Successfully generated **1,505 Python→C++ training pairs** (8.5MB) using NVIDIA Warp's JIT compilation infrastructure. Each sample contains Python kernel source paired with the compiler-generated C++ code including **both forward and backward (gradient) functions**.
+Successfully generated **1,500 Python→C++/CUDA training pairs** (18MB) using NVIDIA Warp's JIT compilation infrastructure. Each sample contains Python kernel source paired with compiler-generated code for **both CPU and CUDA backends**, each including **forward and backward (gradient) functions**.
 
 ---
 
@@ -15,51 +15,70 @@ Successfully generated **1,505 Python→C++ training pairs** (8.5MB) using NVIDI
 
 | Metric | Value |
 |--------|-------|
-| Total Samples | 1,505 |
-| File Size | 8.5 MB |
+| Total Samples | 1,500 |
+| File Size | 18 MB |
 | Format | JSONL |
 | Kernel Types | 10 categories |
-| Forward Pass | ✅ Included |
-| Backward Pass | ✅ Included |
+| CPU Code | ✅ Forward + Backward |
+| CUDA Code | ✅ Forward + Backward |
 
-### Kernel Type Distribution
+### Sample Structure
 
-Each of 10 kernel types is approximately equally represented (~10% each):
-- Elementwise operations
-- Scalar-array operations  
-- Unary math functions
-- Conditional branching
-- For loops
-- Atomic reductions
-- Vector operations
-- Multi-statement kernels
-- Nested conditionals
-- Compound patterns
+Each sample contains:
+```json
+{
+  "id": 0,
+  "kernel_name": "kernel_xyz",
+  "python": "@wp.kernel\ndef kernel_xyz(...):\n    ...",
+  "cpp": "void kernel_cpu_kernel_forward(...) {...}\nvoid kernel_cpu_kernel_backward(...) {...}",
+  "cuda": "void kernel_cuda_kernel_forward(...) {...}\nvoid kernel_cuda_kernel_backward(...) {...}",
+  "type": "generate_..."
+}
+```
+
+---
+
+## Why Both CPU and CUDA?
+
+Training data with both backends enables:
+
+1. **Backend-Aware Translation**: Models learn hardware-specific patterns
+2. **Cross-Compilation Training**: Same Python → different targets
+3. **Optimization Learning**: Understand CPU vs GPU trade-offs
+
+### Key Differences
+
+| Aspect | CPU | CUDA |
+|--------|-----|------|
+| Execution | Sequential loop | Parallel threads |
+| Thread ID | `task_index` | `blockIdx * blockDim + threadIdx` |
+| Args | Struct pointer | Direct parameters |
+| Memory | Stack-based | Shared memory support |
 
 ---
 
 ## Why Forward + Backward Matters
 
-The dataset includes **both forward and backward passes** in the C++ code. This is critical because:
+Both forward and backward passes are included because:
 
-1. **Differentiable Programming**: Modern ML frameworks require gradient computation
-2. **Complete Translation Task**: LLM must learn to generate autodiff code
-3. **Real-World Utility**: Matches actual compiler output structure
+1. **Differentiable Programming**: Modern ML requires gradients
+2. **Complete Translation Task**: LLM learns full autodiff patterns
+3. **Real-World Utility**: Matches actual Warp compiler output
 
-### Example Structure
+### Backward Pass Structure
 
 ```cpp
 // Forward pass - computes output
-void kernel_cpu_kernel_forward(...) {
+void kernel_cuda_kernel_forward(...) {
     var_0 = builtin_tid1d();
     var_1 = wp::load(var_a, var_0);
     var_2 = wp::mul(var_1, 2.0);
     wp::array_store(var_b, var_0, var_2);
 }
 
-// Backward pass - computes gradients
-void kernel_cpu_kernel_backward(...) {
-    // Replay forward to get intermediate values
+// Backward pass - computes gradients  
+void kernel_cuda_kernel_backward(...) {
+    // Replay forward
     var_0 = builtin_tid1d();
     var_1 = wp::load(var_a, var_0);
     var_2 = wp::mul(var_1, 2.0);
@@ -73,68 +92,91 @@ void kernel_cpu_kernel_backward(...) {
 
 ---
 
+## Kernel Type Distribution
+
+Each of 10 kernel types is approximately equally represented (~10% each):
+
+1. **Elementwise**: Basic arithmetic operations
+2. **Scalar-Array**: Scalar parameters with arrays
+3. **Unary**: Single-input math functions
+4. **Branch**: Conditional if/else logic
+5. **Loop**: For-loop iterations
+6. **Reduction**: Atomic accumulations
+7. **Vector**: Vec3 dot, length, etc.
+8. **Multi-Statement**: Chained operations
+9. **Nested Branch**: Nested conditionals
+10. **Compound**: Mixed patterns
+
+---
+
 ## Technical Approach
 
-### JIT-Based Data Generation
+### JIT-Based Extraction
 
-Rather than manually writing training pairs, we leverage the Warp compiler:
-
-1. **Generate** random Python kernels programmatically
-2. **Compile** using Warp's JIT infrastructure
-3. **Extract** the generated C++ via internal APIs
-4. **Pair** the original Python with extracted C++
-
-This ensures:
-- **100% correctness**: C++ is compiler-generated, not hand-written
-- **Consistency**: Same Python always produces same C++
-- **Scalability**: Can generate unlimited samples
-
-### IR Extraction Method
+Rather than hand-writing training pairs, we leverage Warp's compiler:
 
 ```python
-from warp._src.codegen import codegen_kernel, codegen_module
+import warp._src.context as ctx
 
-# Trigger compilation
-kernel.module.load("cpu")
+# Create code builder
+hasher = ctx.ModuleHasher(module)
+builder = ctx.ModuleBuilder(module, options, hasher)
 
-# Extract C++ code
-cpp_kernel = codegen_kernel(kernel, "cpu", options)
-cpp_module = codegen_module(kernel, "cpu", options)
+# Generate CPU code (forward + backward)
+cpp_code = builder.codegen("cpu")
+
+# Generate CUDA code (forward + backward)
+cuda_code = builder.codegen("cuda")
 ```
 
----
-
-## Use Cases
-
-1. **Code Translation Models**: Train Python→C++ translators
-2. **Compiler Assistants**: Learn to explain/optimize IR
-3. **Autodiff Training**: Teach models to generate gradient code
-4. **GPU Code Understanding**: Learn parallel programming patterns
+Benefits:
+- **100% Correct**: Compiler-generated, not hand-written
+- **Consistent**: Same Python → deterministic output
+- **Scalable**: Can generate unlimited samples
 
 ---
 
-## Quality Validation
+## Branch Investigation Summary
 
-- **JSON Validity**: 100% parseable
-- **Python Syntax**: All kernels compile successfully
-- **C++ Completeness**: Contains struct, forward, backward, and entry points
-- **Type Safety**: Properly typed Warp types (float32, vec3, etc.)
+Investigated 15+ `dataset-and-report-generation` branches:
+
+| Branch | CPU Data | CUDA Data | Forward+Backward |
+|--------|----------|-----------|------------------|
+| acf8 | 40K files | 40K files | Forward only |
+| 891a | 69K files | 60K files | Forward only |
+| 6a68 | Manifest | Manifest | ✅ Both |
+| a4a2 | 1.3K files | 1.3K files | Forward only |
+| ca52 | JSONL | JSONL | Forward only |
+
+**Solution**: Used improved `ir_extractor.py` from branch 6a68's approach to generate both forward and backward for both CPU and CUDA.
 
 ---
 
-## Scaling Recommendations
+## Usage
 
-To generate more data:
+### Generate More Data
 
 ```bash
-# Generate 10,000 pairs
-python3 jit/code/synthesis/batch_generator.py --count 10000 --output data/large.jsonl
+cd jit
 
-# Different seeds for variety
-python3 jit/code/synthesis/pipeline.py --count 5000 --seed 12345 --output data/batch2.jsonl --jsonl
+# Generate 5000 pairs with both CPU and CUDA
+python3 code/synthesis/pipeline.py \
+    --count 5000 \
+    --output data/large.jsonl \
+    --jsonl \
+    --device both \
+    --seed 12345
 ```
 
-Expected rate: ~0.8-1.0 pairs/second (CPU-only mode)
+### Device-Specific Generation
+
+```bash
+# CPU only
+python3 code/synthesis/pipeline.py --count 1000 --output cpu.jsonl --jsonl --device cpu
+
+# CUDA only
+python3 code/synthesis/pipeline.py --count 1000 --output cuda.jsonl --jsonl --device cuda
+```
 
 ---
 
@@ -142,14 +184,19 @@ Expected rate: ~0.8-1.0 pairs/second (CPU-only mode)
 
 | File | Description |
 |------|-------------|
-| `jit/data/training_all.jsonl` | Main dataset (1,505 pairs) |
-| `jit/code/extraction/ir_extractor.py` | IR extraction utility |
+| `jit/data/training_all.jsonl` | Main dataset (1,500 pairs, 18MB) |
+| `jit/code/extraction/ir_extractor.py` | IR extraction (CPU + CUDA) |
 | `jit/code/synthesis/generator.py` | 10 kernel generators |
 | `jit/code/synthesis/pipeline.py` | End-to-end pipeline |
-| `jit/code/synthesis/batch_generator.py` | Scalable generation |
 
 ---
 
 ## Conclusion
 
-This dataset provides high-quality Python→C++ training pairs with both forward and backward passes included. The JIT-based approach guarantees correctness and enables unlimited scaling. The 10 kernel type categories ensure diverse coverage of common GPU programming patterns.
+This dataset provides high-quality Python→C++/CUDA training pairs with:
+- **Both CPU and CUDA backends**
+- **Both forward and backward functions**
+- **10 diverse kernel types**
+- **Production-ready JSONL format**
+
+The JIT-based approach guarantees correctness and enables unlimited scaling.

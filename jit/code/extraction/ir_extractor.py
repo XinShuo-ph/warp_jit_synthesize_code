@@ -2,7 +2,8 @@
 from dataclasses import dataclass
 from typing import Optional
 import warp as wp
-from warp._src.codegen import codegen_kernel, codegen_module
+import warp._src.codegen
+import warp._src.context
 
 
 @dataclass
@@ -10,18 +11,17 @@ class ExtractedIR:
     """Container for extracted IR from a warp kernel."""
     kernel_name: str
     python_source: str
-    cpp_code: str
-    cuda_code: Optional[str] = None
+    cpp_code: str  # CPU code with forward + backward
+    cuda_code: Optional[str] = None  # CUDA code with forward + backward
 
 
-def extract_ir(kernel: wp.Kernel, enable_backward: bool = True, device: str = "cpu") -> ExtractedIR:
+def extract_ir(kernel: wp.Kernel, enable_backward: bool = True) -> ExtractedIR:
     """
     Extract IR (C++/CUDA code) from a Warp kernel.
     
     Args:
         kernel: A warp kernel decorated with @wp.kernel
         enable_backward: Whether to include backward (adjoint) code
-        device: Target device for compilation ("cpu" or "cuda")
         
     Returns:
         ExtractedIR containing Python source and generated C++/CUDA code
@@ -30,26 +30,27 @@ def extract_ir(kernel: wp.Kernel, enable_backward: bool = True, device: str = "c
     if not hasattr(kernel, 'adj') or kernel.adj is None:
         raise ValueError("Kernel has no adjoint - ensure it's decorated with @wp.kernel")
     
-    # Load the module to trigger hash computation and full build
-    kernel.module.load(device)
+    module = kernel.module
     
-    options = {
-        "enable_backward": enable_backward,
-        "mode": "release",
-    }
-    # Merge with module options
-    options = kernel.module.options | options
+    # Get or create hasher for the module
+    hasher = warp._src.context.ModuleHasher(module)
     
-    # Generate CPU code
-    cpp_kernel = codegen_kernel(kernel, "cpu", options)
-    cpp_module = codegen_module(kernel, "cpu", options)
-    cpp_code = cpp_kernel + "\n" + cpp_module
+    # Create options dict
+    options = module.options.copy() if module.options else {}
+    options.setdefault("block_dim", 256)
+    options.setdefault("enable_backward", enable_backward)
+    options.setdefault("mode", "release")
     
-    # Try to generate CUDA code (may fail on CPU-only systems)
+    # Create a builder to generate code
+    builder = warp._src.context.ModuleBuilder(module, options, hasher)
+    
+    # Generate CPU code (includes both forward and backward)
+    cpp_code = builder.codegen("cpu")
+    
+    # Generate CUDA code (includes both forward and backward)
     cuda_code = None
     try:
-        cuda_kernel = codegen_kernel(kernel, "cuda", options)
-        cuda_code = cuda_kernel
+        cuda_code = builder.codegen("cuda")
     except Exception:
         pass  # CUDA codegen may not be available
     
@@ -61,17 +62,20 @@ def extract_ir(kernel: wp.Kernel, enable_backward: bool = True, device: str = "c
     )
 
 
-def extract_ir_pair(kernel: wp.Kernel) -> tuple[str, str]:
+def extract_ir_pair(kernel: wp.Kernel, device: str = "cpu") -> tuple[str, str]:
     """
     Extract Python→C++ pair suitable for LLM training.
     
     Args:
         kernel: A warp kernel
+        device: "cpu" or "cuda"
         
     Returns:
-        Tuple of (python_source, cpp_code)
+        Tuple of (python_source, code)
     """
     ir = extract_ir(kernel)
+    if device == "cuda" and ir.cuda_code:
+        return (ir.python_source, ir.cuda_code)
     return (ir.python_source, ir.cpp_code)
 
 
@@ -91,3 +95,8 @@ if __name__ == "__main__":
     print(ir.python_source)
     print("\n=== C++ Code (first 1500 chars) ===")
     print(ir.cpp_code[:1500])
+    print("\n=== CUDA Code available ===")
+    print("Yes" if ir.cuda_code else "No")
+    if ir.cuda_code:
+        print("\n=== CUDA Code (first 1500 chars) ===")
+        print(ir.cuda_code[:1500])

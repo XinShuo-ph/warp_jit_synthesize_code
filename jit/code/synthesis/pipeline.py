@@ -22,6 +22,7 @@ class TrainingPair:
     kernel_name: str
     python_source: str
     cpp_code: str
+    cuda_code: Optional[str]
     generator_type: str
     
 
@@ -45,8 +46,8 @@ def create_module_from_source(source: str, module_name: str):
         raise e
 
 
-def extract_ir_from_source(kernel_source: str, kernel_name: str, module_id: int) -> Optional[str]:
-    """Extract C++ IR from kernel source code."""
+def extract_ir_from_source(kernel_source: str, kernel_name: str, module_id: int):
+    """Extract C++ and CUDA IR from kernel source code."""
     from ir_extractor import extract_ir
     
     module_name = f"synth_module_{module_id}"
@@ -73,7 +74,7 @@ def extract_ir_from_source(kernel_source: str, kernel_name: str, module_id: int)
         if module_name in sys.modules:
             del sys.modules[module_name]
         
-        return ir.cpp_code
+        return ir.cpp_code, ir.cuda_code
         
     except Exception as e:
         # Cleanup on error
@@ -92,7 +93,7 @@ def generate_training_pairs(
     base_seed: int = 42,
     output_dir: Optional[str] = None
 ) -> List[TrainingPair]:
-    """Generate training pairs."""
+    """Generate training pairs with both CPU and CUDA code."""
     wp.init()
     
     pairs = []
@@ -113,13 +114,14 @@ def generate_training_pairs(
         kernel_name = match.group(1) if match else f"kernel_{i}"
         
         try:
-            cpp_code = extract_ir_from_source(kernel_source, kernel_name, i)
+            cpp_code, cuda_code = extract_ir_from_source(kernel_source, kernel_name, i)
             
             pair = TrainingPair(
                 id=i,
                 kernel_name=kernel_name,
                 python_source=kernel_source.strip(),
                 cpp_code=cpp_code,
+                cuda_code=cuda_code,
                 generator_type=generator.__name__
             )
             pairs.append(pair)
@@ -150,9 +152,17 @@ def generate_training_pairs(
 def generate_batch_to_jsonl(
     count: int,
     output_path: str,
-    base_seed: int = 42
+    base_seed: int = 42,
+    device: str = "both"
 ):
-    """Generate pairs and save as JSONL (one JSON per line)."""
+    """Generate pairs and save as JSONL.
+    
+    Args:
+        count: Number of pairs to generate
+        output_path: Output file path
+        base_seed: Random seed base
+        device: "cpu", "cuda", or "both"
+    """
     wp.init()
     
     with open(output_path, 'w') as f:
@@ -172,15 +182,26 @@ def generate_batch_to_jsonl(
             kernel_name = match.group(1) if match else f"kernel_{i}"
             
             try:
-                cpp_code = extract_ir_from_source(kernel_source, kernel_name, i)
+                cpp_code, cuda_code = extract_ir_from_source(kernel_source, kernel_name, i)
                 
                 pair = {
                     "id": i,
                     "kernel_name": kernel_name,
                     "python": kernel_source.strip(),
-                    "cpp": cpp_code,
                     "type": generator.__name__
                 }
+                
+                if device == "cpu":
+                    pair["cpp"] = cpp_code
+                elif device == "cuda":
+                    if cuda_code:
+                        pair["cuda"] = cuda_code
+                    else:
+                        continue  # Skip if no CUDA code
+                else:  # both
+                    pair["cpp"] = cpp_code
+                    if cuda_code:
+                        pair["cuda"] = cuda_code
                 
                 f.write(json.dumps(pair) + '\n')
                 generated += 1
@@ -199,16 +220,18 @@ def generate_batch_to_jsonl(
 if __name__ == "__main__":
     import argparse
     
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description="Generate Python→C++/CUDA training pairs")
     parser.add_argument("--count", type=int, default=10, help="Number of pairs to generate")
     parser.add_argument("--output", type=str, default=None, help="Output directory or file")
     parser.add_argument("--seed", type=int, default=42, help="Base random seed")
     parser.add_argument("--jsonl", action="store_true", help="Output as JSONL")
+    parser.add_argument("--device", type=str, default="both", choices=["cpu", "cuda", "both"],
+                        help="Target device(s) for code generation")
     
     args = parser.parse_args()
     
     if args.jsonl and args.output:
-        generate_batch_to_jsonl(args.count, args.output, args.seed)
+        generate_batch_to_jsonl(args.count, args.output, args.seed, args.device)
     elif args.output:
         generate_training_pairs(args.count, args.seed, args.output)
     else:
@@ -222,3 +245,6 @@ if __name__ == "__main__":
             print(pair.python_source)
             print(f"\nC++ ({len(pair.cpp_code)} chars):")
             print(pair.cpp_code[:500] + "...")
+            if pair.cuda_code:
+                print(f"\nCUDA ({len(pair.cuda_code)} chars):")
+                print(pair.cuda_code[:500] + "...")
