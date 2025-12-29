@@ -7,7 +7,6 @@ __pycache__/
 /_tmp_branch_inspect/
 
 # Large generated datasets (keep out of git by default)
-/jit/data/generated/
 /jit/data/large/
-/jit/data/*.jsonl
+
 

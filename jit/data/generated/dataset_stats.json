@@ -1,0 +1,70 @@
+{
+  "generated_at_unix": 1766960630,
+  "warp_version": "1.10.1",
+  "generator_categories": [
+    "arithmetic",
+    "vector",
+    "matrix",
+    "control_flow",
+    "math",
+    "atomic",
+    "nested_loop",
+    "multi_conditional",
+    "combined",
+    "scalar_param"
+  ],
+  "runs": [
+    {
+      "device": "cpu",
+      "out_path": "/workspace/jit/data/generated/cpu_code.jsonl",
+      "bytes": 209720372,
+      "mb": 200.00493240356445,
+      "records": 13858,
+      "elapsed_sec": 48.996134996414185,
+      "records_per_sec": 282.83863617026543,
+      "category_counts": {
+        "combined": 1451,
+        "math": 1448,
+        "control_flow": 1412,
+        "arithmetic": 1404,
+        "atomic": 1380,
+        "scalar_param": 1377,
+        "vector": 1377,
+        "multi_conditional": 1372,
+        "matrix": 1341,
+        "nested_loop": 1296
+      },
+      "code_scope": "full",
+      "include_backward": false,
+      "include_python_source": true,
+      "seed": 42,
+      "batch_size": 50
+    },
+    {
+      "device": "cuda",
+      "out_path": "/workspace/jit/data/generated/cuda_code.jsonl",
+      "bytes": 209720027,
+      "mb": 200.0046033859253,
+      "records": 13246,
+      "elapsed_sec": 49.7653021812439,
+      "records_per_sec": 266.1693874932864,
+      "category_counts": {
+        "multi_conditional": 1358,
+        "atomic": 1354,
+        "scalar_param": 1341,
+        "vector": 1339,
+        "combined": 1337,
+        "control_flow": 1326,
+        "arithmetic": 1321,
+        "matrix": 1315,
+        "nested_loop": 1301,
+        "math": 1254
+      },
+      "code_scope": "full",
+      "include_backward": false,
+      "include_python_source": true,
+      "seed": 10000042,
+      "batch_size": 50
+    }
+  ]
+}
