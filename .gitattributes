@@ -1,0 +1,2 @@
+cpu_production/data/**/*.json filter=lfs diff=lfs merge=lfs -text
+cuda_production/data/**/*.json filter=lfs diff=lfs merge=lfs -text

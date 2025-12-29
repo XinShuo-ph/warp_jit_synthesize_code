@@ -267,8 +267,10 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     
-    # Resolve output path relative to script
-    output_path = Path(__file__).parent / args.output
+    # Resolve output path
+    output_path = Path(args.output)
+    if not output_path.is_absolute():
+        output_path = Path.cwd() / output_path
     output_path = output_path.resolve()
     
     run_pipeline(str(output_path), args.count, args.seed)
