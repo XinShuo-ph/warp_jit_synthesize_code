@@ -1,0 +1,4 @@
+cpu/
+cuda/
+*_batch*
+*_test
