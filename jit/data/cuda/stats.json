@@ -1,0 +1,23 @@
+{
+  "started_at": "2025-12-28T22:39:45.005058",
+  "device": "cuda",
+  "target_mb": 0.5,
+  "successful": 100,
+  "failed": 0,
+  "by_type": {
+    "arithmetic": 10,
+    "conditional": 10,
+    "loop": 10,
+    "math": 10,
+    "vector": 10,
+    "atomic": 10,
+    "nested": 10,
+    "multi_cond": 10,
+    "combined": 10,
+    "scalar_param": 10
+  },
+  "finished_at": "2025-12-28T22:39:50.158504",
+  "final_size_mb": 0.8905267715454102,
+  "elapsed_sec": 5.153436183929443,
+  "total_files": 100
+}
