@@ -1,17 +1,20 @@
 # Current State
-- **Milestone**: Completed
-- **Status**: ready_for_next
+- **Milestone**: M3 (Scale Up)
+- **Status**: in_progress
 
 ## Completed
-- M1: CPU Code Production (1000 samples generated).
-- M2: CUDA Code Production (1000 samples generated).
+- M1: CPU Code Production (Initial sample + 10k batch).
+- M2: CUDA Code Production (Initial sample + 10k batch).
 - M3: Report (Written).
+- Configured Git LFS for large dataset files.
+- Implemented batched generation to avoid file count limits.
+- Pushed ~60MB of data to remote.
 
 ## Next Action
-Scale up generation to reach 200MB target (currently ~3.2MB total).
+Continue scaling up to reach 200MB target if needed (requires ~7 more batches of 10k).
 
 ## Session Log
 - [Dec 28]: Initialized project.
-- [Dec 28]: Setup CPU generator and generated 1000 samples.
-- [Dec 28]: Setup CUDA generator and generated 1000 samples.
-- [Dec 28]: Wrote final report.
+- [Dec 28]: Setup CPU/CUDA generators.
+- [Dec 28]: Wrote report.
+- [Dec 29]: Configured LFS, updated pipeline for batching, generated ~60MB, pushed to remote.
