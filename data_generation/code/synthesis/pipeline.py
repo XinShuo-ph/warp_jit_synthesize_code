@@ -196,18 +196,20 @@ def synthesize_batch(
 
 
 def save_pairs(pairs: list[dict], output_dir: str | Path, prefix: str = "pair"):
-    """Save pairs to JSON files."""
+    """Save pairs to a single JSON file per batch."""
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     
-    for i, pair in enumerate(pairs):
-        filename = f"{prefix}_{i:04d}.json"
-        filepath = output_dir / filename
-        
-        with open(filepath, 'w') as f:
-            json.dump(pair, f, indent=2)
+    # Generate unique filename for the batch
+    import time
+    timestamp = int(time.time())
+    filename = f"{prefix}_{timestamp}_{len(pairs)}.json"
+    filepath = output_dir / filename
     
-    print(f"Saved {len(pairs)} pairs to {output_dir}")
+    with open(filepath, 'w') as f:
+        json.dump(pairs, f, indent=2)
+    
+    print(f"Saved {len(pairs)} pairs to {filepath}")
 
 
 def run_pipeline(
