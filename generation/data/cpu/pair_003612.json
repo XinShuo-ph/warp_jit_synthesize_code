@@ -1,9 +1,0 @@
-{
-  "python_source": "@wp.kernel\ndef atomic_qswrzf(values: wp.array(dtype=float), result: wp.array(dtype=float)):\n    tid = wp.tid()\n    wp.atomic_add(result, 0, values[tid] * -8.14)\n",
-  "cpp_forward": "void atomic_qswrzf_010709f2_cpu_kernel_forward(\n    wp::launch_bounds_t dim,\n    size_t task_index,\n    wp_args_atomic_qswrzf_010709f2 *_wp_args)\n{\n    //---------\n    // argument vars\n    wp::array_t<wp::float32> var_values = _wp_args->values;\n    wp::array_t<wp::float32> var_result = _wp_args->result;\n    //---------\n    // primal vars\n    wp::int32 var_0;\n    const wp::int32 var_1 = 0;\n    wp::float32* var_2;\n    const wp::float32 var_3 = 8.14;\n    const wp::float32 var_4 = -8.14;\n    wp::float32 var_5;\n    wp::float32 var_6;\n    wp::float32 var_7;\n    //---------\n    // forward\n    // def atomic_qswrzf(values: wp.array(dtype=float), result: wp.array(dtype=float)):       <L 17>\n    // tid = wp.tid()                                                                         <L 18>\n    var_0 = builtin_tid1d();\n    // wp.atomic_add(result, 0, values[tid] * -8.14)                                          <L 19>\n    var_2 = wp::address(var_values, var_0);\n    var_6 = wp::load(var_2);\n    var_5 = wp::mul(var_6, var_4);\n    var_7 = wp::atomic_add(var_result, var_1, var_5);\n}",
-  "metadata": {
-    "kernel_name": "atomic_qswrzf",
-    "category": "atomic",
-    "device": "cpu"
-  }
-}

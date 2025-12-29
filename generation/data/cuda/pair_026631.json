@@ -1,9 +1,0 @@
-{
-  "python_source": "@wp.kernel\ndef math_qkuucm(x: wp.array(dtype=float), out: wp.array(dtype=float)):\n    tid = wp.tid()\n    val = wp.exp(x[tid] * -5.19)\n    out[tid] = wp.exp(val)\n",
-  "cuda_forward": "extern \"C\" __global__ void math_qkuucm_1955413a_cuda_kernel_forward(\n    wp::launch_bounds_t dim,\n    wp::array_t<wp::float32> var_x,\n    wp::array_t<wp::float32> var_out)\n{\n    wp::tile_shared_storage_t tile_mem;\n\n    for (size_t _idx = static_cast<size_t>(blockDim.x) * static_cast<size_t>(blockIdx.x) + static_cast<size_t>(threadIdx.x);\n         _idx < dim.size;\n         _idx += static_cast<size_t>(blockDim.x) * static_cast<size_t>(gridDim.x))\n    {\n            // reset shared memory allocator\n        wp::tile_shared_storage_t::init();\n\n        //---------\n        // primal vars\n        wp::int32 var_0;\n        wp::float32* var_1;\n        const wp::float32 var_2 = 5.19;\n        const wp::float32 var_3 = -5.19;\n        wp::float32 var_4;\n        wp::float32 var_5;\n        wp::float32 var_6;\n        wp::float32 var_7;\n        //---------\n        // forward\n        // def math_qkuucm(x: wp.array(dtype=float), out: wp.array(dtype=float)):                 <L 9>\n        // tid = wp.tid()                                                                         <L 10>\n        var_0 = builtin_tid1d();\n        // val = wp.exp(x[tid] * -5.19)                                                           <L 11>\n        var_1 = wp::address(var_x, var_0);\n        var_5 = wp::load(var_1);\n        var_4 = wp::mul(var_5, var_3);\n        var_6 = wp::exp(var_4);\n        // out[tid] = wp.exp(val)                                                                 <L 12>\n        var_7 = wp::exp(var_6);\n        wp::array_store(var_out, var_0, var_7);\n    }\n}",
-  "metadata": {
-    "kernel_name": "math_qkuucm",
-    "category": "math",
-    "device": "cuda"
-  }
-}

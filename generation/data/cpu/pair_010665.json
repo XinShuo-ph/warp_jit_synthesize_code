@@ -1,9 +1,0 @@
-{
-  "python_source": "@wp.kernel\ndef math_noeehe(x: wp.array(dtype=float), out: wp.array(dtype=float)):\n    tid = wp.tid()\n    val = wp.sin(x[tid] * -8.9)\n    out[tid] = wp.exp(val)\n",
-  "cpp_forward": "void math_noeehe_9f73419b_cpu_kernel_forward(\n    wp::launch_bounds_t dim,\n    size_t task_index,\n    wp_args_math_noeehe_9f73419b *_wp_args)\n{\n    //---------\n    // argument vars\n    wp::array_t<wp::float32> var_x = _wp_args->x;\n    wp::array_t<wp::float32> var_out = _wp_args->out;\n    //---------\n    // primal vars\n    wp::int32 var_0;\n    wp::float32* var_1;\n    const wp::float32 var_2 = 8.9;\n    const wp::float32 var_3 = -8.9;\n    wp::float32 var_4;\n    wp::float32 var_5;\n    wp::float32 var_6;\n    wp::float32 var_7;\n    //---------\n    // forward\n    // def math_noeehe(x: wp.array(dtype=float), out: wp.array(dtype=float)):                 <L 39>\n    // tid = wp.tid()                                                                         <L 40>\n    var_0 = builtin_tid1d();\n    // val = wp.sin(x[tid] * -8.9)                                                            <L 41>\n    var_1 = wp::address(var_x, var_0);\n    var_5 = wp::load(var_1);\n    var_4 = wp::mul(var_5, var_3);\n    var_6 = wp::sin(var_4);\n    // out[tid] = wp.exp(val)                                                                 <L 42>\n    var_7 = wp::exp(var_6);\n    wp::array_store(var_out, var_0, var_7);\n}",
-  "metadata": {
-    "kernel_name": "math_noeehe",
-    "category": "math",
-    "device": "cpu"
-  }
-}

@@ -1,9 +1,0 @@
-{
-  "python_source": "@wp.kernel\ndef math_vogoql(x: wp.array(dtype=float), out: wp.array(dtype=float)):\n    tid = wp.tid()\n    val = wp.abs(x[tid] * 8.58)\n    out[tid] = wp.cos(val)\n",
-  "cpp_forward": "void math_vogoql_d93b6581_cpu_kernel_forward(\n    wp::launch_bounds_t dim,\n    size_t task_index,\n    wp_args_math_vogoql_d93b6581 *_wp_args)\n{\n    //---------\n    // argument vars\n    wp::array_t<wp::float32> var_x = _wp_args->x;\n    wp::array_t<wp::float32> var_out = _wp_args->out;\n    //---------\n    // primal vars\n    wp::int32 var_0;\n    wp::float32* var_1;\n    const wp::float32 var_2 = 8.58;\n    wp::float32 var_3;\n    wp::float32 var_4;\n    wp::float32 var_5;\n    wp::float32 var_6;\n    //---------\n    // forward\n    // def math_vogoql(x: wp.array(dtype=float), out: wp.array(dtype=float)):                 <L 51>\n    // tid = wp.tid()                                                                         <L 52>\n    var_0 = builtin_tid1d();\n    // val = wp.abs(x[tid] * 8.58)                                                            <L 53>\n    var_1 = wp::address(var_x, var_0);\n    var_4 = wp::load(var_1);\n    var_3 = wp::mul(var_4, var_2);\n    var_5 = wp::abs(var_3);\n    // out[tid] = wp.cos(val)                                                                 <L 54>\n    var_6 = wp::cos(var_5);\n    wp::array_store(var_out, var_0, var_6);\n}",
-  "metadata": {
-    "kernel_name": "math_vogoql",
-    "category": "math",
-    "device": "cpu"
-  }
-}

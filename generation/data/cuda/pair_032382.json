@@ -1,9 +1,0 @@
-{
-  "python_source": "@wp.kernel\ndef atomic_ypzkah(values: wp.array(dtype=float), result: wp.array(dtype=float)):\n    tid = wp.tid()\n    wp.atomic_add(result, 0, values[tid] * -8.6)\n",
-  "cuda_forward": "extern \"C\" __global__ void atomic_ypzkah_e8157153_cuda_kernel_forward(\n    wp::launch_bounds_t dim,\n    wp::array_t<wp::float32> var_values,\n    wp::array_t<wp::float32> var_result)\n{\n    wp::tile_shared_storage_t tile_mem;\n\n    for (size_t _idx = static_cast<size_t>(blockDim.x) * static_cast<size_t>(blockIdx.x) + static_cast<size_t>(threadIdx.x);\n         _idx < dim.size;\n         _idx += static_cast<size_t>(blockDim.x) * static_cast<size_t>(gridDim.x))\n    {\n            // reset shared memory allocator\n        wp::tile_shared_storage_t::init();\n\n        //---------\n        // primal vars\n        wp::int32 var_0;\n        const wp::int32 var_1 = 0;\n        wp::float32* var_2;\n        const wp::float32 var_3 = 8.6;\n        const wp::float32 var_4 = -8.6;\n        wp::float32 var_5;\n        wp::float32 var_6;\n        wp::float32 var_7;\n        //---------\n        // forward\n        // def atomic_ypzkah(values: wp.array(dtype=float), result: wp.array(dtype=float)):       <L 20>\n        // tid = wp.tid()                                                                         <L 21>\n        var_0 = builtin_tid1d();\n        // wp.atomic_add(result, 0, values[tid] * -8.6)                                           <L 22>\n        var_2 = wp::address(var_values, var_0);\n        var_6 = wp::load(var_2);\n        var_5 = wp::mul(var_6, var_4);\n        var_7 = wp::atomic_add(var_result, var_1, var_5);\n    }\n}",
-  "metadata": {
-    "kernel_name": "atomic_ypzkah",
-    "category": "atomic",
-    "device": "cuda"
-  }
-}
