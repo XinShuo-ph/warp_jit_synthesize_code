@@ -1,7 +1,7 @@
 # JIT Code Synthesis for LLM Training Data
 
 ## Objective
-Use Nvidia's `warp` package to extract JIT intermediate representations (IR) and synthesize Python→IR paired data for LLM training.
+Use Google's **JAX** to extract JIT intermediate representations (IR) (e.g. **JAXPR** and **XLA/StableHLO/MLIR**) and synthesize Python→IR paired data for LLM training.
 
 ---
 
@@ -62,32 +62,32 @@ jit/
 
 ## Milestones
 
-### M1: Environment Setup & Warp Basics
-**Goal**: Run warp examples, understand kernel compilation flow
+### M1: Environment Setup & JAX Basics
+**Goal**: Run JAX examples, understand tracing → lowering → compilation flow
 **Deliverables**:
-- Working warp installation
+- Working JAX installation
 - 3+ examples run successfully
-- `notes/warp_basics.md`: How kernels compile, where IR lives (max 50 lines)
+- `notes/jax_basics.md`: How JAX traces/lowers/compiles, and where to obtain IR (max 50 lines)
 
 ### M2: IR Extraction Mechanism
-**Goal**: Programmatically extract IR from warp kernels
+**Goal**: Programmatically extract IR from JAX-compiled functions
 **Deliverables**:
-- `code/extraction/ir_extractor.py`: Function that takes a warp kernel → returns IR
-- 5+ test cases showing Python kernel → IR pairs
-- `notes/ir_format.md`: IR structure documentation (max 30 lines)
+- `code/extraction/ir_extractor.py`: Function that takes a Python callable + example args → returns IR artifacts (e.g. jaxpr + HLO/StableHLO/MLIR text)
+- 5+ test cases showing Python function → IR pairs
+- `notes/ir_format.md`: IR structure documentation and chosen dialect(s) (max 30 lines)
 
-### M3: FEM Deep Dive
-**Goal**: Understand warp.fem, implement Poisson solver
+### M3: Numerics Deep Dive
+**Goal**: Implement a Poisson solver in JAX (e.g. finite differences + conjugate gradient), and validate it
 **Deliverables**:
 - `code/examples/poisson_solver.py`: Working Poisson equation solver
 - `code/examples/test_poisson.py`: Validation tests (compare to analytical solutions)
 - Tests pass for 2+ consecutive runs
 
 ### M4: Synthesis Pipeline
-**Goal**: Automated Python→IR data generation
+**Goal**: Automated Python→IR data generation (JAXPR + chosen compiler IR)
 **Deliverables**:
-- `code/synthesis/generator.py`: Generates varied Python kernels programmatically
-- `code/synthesis/pipeline.py`: End-to-end: generate kernel → compile → extract IR → save pair
+- `code/synthesis/generator.py`: Generates varied JAX programs programmatically
+- `code/synthesis/pipeline.py`: End-to-end: generate function → jit/lower/compile → extract IR → save pair
 - `data/samples/`: 100+ sample pairs for validation
 
 ### M5: Scale Up
@@ -149,12 +149,14 @@ If blocked for >20k tokens on same issue:
 
 ## Key Resources
 
-- Warp repo: https://github.com/NVIDIA/warp.git
-- FEM examples: `warp/examples/fem/`
-- Key files to study:
-  - `warp/codegen.py` (IR generation)
-  - `warp/context.py` (kernel compilation)
-  - `warp/types.py` (type system)
+- JAX documentation: https://jax.readthedocs.io/
+- JAXPR (tracing IR): https://jax.readthedocs.io/en/latest/jaxpr.html
+- Lowering/compilation (useful APIs to look up):
+  - `jax.make_jaxpr(...)`
+  - `jax.jit(f).lower(*args, **kwargs)` and `lowered.compiler_ir(...)` / `lowered.as_text()`
+- XLA / StableHLO background:
+  - https://www.tensorflow.org/xla
+  - https://github.com/openxla/stablehlo
 
 ---
 

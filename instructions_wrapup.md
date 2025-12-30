@@ -54,7 +54,7 @@ jit/
 
 **Tasks**:
 1. Check what milestone your branch reached (read STATE.md, git log, file structure)
-2. Install dependencies: `pip install warp-lang` (and any in requirements.txt)
+2. Install dependencies (CPU): `pip install -U "jax[cpu]"` (and any in requirements.txt)
 3. Run the main pipeline/scripts to verify they work:
    - If you have `code/synthesis/pipeline.py`: `python code/synthesis/pipeline.py --count 5`
    - If you have `code/extraction/ir_extractor.py`: run its `__main__` block
@@ -69,7 +69,7 @@ jit/
 
 **README.md must include**:
 ```markdown
-# Warp JIT Code Synthesis - [Branch Name]
+# JAX JIT Code Synthesis - [Branch Name]
 
 ## Progress Summary
 - Milestone reached: M1/M2/M3/M4/M5
@@ -81,7 +81,7 @@ jit/
 
 ## Requirements
 ```bash
-pip install warp-lang
+pip install -U "jax[cpu]"
 ```
 
 ## Quick Start
@@ -122,9 +122,9 @@ jit/
 
 **Tasks**:
 1. Check if your `ir_extractor.py` has a `device` parameter
-2. If GPU available: try running with `device="cuda"` and note results
-3. If no GPU: read warp source code to understand CUDA code generation
-4. Study differences between `.cpp` (CPU) and `.cu` (CUDA) output
+2. If GPU available: run with `device="cuda"` and note results (and what IR differs)
+3. If no GPU: study how JAX/XLA targets GPU and how to dump compiler artifacts
+4. Study differences between CPU vs GPU compiler IR (HLO/StableHLO/MLIR) and any dumped backend code (e.g. PTX)
 5. Document findings in `notes/gpu_analysis.md`
 
 **notes/gpu_analysis.md template**:
@@ -136,7 +136,7 @@ jit/
 - Tested with device="cuda": [pass/fail/no GPU]
 
 ## CPU vs GPU IR Differences
-| Aspect | CPU (.cpp) | GPU (.cu) |
+| Aspect | CPU | GPU |
 |--------|------------|-----------|
 | [aspect] | [cpu behavior] | [gpu behavior] |
 
@@ -160,8 +160,8 @@ jit/
 git status
 git log --oneline -5
 
-# Install warp
-pip install warp-lang
+# Install JAX (CPU)
+pip install -U "jax[cpu]"
 
 # Common test commands
 python code/extraction/ir_extractor.py
