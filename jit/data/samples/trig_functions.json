@@ -1,0 +1,11 @@
+{
+  "name": "trig_functions",
+  "source": "def trig_functions(x):\n    \"\"\"Trigonometric operations.\"\"\"\n    return jnp.sin(x) * jnp.cos(x) + jnp.tan(x / 2)\n",
+  "jaxpr": "{ lambda ; a:f32[4]. let\n    b:f32[4] = sin a\n    c:f32[4] = cos a\n    d:f32[4] = mul b c\n    e:f32[4] = div a 2.0:f32[]\n    f:f32[4] = tan e\n    g:f32[4] = add d f\n  in (g,) }",
+  "hlo": "module @jit_trig_functions attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>) -> (tensor<4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.sine %arg0 : tensor<4xf32>\n    %1 = stablehlo.cosine %arg0 : tensor<4xf32>\n    %2 = stablehlo.multiply %0, %1 : tensor<4xf32>\n    %cst = stablehlo.constant dense<2.000000e+00> : tensor<f32>\n    %3 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %4 = stablehlo.divide %arg0, %3 : tensor<4xf32>\n    %5 = stablehlo.tan %4 : tensor<4xf32>\n    %6 = stablehlo.add %2, %5 : tensor<4xf32>\n    return %6 : tensor<4xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      4
+    ]
+  ]
+}

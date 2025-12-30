@@ -1,0 +1,11 @@
+{
+  "name": "unary_hkj0rk",
+  "source": "def unary_hkj0rk(x):\n    return jnp.log(jnp.abs(jnp.sin(jnp.maximum(x, 0))) + 1e-6)",
+  "jaxpr": "{ lambda ; a:f32[4]. let\n    b:f32[4] = max a 0.0:f32[]\n    c:f32[4] = sin b\n    d:f32[4] = abs c\n    e:f32[4] = add d 9.999999974752427e-07:f32[]\n    f:f32[4] = log e\n  in (f,) }",
+  "hlo": "module @jit_unary_hkj0rk attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>) -> (tensor<4xf32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %0 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %1 = stablehlo.maximum %arg0, %0 : tensor<4xf32>\n    %2 = stablehlo.sine %1 : tensor<4xf32>\n    %3 = stablehlo.abs %2 : tensor<4xf32>\n    %cst_0 = stablehlo.constant dense<9.99999997E-7> : tensor<f32>\n    %4 = stablehlo.broadcast_in_dim %cst_0, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %5 = stablehlo.add %3, %4 : tensor<4xf32>\n    %6 = stablehlo.log %5 : tensor<4xf32>\n    return %6 : tensor<4xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      4
+    ]
+  ]
+}

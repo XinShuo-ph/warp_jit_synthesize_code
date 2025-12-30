@@ -1,0 +1,14 @@
+{
+  "name": "binary_0lqy9x",
+  "source": "def binary_0lqy9x(x, y):\n    return jnp.maximum(x, y) * y",
+  "jaxpr": "{ lambda ; a:f32[4] b:f32[4]. let\n    c:f32[4] = max a b\n    d:f32[4] = mul c b\n  in (d,) }",
+  "hlo": "module @jit_binary_0lqy9x attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>, %arg1: tensor<4xf32>) -> (tensor<4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.maximum %arg0, %arg1 : tensor<4xf32>\n    %1 = stablehlo.multiply %0, %arg1 : tensor<4xf32>\n    return %1 : tensor<4xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      4
+    ],
+    [
+      4
+    ]
+  ]
+}

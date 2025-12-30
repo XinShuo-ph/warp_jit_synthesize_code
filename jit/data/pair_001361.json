@@ -1,0 +1,14 @@
+{
+  "name": "mixed_le0olk",
+  "source": "def mixed_le0olk(x, y):\n    t1 = 1 / (1 + jnp.exp(-x))\n    t2 = t1 / (y + 1e-6)\n    t3 = jnp.min(t2)\n    return t3",
+  "jaxpr": "{ lambda ; a:f32[4] b:f32[4]. let\n    c:f32[4] = neg a\n    d:f32[4] = exp c\n    e:f32[4] = add 1.0:f32[] d\n    f:f32[4] = div 1.0:f32[] e\n    g:f32[4] = add b 9.999999974752427e-07:f32[]\n    h:f32[4] = div f g\n    i:f32[] = reduce_min[axes=(0,)] h\n  in (i,) }",
+  "hlo": "module @jit_mixed_le0olk attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>, %arg1: tensor<4xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.negate %arg0 : tensor<4xf32>\n    %1 = stablehlo.exponential %0 : tensor<4xf32>\n    %cst = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %2 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %3 = stablehlo.add %2, %1 : tensor<4xf32>\n    %cst_0 = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %4 = stablehlo.broadcast_in_dim %cst_0, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %5 = stablehlo.divide %4, %3 : tensor<4xf32>\n    %cst_1 = stablehlo.constant dense<9.99999997E-7> : tensor<f32>\n    %6 = stablehlo.broadcast_in_dim %cst_1, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %7 = stablehlo.add %arg1, %6 : tensor<4xf32>\n    %8 = stablehlo.divide %5, %7 : tensor<4xf32>\n    %cst_2 = stablehlo.constant dense<0x7F800000> : tensor<f32>\n    %9 = stablehlo.reduce(%8 init: %cst_2) applies stablehlo.minimum across dimensions = [0] : (tensor<4xf32>, tensor<f32>) -> tensor<f32>\n    return %9 : tensor<f32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      4
+    ],
+    [
+      4
+    ]
+  ]
+}

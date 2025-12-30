@@ -1,0 +1,11 @@
+{
+  "name": "unary_ptafog",
+  "source": "def unary_ptafog(x):\n    return jnp.abs(jnp.tan(x))",
+  "jaxpr": "{ lambda ; a:f32[8]. let b:f32[8] = tan a; c:f32[8] = abs b in (c,) }",
+  "hlo": "module @jit_unary_ptafog attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<8xf32>) -> (tensor<8xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.tan %arg0 : tensor<8xf32>\n    %1 = stablehlo.abs %0 : tensor<8xf32>\n    return %1 : tensor<8xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      8
+    ]
+  ]
+}

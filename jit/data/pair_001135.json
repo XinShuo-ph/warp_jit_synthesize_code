@@ -1,0 +1,16 @@
+{
+  "name": "binary_otr6y5",
+  "source": "def binary_otr6y5(x, y):\n    return jnp.minimum(x, y)",
+  "jaxpr": "{ lambda ; a:f32[2,4] b:f32[2,4]. let c:f32[2,4] = min a b in (c,) }",
+  "hlo": "module @jit_binary_otr6y5 attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2x4xf32>, %arg1: tensor<2x4xf32>) -> (tensor<2x4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.minimum %arg0, %arg1 : tensor<2x4xf32>\n    return %0 : tensor<2x4xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      2,
+      4
+    ],
+    [
+      2,
+      4
+    ]
+  ]
+}

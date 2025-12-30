@@ -1,0 +1,16 @@
+{
+  "name": "matmul_v7amxz",
+  "source": "def matmul_v7amxz(A, B):\n    return jnp.dot(A, B.T)",
+  "jaxpr": "{ lambda ; a:f32[2,3] b:f32[4,3]. let\n    c:f32[3,4] = transpose[permutation=(1, 0)] b\n    d:f32[2,4] = dot_general[\n      dimension_numbers=(([1], [0]), ([], []))\n      preferred_element_type=float32\n    ] a c\n  in (d,) }",
+  "hlo": "module @jit_matmul_v7amxz attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2x3xf32>, %arg1: tensor<4x3xf32>) -> (tensor<2x4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.transpose %arg1, dims = [1, 0] : (tensor<4x3xf32>) -> tensor<3x4xf32>\n    %1 = stablehlo.dot_general %arg0, %0, contracting_dims = [1] x [0], precision = [DEFAULT, DEFAULT] : (tensor<2x3xf32>, tensor<3x4xf32>) -> tensor<2x4xf32>\n    return %1 : tensor<2x4xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      2,
+      3
+    ],
+    [
+      4,
+      3
+    ]
+  ]
+}

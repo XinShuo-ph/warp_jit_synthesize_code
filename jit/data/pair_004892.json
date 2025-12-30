@@ -1,0 +1,11 @@
+{
+  "name": "norm_ph8fhb",
+  "source": "def norm_ph8fhb(x):\n    exp_x = jnp.exp(x - jnp.max(x))\n    return exp_x / jnp.sum(exp_x)",
+  "jaxpr": "{ lambda ; a:f32[4]. let\n    b:f32[] = reduce_max[axes=(0,)] a\n    c:f32[4] = sub a b\n    d:f32[4] = exp c\n    e:f32[] = reduce_sum[axes=(0,) out_sharding=None] d\n    f:f32[4] = div d e\n  in (f,) }",
+  "hlo": "module @jit_norm_ph8fhb attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>) -> (tensor<4xf32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<0xFF800000> : tensor<f32>\n    %0 = stablehlo.reduce(%arg0 init: %cst) applies stablehlo.maximum across dimensions = [0] : (tensor<4xf32>, tensor<f32>) -> tensor<f32>\n    %1 = stablehlo.broadcast_in_dim %0, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %2 = stablehlo.subtract %arg0, %1 : tensor<4xf32>\n    %3 = stablehlo.exponential %2 : tensor<4xf32>\n    %cst_0 = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %4 = stablehlo.reduce(%3 init: %cst_0) applies stablehlo.add across dimensions = [0] : (tensor<4xf32>, tensor<f32>) -> tensor<f32>\n    %5 = stablehlo.broadcast_in_dim %4, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %6 = stablehlo.divide %3, %5 : tensor<4xf32>\n    return %6 : tensor<4xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      4
+    ]
+  ]
+}

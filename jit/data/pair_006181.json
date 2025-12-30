@@ -1,0 +1,12 @@
+{
+  "name": "unary_7x86ro",
+  "source": "def unary_7x86ro(x):\n    return jnp.sqrt(jnp.abs(jnp.sin(x ** 2)))",
+  "jaxpr": "{ lambda ; a:f32[2,4]. let\n    b:f32[2,4] = integer_pow[y=2] a\n    c:f32[2,4] = sin b\n    d:f32[2,4] = abs c\n    e:f32[2,4] = sqrt d\n  in (e,) }",
+  "hlo": "module @jit_unary_7x86ro attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2x4xf32>) -> (tensor<2x4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.multiply %arg0, %arg0 : tensor<2x4xf32>\n    %1 = stablehlo.sine %0 : tensor<2x4xf32>\n    %2 = stablehlo.abs %1 : tensor<2x4xf32>\n    %3 = stablehlo.sqrt %2 : tensor<2x4xf32>\n    return %3 : tensor<2x4xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      2,
+      4
+    ]
+  ]
+}

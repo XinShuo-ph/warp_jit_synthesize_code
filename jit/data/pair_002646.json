@@ -1,0 +1,11 @@
+{
+  "name": "unary_witt1z",
+  "source": "def unary_witt1z(x):\n    return jnp.sqrt(jnp.abs(jnp.cos(jnp.sin(x))))",
+  "jaxpr": "{ lambda ; a:f32[8]. let\n    b:f32[8] = sin a\n    c:f32[8] = cos b\n    d:f32[8] = abs c\n    e:f32[8] = sqrt d\n  in (e,) }",
+  "hlo": "module @jit_unary_witt1z attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<8xf32>) -> (tensor<8xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.sine %arg0 : tensor<8xf32>\n    %1 = stablehlo.cosine %0 : tensor<8xf32>\n    %2 = stablehlo.abs %1 : tensor<8xf32>\n    %3 = stablehlo.sqrt %2 : tensor<8xf32>\n    return %3 : tensor<8xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      8
+    ]
+  ]
+}

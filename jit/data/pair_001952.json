@@ -1,0 +1,11 @@
+{
+  "name": "norm_rxznfl",
+  "source": "def norm_rxznfl(x):\n    min_val = jnp.min(x)\n    max_val = jnp.max(x)\n    return (x - min_val) / (max_val - min_val + 1e-6)",
+  "jaxpr": "{ lambda ; a:f32[4]. let\n    b:f32[] = reduce_min[axes=(0,)] a\n    c:f32[] = reduce_max[axes=(0,)] a\n    d:f32[4] = sub a b\n    e:f32[] = sub c b\n    f:f32[] = add e 9.999999974752427e-07:f32[]\n    g:f32[4] = div d f\n  in (g,) }",
+  "hlo": "module @jit_norm_rxznfl attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>) -> (tensor<4xf32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<0x7F800000> : tensor<f32>\n    %0 = stablehlo.reduce(%arg0 init: %cst) applies stablehlo.minimum across dimensions = [0] : (tensor<4xf32>, tensor<f32>) -> tensor<f32>\n    %cst_0 = stablehlo.constant dense<0xFF800000> : tensor<f32>\n    %1 = stablehlo.reduce(%arg0 init: %cst_0) applies stablehlo.maximum across dimensions = [0] : (tensor<4xf32>, tensor<f32>) -> tensor<f32>\n    %2 = stablehlo.broadcast_in_dim %0, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %3 = stablehlo.subtract %arg0, %2 : tensor<4xf32>\n    %4 = stablehlo.subtract %1, %0 : tensor<f32>\n    %cst_1 = stablehlo.constant dense<9.99999997E-7> : tensor<f32>\n    %5 = stablehlo.add %4, %cst_1 : tensor<f32>\n    %6 = stablehlo.broadcast_in_dim %5, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %7 = stablehlo.divide %3, %6 : tensor<4xf32>\n    return %7 : tensor<4xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      4
+    ]
+  ]
+}

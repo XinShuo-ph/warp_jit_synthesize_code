@@ -1,0 +1,11 @@
+{
+  "name": "unary_br1e9t",
+  "source": "def unary_br1e9t(x):\n    return 1 / (1 + jnp.exp(-jnp.exp(x)))",
+  "jaxpr": "{ lambda ; a:f32[8]. let\n    b:f32[8] = exp a\n    c:f32[8] = neg b\n    d:f32[8] = exp c\n    e:f32[8] = add 1.0:f32[] d\n    f:f32[8] = div 1.0:f32[] e\n  in (f,) }",
+  "hlo": "module @jit_unary_br1e9t attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<8xf32>) -> (tensor<8xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.exponential %arg0 : tensor<8xf32>\n    %1 = stablehlo.negate %0 : tensor<8xf32>\n    %2 = stablehlo.exponential %1 : tensor<8xf32>\n    %cst = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %3 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<8xf32>\n    %4 = stablehlo.add %3, %2 : tensor<8xf32>\n    %cst_0 = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %5 = stablehlo.broadcast_in_dim %cst_0, dims = [] : (tensor<f32>) -> tensor<8xf32>\n    %6 = stablehlo.divide %5, %4 : tensor<8xf32>\n    return %6 : tensor<8xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      8
+    ]
+  ]
+}

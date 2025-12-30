@@ -1,0 +1,12 @@
+{
+  "name": "unary_r8qdgy",
+  "source": "def unary_r8qdgy(x):\n    return jnp.tan(jnp.sqrt(jnp.abs(jnp.cos(x))))",
+  "jaxpr": "{ lambda ; a:f32[2,4]. let\n    b:f32[2,4] = cos a\n    c:f32[2,4] = abs b\n    d:f32[2,4] = sqrt c\n    e:f32[2,4] = tan d\n  in (e,) }",
+  "hlo": "module @jit_unary_r8qdgy attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2x4xf32>) -> (tensor<2x4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.cosine %arg0 : tensor<2x4xf32>\n    %1 = stablehlo.abs %0 : tensor<2x4xf32>\n    %2 = stablehlo.sqrt %1 : tensor<2x4xf32>\n    %3 = stablehlo.tan %2 : tensor<2x4xf32>\n    return %3 : tensor<2x4xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      2,
+      4
+    ]
+  ]
+}

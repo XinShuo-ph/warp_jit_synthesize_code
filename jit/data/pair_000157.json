@@ -1,0 +1,16 @@
+{
+  "name": "mixed_mojzay",
+  "source": "def mixed_mojzay(x, y):\n    t1 = jnp.sqrt(jnp.abs(x))\n    t2 = t1 * y\n    t3 = jnp.mean(t2)\n    return t3",
+  "jaxpr": "{ lambda ; a:f32[2,4] b:f32[2,4]. let\n    c:f32[2,4] = abs a\n    d:f32[2,4] = sqrt c\n    e:f32[2,4] = mul d b\n    f:f32[] = reduce_sum[axes=(0, 1) out_sharding=None] e\n    g:f32[] = div f 8.0:f32[]\n  in (g,) }",
+  "hlo": "module @jit_mixed_mojzay attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2x4xf32>, %arg1: tensor<2x4xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.abs %arg0 : tensor<2x4xf32>\n    %1 = stablehlo.sqrt %0 : tensor<2x4xf32>\n    %2 = stablehlo.multiply %1, %arg1 : tensor<2x4xf32>\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %3 = stablehlo.reduce(%2 init: %cst) applies stablehlo.add across dimensions = [0, 1] : (tensor<2x4xf32>, tensor<f32>) -> tensor<f32>\n    %cst_0 = stablehlo.constant dense<8.000000e+00> : tensor<f32>\n    %4 = stablehlo.divide %3, %cst_0 : tensor<f32>\n    return %4 : tensor<f32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      2,
+      4
+    ],
+    [
+      2,
+      4
+    ]
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "name": "unary_pxy8s0",
+  "source": "def unary_pxy8s0(x):\n    return jnp.tan(jnp.sin(jnp.tanh(x)))",
+  "jaxpr": "{ lambda ; a:f32[8]. let\n    b:f32[8] = tanh a\n    c:f32[8] = sin b\n    d:f32[8] = tan c\n  in (d,) }",
+  "hlo": "module @jit_unary_pxy8s0 attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<8xf32>) -> (tensor<8xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.tanh %arg0 : tensor<8xf32>\n    %1 = stablehlo.sine %0 : tensor<8xf32>\n    %2 = stablehlo.tan %1 : tensor<8xf32>\n    return %2 : tensor<8xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      8
+    ]
+  ]
+}

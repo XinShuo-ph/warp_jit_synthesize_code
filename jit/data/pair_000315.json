@@ -1,0 +1,12 @@
+{
+  "name": "unary_g7c6jt",
+  "source": "def unary_g7c6jt(x):\n    return jnp.abs(x)",
+  "jaxpr": "{ lambda ; a:f32[3,3]. let b:f32[3,3] = abs a in (b,) }",
+  "hlo": "module @jit_unary_g7c6jt attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<3x3xf32>) -> (tensor<3x3xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.abs %arg0 : tensor<3x3xf32>\n    return %0 : tensor<3x3xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      3,
+      3
+    ]
+  ]
+}

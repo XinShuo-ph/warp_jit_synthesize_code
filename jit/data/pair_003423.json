@@ -1,0 +1,11 @@
+{
+  "name": "unary_grpmfz",
+  "source": "def unary_grpmfz(x):\n    return jnp.sin(jnp.maximum(jnp.abs(x), 0))",
+  "jaxpr": "{ lambda ; a:f32[4]. let\n    b:f32[4] = abs a\n    c:f32[4] = max b 0.0:f32[]\n    d:f32[4] = sin c\n  in (d,) }",
+  "hlo": "module @jit_unary_grpmfz attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>) -> (tensor<4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.abs %arg0 : tensor<4xf32>\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %1 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %2 = stablehlo.maximum %0, %1 : tensor<4xf32>\n    %3 = stablehlo.sine %2 : tensor<4xf32>\n    return %3 : tensor<4xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      4
+    ]
+  ]
+}

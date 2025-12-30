@@ -1,0 +1,11 @@
+{
+  "name": "unary_fs7tk7",
+  "source": "def unary_fs7tk7(x):\n    return jnp.tanh(jnp.sqrt(jnp.abs(x ** 2)))",
+  "jaxpr": "{ lambda ; a:f32[4]. let\n    b:f32[4] = integer_pow[y=2] a\n    c:f32[4] = abs b\n    d:f32[4] = sqrt c\n    e:f32[4] = tanh d\n  in (e,) }",
+  "hlo": "module @jit_unary_fs7tk7 attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>) -> (tensor<4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.multiply %arg0, %arg0 : tensor<4xf32>\n    %1 = stablehlo.abs %0 : tensor<4xf32>\n    %2 = stablehlo.sqrt %1 : tensor<4xf32>\n    %3 = stablehlo.tanh %2 : tensor<4xf32>\n    return %3 : tensor<4xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      4
+    ]
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "name": "unary_kd7jml",
+  "source": "def unary_kd7jml(x):\n    return -jnp.sqrt(jnp.abs(x))",
+  "jaxpr": "{ lambda ; a:f32[3,3]. let\n    b:f32[3,3] = abs a\n    c:f32[3,3] = sqrt b\n    d:f32[3,3] = neg c\n  in (d,) }",
+  "hlo": "module @jit_unary_kd7jml attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<3x3xf32>) -> (tensor<3x3xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.abs %arg0 : tensor<3x3xf32>\n    %1 = stablehlo.sqrt %0 : tensor<3x3xf32>\n    %2 = stablehlo.negate %1 : tensor<3x3xf32>\n    return %2 : tensor<3x3xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      3,
+      3
+    ]
+  ]
+}

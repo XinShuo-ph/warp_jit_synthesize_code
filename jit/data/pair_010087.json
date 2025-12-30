@@ -1,0 +1,11 @@
+{
+  "name": "unary_xpnj8r",
+  "source": "def unary_xpnj8r(x):\n    return jnp.sin(jnp.sqrt(jnp.abs(x ** 2)))",
+  "jaxpr": "{ lambda ; a:f32[8]. let\n    b:f32[8] = integer_pow[y=2] a\n    c:f32[8] = abs b\n    d:f32[8] = sqrt c\n    e:f32[8] = sin d\n  in (e,) }",
+  "hlo": "module @jit_unary_xpnj8r attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<8xf32>) -> (tensor<8xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.multiply %arg0, %arg0 : tensor<8xf32>\n    %1 = stablehlo.abs %0 : tensor<8xf32>\n    %2 = stablehlo.sqrt %1 : tensor<8xf32>\n    %3 = stablehlo.sine %2 : tensor<8xf32>\n    return %3 : tensor<8xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      8
+    ]
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "name": "reduce_nftu2g",
+  "source": "def reduce_nftu2g(x):\n    return jnp.sum(jnp.tanh(jnp.abs(x)))",
+  "jaxpr": "{ lambda ; a:f32[8]. let\n    b:f32[8] = abs a\n    c:f32[8] = tanh b\n    d:f32[] = reduce_sum[axes=(0,) out_sharding=None] c\n  in (d,) }",
+  "hlo": "module @jit_reduce_nftu2g attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<8xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.abs %arg0 : tensor<8xf32>\n    %1 = stablehlo.tanh %0 : tensor<8xf32>\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %2 = stablehlo.reduce(%1 init: %cst) applies stablehlo.add across dimensions = [0] : (tensor<8xf32>, tensor<f32>) -> tensor<f32>\n    return %2 : tensor<f32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      8
+    ]
+  ]
+}

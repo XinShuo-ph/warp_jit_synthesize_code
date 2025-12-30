@@ -1,0 +1,11 @@
+{
+  "name": "unary_c1sz1x",
+  "source": "def unary_c1sz1x(x):\n    return jnp.sqrt(jnp.abs(jnp.tanh(x) ** 2))",
+  "jaxpr": "{ lambda ; a:f32[4]. let\n    b:f32[4] = tanh a\n    c:f32[4] = integer_pow[y=2] b\n    d:f32[4] = abs c\n    e:f32[4] = sqrt d\n  in (e,) }",
+  "hlo": "module @jit_unary_c1sz1x attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>) -> (tensor<4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.tanh %arg0 : tensor<4xf32>\n    %1 = stablehlo.multiply %0, %0 : tensor<4xf32>\n    %2 = stablehlo.abs %1 : tensor<4xf32>\n    %3 = stablehlo.sqrt %2 : tensor<4xf32>\n    return %3 : tensor<4xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      4
+    ]
+  ]
+}

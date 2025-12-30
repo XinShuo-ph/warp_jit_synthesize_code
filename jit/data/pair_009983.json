@@ -1,0 +1,14 @@
+{
+  "name": "binary_qf9lu6",
+  "source": "def binary_qf9lu6(x, y):\n    return jnp.minimum(x, y)",
+  "jaxpr": "{ lambda ; a:f32[8] b:f32[8]. let c:f32[8] = min a b in (c,) }",
+  "hlo": "module @jit_binary_qf9lu6 attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<8xf32>, %arg1: tensor<8xf32>) -> (tensor<8xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.minimum %arg0, %arg1 : tensor<8xf32>\n    return %0 : tensor<8xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      8
+    ],
+    [
+      8
+    ]
+  ]
+}

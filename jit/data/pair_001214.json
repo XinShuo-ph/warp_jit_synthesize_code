@@ -1,0 +1,14 @@
+{
+  "name": "mixed_tep70j",
+  "source": "def mixed_tep70j(x, y):\n    t1 = jnp.sqrt(jnp.abs(x))\n    t2 = jnp.maximum(t1, y)\n    t3 = jnp.sum(t2)\n    return t3",
+  "jaxpr": "{ lambda ; a:f32[8] b:f32[8]. let\n    c:f32[8] = abs a\n    d:f32[8] = sqrt c\n    e:f32[8] = max d b\n    f:f32[] = reduce_sum[axes=(0,) out_sharding=None] e\n  in (f,) }",
+  "hlo": "module @jit_mixed_tep70j attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<8xf32>, %arg1: tensor<8xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.abs %arg0 : tensor<8xf32>\n    %1 = stablehlo.sqrt %0 : tensor<8xf32>\n    %2 = stablehlo.maximum %1, %arg1 : tensor<8xf32>\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %3 = stablehlo.reduce(%2 init: %cst) applies stablehlo.add across dimensions = [0] : (tensor<8xf32>, tensor<f32>) -> tensor<f32>\n    return %3 : tensor<f32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      8
+    ],
+    [
+      8
+    ]
+  ]
+}

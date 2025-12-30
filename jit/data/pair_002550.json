@@ -1,0 +1,11 @@
+{
+  "name": "reduce_7mdz8c",
+  "source": "def reduce_7mdz8c(x):\n    return jnp.prod(jnp.exp(x))",
+  "jaxpr": "{ lambda ; a:f32[4]. let\n    b:f32[4] = exp a\n    c:f32[] = reduce_prod[axes=(0,)] b\n  in (c,) }",
+  "hlo": "module @jit_reduce_7mdz8c attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.exponential %arg0 : tensor<4xf32>\n    %cst = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %1 = stablehlo.reduce(%0 init: %cst) applies stablehlo.multiply across dimensions = [0] : (tensor<4xf32>, tensor<f32>) -> tensor<f32>\n    return %1 : tensor<f32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      4
+    ]
+  ]
+}

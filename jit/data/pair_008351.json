@@ -1,0 +1,12 @@
+{
+  "name": "unary_pm7xns",
+  "source": "def unary_pm7xns(x):\n    return jnp.exp(1 / (1 + jnp.exp(-jnp.maximum(x, 0))))",
+  "jaxpr": "{ lambda ; a:f32[3,3]. let\n    b:f32[3,3] = max a 0.0:f32[]\n    c:f32[3,3] = neg b\n    d:f32[3,3] = exp c\n    e:f32[3,3] = add 1.0:f32[] d\n    f:f32[3,3] = div 1.0:f32[] e\n    g:f32[3,3] = exp f\n  in (g,) }",
+  "hlo": "module @jit_unary_pm7xns attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<3x3xf32>) -> (tensor<3x3xf32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %0 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<3x3xf32>\n    %1 = stablehlo.maximum %arg0, %0 : tensor<3x3xf32>\n    %2 = stablehlo.negate %1 : tensor<3x3xf32>\n    %3 = stablehlo.exponential %2 : tensor<3x3xf32>\n    %cst_0 = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %4 = stablehlo.broadcast_in_dim %cst_0, dims = [] : (tensor<f32>) -> tensor<3x3xf32>\n    %5 = stablehlo.add %4, %3 : tensor<3x3xf32>\n    %cst_1 = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %6 = stablehlo.broadcast_in_dim %cst_1, dims = [] : (tensor<f32>) -> tensor<3x3xf32>\n    %7 = stablehlo.divide %6, %5 : tensor<3x3xf32>\n    %8 = stablehlo.exponential %7 : tensor<3x3xf32>\n    return %8 : tensor<3x3xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      3,
+      3
+    ]
+  ]
+}

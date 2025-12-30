@@ -1,0 +1,12 @@
+{
+  "name": "conditional",
+  "source": "def conditional(x, threshold):\n    \"\"\"Conditional selection using where.\"\"\"\n    return jnp.where(x > threshold, x, threshold)\n",
+  "jaxpr": "{ lambda ; a:f32[4] b:f32[]. let\n    c:f32[] = convert_element_type[new_dtype=float32 weak_type=False] b\n    d:bool[4] = gt a c\n    e:f32[4] = jit[\n      name=_where\n      jaxpr={ lambda ; d:bool[4] a:f32[4] b:f32[]. let\n          f:f32[] = convert_element_type[new_dtype=float32 weak_type=False] b\n          g:f32[4] = broadcast_in_dim[\n            broadcast_dimensions=()\n            shape=(4,)\n            sharding=None\n          ] f\n          e:f32[4] = select_n d g a\n        in (e,) }\n    ] d a b\n  in (e,) }",
+  "hlo": "module @jit_conditional attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>, %arg1: tensor<f32>) -> (tensor<4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.convert %arg1 : tensor<f32>\n    %1 = stablehlo.broadcast_in_dim %0, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %2 = stablehlo.compare  GT, %arg0, %1,  FLOAT : (tensor<4xf32>, tensor<4xf32>) -> tensor<4xi1>\n    %3 = call @_where(%2, %arg0, %arg1) : (tensor<4xi1>, tensor<4xf32>, tensor<f32>) -> tensor<4xf32>\n    return %3 : tensor<4xf32>\n  }\n  func.func private @_where(%arg0: tensor<4xi1>, %arg1: tensor<4xf32>, %arg2: tensor<f32>) -> tensor<4xf32> {\n    %0 = stablehlo.convert %arg2 : tensor<f32>\n    %1 = stablehlo.broadcast_in_dim %0, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %2 = stablehlo.select %arg0, %arg1, %1 : tensor<4xi1>, tensor<4xf32>\n    return %2 : tensor<4xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      4
+    ],
+    null
+  ]
+}

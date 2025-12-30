@@ -1,0 +1,12 @@
+{
+  "name": "unary_c1mlkm",
+  "source": "def unary_c1mlkm(x):\n    return jnp.tan(x)",
+  "jaxpr": "{ lambda ; a:f32[3,3]. let b:f32[3,3] = tan a in (b,) }",
+  "hlo": "module @jit_unary_c1mlkm attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<3x3xf32>) -> (tensor<3x3xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.tan %arg0 : tensor<3x3xf32>\n    return %0 : tensor<3x3xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      3,
+      3
+    ]
+  ]
+}

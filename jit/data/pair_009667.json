@@ -1,0 +1,11 @@
+{
+  "name": "unary_70gdk4",
+  "source": "def unary_70gdk4(x):\n    return jnp.sin(jnp.tan(jnp.tanh(x)))",
+  "jaxpr": "{ lambda ; a:f32[4]. let\n    b:f32[4] = tanh a\n    c:f32[4] = tan b\n    d:f32[4] = sin c\n  in (d,) }",
+  "hlo": "module @jit_unary_70gdk4 attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>) -> (tensor<4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.tanh %arg0 : tensor<4xf32>\n    %1 = stablehlo.tan %0 : tensor<4xf32>\n    %2 = stablehlo.sine %1 : tensor<4xf32>\n    return %2 : tensor<4xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      4
+    ]
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "name": "unary_eee0hz",
+  "source": "def unary_eee0hz(x):\n    return jnp.cos(jnp.sin(jnp.exp(x)))",
+  "jaxpr": "{ lambda ; a:f32[8]. let\n    b:f32[8] = exp a\n    c:f32[8] = sin b\n    d:f32[8] = cos c\n  in (d,) }",
+  "hlo": "module @jit_unary_eee0hz attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<8xf32>) -> (tensor<8xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.exponential %arg0 : tensor<8xf32>\n    %1 = stablehlo.sine %0 : tensor<8xf32>\n    %2 = stablehlo.cosine %1 : tensor<8xf32>\n    return %2 : tensor<8xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      8
+    ]
+  ]
+}

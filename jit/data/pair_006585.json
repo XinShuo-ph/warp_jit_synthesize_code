@@ -1,0 +1,11 @@
+{
+  "name": "cond_ft4fz8",
+  "source": "def cond_ft4fz8(x):\n    return jnp.where(x > 0, x, 0)",
+  "jaxpr": "{ lambda ; a:f32[4]. let\n    b:bool[4] = gt a 0.0:f32[]\n    c:f32[4] = jit[\n      name=_where\n      jaxpr={ lambda ; b:bool[4] a:f32[4] d:i32[]. let\n          e:f32[] = convert_element_type[new_dtype=float32 weak_type=False] d\n          f:f32[4] = broadcast_in_dim[\n            broadcast_dimensions=()\n            shape=(4,)\n            sharding=None\n          ] e\n          c:f32[4] = select_n b f a\n        in (c,) }\n    ] b a 0:i32[]\n  in (c,) }",
+  "hlo": "module @jit_cond_ft4fz8 attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>) -> (tensor<4xf32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %0 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %1 = stablehlo.compare  GT, %arg0, %0,  FLOAT : (tensor<4xf32>, tensor<4xf32>) -> tensor<4xi1>\n    %c = stablehlo.constant dense<0> : tensor<i32>\n    %2 = call @_where(%1, %arg0, %c) : (tensor<4xi1>, tensor<4xf32>, tensor<i32>) -> tensor<4xf32>\n    return %2 : tensor<4xf32>\n  }\n  func.func private @_where(%arg0: tensor<4xi1>, %arg1: tensor<4xf32>, %arg2: tensor<i32>) -> tensor<4xf32> {\n    %0 = stablehlo.convert %arg2 : (tensor<i32>) -> tensor<f32>\n    %1 = stablehlo.broadcast_in_dim %0, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %2 = stablehlo.select %arg0, %arg1, %1 : tensor<4xi1>, tensor<4xf32>\n    return %2 : tensor<4xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      4
+    ]
+  ]
+}

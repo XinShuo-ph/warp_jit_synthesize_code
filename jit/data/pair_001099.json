@@ -1,0 +1,12 @@
+{
+  "name": "unary_oe9p02",
+  "source": "def unary_oe9p02(x):\n    return jnp.cos(jnp.tanh(x))",
+  "jaxpr": "{ lambda ; a:f32[3,3]. let b:f32[3,3] = tanh a; c:f32[3,3] = cos b in (c,) }",
+  "hlo": "module @jit_unary_oe9p02 attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<3x3xf32>) -> (tensor<3x3xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.tanh %arg0 : tensor<3x3xf32>\n    %1 = stablehlo.cosine %0 : tensor<3x3xf32>\n    return %1 : tensor<3x3xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      3,
+      3
+    ]
+  ]
+}

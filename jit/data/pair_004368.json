@@ -1,0 +1,12 @@
+{
+  "name": "unary_gmjogk",
+  "source": "def unary_gmjogk(x):\n    return jnp.sin(jnp.tanh(x))",
+  "jaxpr": "{ lambda ; a:f32[3,3]. let b:f32[3,3] = tanh a; c:f32[3,3] = sin b in (c,) }",
+  "hlo": "module @jit_unary_gmjogk attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<3x3xf32>) -> (tensor<3x3xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.tanh %arg0 : tensor<3x3xf32>\n    %1 = stablehlo.sine %0 : tensor<3x3xf32>\n    return %1 : tensor<3x3xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      3,
+      3
+    ]
+  ]
+}

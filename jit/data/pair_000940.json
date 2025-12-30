@@ -1,0 +1,11 @@
+{
+  "name": "reduce_s4d337",
+  "source": "def reduce_s4d337(x):\n    return jnp.prod(jnp.log(jnp.abs(1 / (1 + jnp.exp(-x))) + 1e-6))",
+  "jaxpr": "{ lambda ; a:f32[4]. let\n    b:f32[4] = neg a\n    c:f32[4] = exp b\n    d:f32[4] = add 1.0:f32[] c\n    e:f32[4] = div 1.0:f32[] d\n    f:f32[4] = abs e\n    g:f32[4] = add f 9.999999974752427e-07:f32[]\n    h:f32[4] = log g\n    i:f32[] = reduce_prod[axes=(0,)] h\n  in (i,) }",
+  "hlo": "module @jit_reduce_s4d337 attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.negate %arg0 : tensor<4xf32>\n    %1 = stablehlo.exponential %0 : tensor<4xf32>\n    %cst = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %2 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %3 = stablehlo.add %2, %1 : tensor<4xf32>\n    %cst_0 = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %4 = stablehlo.broadcast_in_dim %cst_0, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %5 = stablehlo.divide %4, %3 : tensor<4xf32>\n    %6 = stablehlo.abs %5 : tensor<4xf32>\n    %cst_1 = stablehlo.constant dense<9.99999997E-7> : tensor<f32>\n    %7 = stablehlo.broadcast_in_dim %cst_1, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %8 = stablehlo.add %6, %7 : tensor<4xf32>\n    %9 = stablehlo.log %8 : tensor<4xf32>\n    %cst_2 = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %10 = stablehlo.reduce(%9 init: %cst_2) applies stablehlo.multiply across dimensions = [0] : (tensor<4xf32>, tensor<f32>) -> tensor<f32>\n    return %10 : tensor<f32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      4
+    ]
+  ]
+}

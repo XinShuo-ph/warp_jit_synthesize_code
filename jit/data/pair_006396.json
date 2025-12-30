@@ -1,0 +1,11 @@
+{
+  "name": "cond_zt8oow",
+  "source": "def cond_zt8oow(x):\n    return jnp.where(x > 0.5, jnp.sin(x), jnp.cos(x))",
+  "jaxpr": "{ lambda ; a:f32[4]. let\n    b:bool[4] = gt a 0.5:f32[]\n    c:f32[4] = sin a\n    d:f32[4] = cos a\n    e:f32[4] = jit[\n      name=_where\n      jaxpr={ lambda ; b:bool[4] c:f32[4] d:f32[4]. let\n          e:f32[4] = select_n b d c\n        in (e,) }\n    ] b c d\n  in (e,) }",
+  "hlo": "module @jit_cond_zt8oow attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>) -> (tensor<4xf32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<5.000000e-01> : tensor<f32>\n    %0 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %1 = stablehlo.compare  GT, %arg0, %0,  FLOAT : (tensor<4xf32>, tensor<4xf32>) -> tensor<4xi1>\n    %2 = stablehlo.sine %arg0 : tensor<4xf32>\n    %3 = stablehlo.cosine %arg0 : tensor<4xf32>\n    %4 = call @_where(%1, %2, %3) : (tensor<4xi1>, tensor<4xf32>, tensor<4xf32>) -> tensor<4xf32>\n    return %4 : tensor<4xf32>\n  }\n  func.func private @_where(%arg0: tensor<4xi1>, %arg1: tensor<4xf32>, %arg2: tensor<4xf32>) -> tensor<4xf32> {\n    %0 = stablehlo.select %arg0, %arg1, %arg2 : tensor<4xi1>, tensor<4xf32>\n    return %0 : tensor<4xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      4
+    ]
+  ]
+}

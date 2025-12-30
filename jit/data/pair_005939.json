@@ -1,0 +1,14 @@
+{
+  "name": "mixed_9poqjs",
+  "source": "def mixed_9poqjs(x, y):\n    t1 = -x\n    t2 = jnp.maximum(t1, y)\n    t3 = jnp.sum(t2)\n    return t3",
+  "jaxpr": "{ lambda ; a:f32[4] b:f32[4]. let\n    c:f32[4] = neg a\n    d:f32[4] = max c b\n    e:f32[] = reduce_sum[axes=(0,) out_sharding=None] d\n  in (e,) }",
+  "hlo": "module @jit_mixed_9poqjs attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>, %arg1: tensor<4xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.negate %arg0 : tensor<4xf32>\n    %1 = stablehlo.maximum %0, %arg1 : tensor<4xf32>\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %2 = stablehlo.reduce(%1 init: %cst) applies stablehlo.add across dimensions = [0] : (tensor<4xf32>, tensor<f32>) -> tensor<f32>\n    return %2 : tensor<f32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      4
+    ],
+    [
+      4
+    ]
+  ]
+}

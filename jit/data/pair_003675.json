@@ -1,0 +1,11 @@
+{
+  "name": "unary_ob0q01",
+  "source": "def unary_ob0q01(x):\n    return jnp.cos(jnp.sqrt(jnp.abs(jnp.abs(x))))",
+  "jaxpr": "{ lambda ; a:f32[4]. let\n    b:f32[4] = abs a\n    c:f32[4] = abs b\n    d:f32[4] = sqrt c\n    e:f32[4] = cos d\n  in (e,) }",
+  "hlo": "module @jit_unary_ob0q01 attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>) -> (tensor<4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.abs %arg0 : tensor<4xf32>\n    %1 = stablehlo.abs %0 : tensor<4xf32>\n    %2 = stablehlo.sqrt %1 : tensor<4xf32>\n    %3 = stablehlo.cosine %2 : tensor<4xf32>\n    return %3 : tensor<4xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      4
+    ]
+  ]
+}

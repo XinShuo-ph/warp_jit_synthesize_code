@@ -1,0 +1,12 @@
+{
+  "name": "unary_mefah2",
+  "source": "def unary_mefah2(x):\n    return -jnp.abs(x)",
+  "jaxpr": "{ lambda ; a:f32[2,4]. let b:f32[2,4] = abs a; c:f32[2,4] = neg b in (c,) }",
+  "hlo": "module @jit_unary_mefah2 attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2x4xf32>) -> (tensor<2x4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.abs %arg0 : tensor<2x4xf32>\n    %1 = stablehlo.negate %0 : tensor<2x4xf32>\n    return %1 : tensor<2x4xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      2,
+      4
+    ]
+  ]
+}

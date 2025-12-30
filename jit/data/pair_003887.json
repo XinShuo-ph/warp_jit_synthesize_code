@@ -1,0 +1,11 @@
+{
+  "name": "reduce_5vligi",
+  "source": "def reduce_5vligi(x):\n    return jnp.max(jnp.sin(x))",
+  "jaxpr": "{ lambda ; a:f32[16]. let\n    b:f32[16] = sin a\n    c:f32[] = reduce_max[axes=(0,)] b\n  in (c,) }",
+  "hlo": "module @jit_reduce_5vligi attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<16xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.sine %arg0 : tensor<16xf32>\n    %cst = stablehlo.constant dense<0xFF800000> : tensor<f32>\n    %1 = stablehlo.reduce(%0 init: %cst) applies stablehlo.maximum across dimensions = [0] : (tensor<16xf32>, tensor<f32>) -> tensor<f32>\n    return %1 : tensor<f32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      16
+    ]
+  ]
+}

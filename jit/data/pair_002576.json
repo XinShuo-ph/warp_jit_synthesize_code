@@ -1,0 +1,11 @@
+{
+  "name": "unary_0w3l3b",
+  "source": "def unary_0w3l3b(x):\n    return -x ** 2",
+  "jaxpr": "{ lambda ; a:f32[4]. let\n    b:f32[4] = integer_pow[y=2] a\n    c:f32[4] = neg b\n  in (c,) }",
+  "hlo": "module @jit_unary_0w3l3b attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>) -> (tensor<4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.multiply %arg0, %arg0 : tensor<4xf32>\n    %1 = stablehlo.negate %0 : tensor<4xf32>\n    return %1 : tensor<4xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      4
+    ]
+  ]
+}

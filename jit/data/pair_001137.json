@@ -1,0 +1,14 @@
+{
+  "name": "mixed_uez5iw",
+  "source": "def mixed_uez5iw(x, y):\n    t1 = jnp.tan(x)\n    t2 = t1 / (y + 1e-6)\n    t3 = jnp.prod(t2)\n    return t3",
+  "jaxpr": "{ lambda ; a:f32[4] b:f32[4]. let\n    c:f32[4] = tan a\n    d:f32[4] = add b 9.999999974752427e-07:f32[]\n    e:f32[4] = div c d\n    f:f32[] = reduce_prod[axes=(0,)] e\n  in (f,) }",
+  "hlo": "module @jit_mixed_uez5iw attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>, %arg1: tensor<4xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.tan %arg0 : tensor<4xf32>\n    %cst = stablehlo.constant dense<9.99999997E-7> : tensor<f32>\n    %1 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %2 = stablehlo.add %arg1, %1 : tensor<4xf32>\n    %3 = stablehlo.divide %0, %2 : tensor<4xf32>\n    %cst_0 = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %4 = stablehlo.reduce(%3 init: %cst_0) applies stablehlo.multiply across dimensions = [0] : (tensor<4xf32>, tensor<f32>) -> tensor<f32>\n    return %4 : tensor<f32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      4
+    ],
+    [
+      4
+    ]
+  ]
+}

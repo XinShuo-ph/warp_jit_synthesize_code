@@ -1,0 +1,12 @@
+{
+  "name": "unary_ibg2kz",
+  "source": "def unary_ibg2kz(x):\n    return jnp.log(jnp.abs(1 / (1 + jnp.exp(-jnp.sqrt(jnp.abs(x))))) + 1e-6)",
+  "jaxpr": "{ lambda ; a:f32[3,3]. let\n    b:f32[3,3] = abs a\n    c:f32[3,3] = sqrt b\n    d:f32[3,3] = neg c\n    e:f32[3,3] = exp d\n    f:f32[3,3] = add 1.0:f32[] e\n    g:f32[3,3] = div 1.0:f32[] f\n    h:f32[3,3] = abs g\n    i:f32[3,3] = add h 9.999999974752427e-07:f32[]\n    j:f32[3,3] = log i\n  in (j,) }",
+  "hlo": "module @jit_unary_ibg2kz attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<3x3xf32>) -> (tensor<3x3xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.abs %arg0 : tensor<3x3xf32>\n    %1 = stablehlo.sqrt %0 : tensor<3x3xf32>\n    %2 = stablehlo.negate %1 : tensor<3x3xf32>\n    %3 = stablehlo.exponential %2 : tensor<3x3xf32>\n    %cst = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %4 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<3x3xf32>\n    %5 = stablehlo.add %4, %3 : tensor<3x3xf32>\n    %cst_0 = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %6 = stablehlo.broadcast_in_dim %cst_0, dims = [] : (tensor<f32>) -> tensor<3x3xf32>\n    %7 = stablehlo.divide %6, %5 : tensor<3x3xf32>\n    %8 = stablehlo.abs %7 : tensor<3x3xf32>\n    %cst_1 = stablehlo.constant dense<9.99999997E-7> : tensor<f32>\n    %9 = stablehlo.broadcast_in_dim %cst_1, dims = [] : (tensor<f32>) -> tensor<3x3xf32>\n    %10 = stablehlo.add %8, %9 : tensor<3x3xf32>\n    %11 = stablehlo.log %10 : tensor<3x3xf32>\n    return %11 : tensor<3x3xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      3,
+      3
+    ]
+  ]
+}

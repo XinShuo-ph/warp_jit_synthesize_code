@@ -1,0 +1,14 @@
+{
+  "name": "binary_ozb4rc",
+  "source": "def binary_ozb4rc(x, y):\n    return jnp.maximum(x, y)",
+  "jaxpr": "{ lambda ; a:f32[4] b:f32[4]. let c:f32[4] = max a b in (c,) }",
+  "hlo": "module @jit_binary_ozb4rc attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>, %arg1: tensor<4xf32>) -> (tensor<4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.maximum %arg0, %arg1 : tensor<4xf32>\n    return %0 : tensor<4xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      4
+    ],
+    [
+      4
+    ]
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "name": "reduce_tqkfnp",
+  "source": "def reduce_tqkfnp(x):\n    return jnp.max(jnp.sqrt(jnp.abs(1 / (1 + jnp.exp(-x)))))",
+  "jaxpr": "{ lambda ; a:f32[2,4]. let\n    b:f32[2,4] = neg a\n    c:f32[2,4] = exp b\n    d:f32[2,4] = add 1.0:f32[] c\n    e:f32[2,4] = div 1.0:f32[] d\n    f:f32[2,4] = abs e\n    g:f32[2,4] = sqrt f\n    h:f32[] = reduce_max[axes=(0, 1)] g\n  in (h,) }",
+  "hlo": "module @jit_reduce_tqkfnp attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2x4xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.negate %arg0 : tensor<2x4xf32>\n    %1 = stablehlo.exponential %0 : tensor<2x4xf32>\n    %cst = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %2 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<2x4xf32>\n    %3 = stablehlo.add %2, %1 : tensor<2x4xf32>\n    %cst_0 = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %4 = stablehlo.broadcast_in_dim %cst_0, dims = [] : (tensor<f32>) -> tensor<2x4xf32>\n    %5 = stablehlo.divide %4, %3 : tensor<2x4xf32>\n    %6 = stablehlo.abs %5 : tensor<2x4xf32>\n    %7 = stablehlo.sqrt %6 : tensor<2x4xf32>\n    %cst_1 = stablehlo.constant dense<0xFF800000> : tensor<f32>\n    %8 = stablehlo.reduce(%7 init: %cst_1) applies stablehlo.maximum across dimensions = [0, 1] : (tensor<2x4xf32>, tensor<f32>) -> tensor<f32>\n    return %8 : tensor<f32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      2,
+      4
+    ]
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "name": "unary_73sjj2",
+  "source": "def unary_73sjj2(x):\n    return jnp.exp(jnp.maximum(x, 0))",
+  "jaxpr": "{ lambda ; a:f32[3,3]. let\n    b:f32[3,3] = max a 0.0:f32[]\n    c:f32[3,3] = exp b\n  in (c,) }",
+  "hlo": "module @jit_unary_73sjj2 attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<3x3xf32>) -> (tensor<3x3xf32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %0 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<3x3xf32>\n    %1 = stablehlo.maximum %arg0, %0 : tensor<3x3xf32>\n    %2 = stablehlo.exponential %1 : tensor<3x3xf32>\n    return %2 : tensor<3x3xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      3,
+      3
+    ]
+  ]
+}

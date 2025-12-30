@@ -1,0 +1,14 @@
+{
+  "name": "cond_f6wa7i",
+  "source": "def cond_f6wa7i(x, y):\n    return jnp.where(x > y, x, y)",
+  "jaxpr": "{ lambda ; a:f32[4] b:f32[4]. let\n    c:bool[4] = gt a b\n    d:f32[4] = jit[\n      name=_where\n      jaxpr={ lambda ; c:bool[4] a:f32[4] b:f32[4]. let\n          d:f32[4] = select_n c b a\n        in (d,) }\n    ] c a b\n  in (d,) }",
+  "hlo": "module @jit_cond_f6wa7i attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>, %arg1: tensor<4xf32>) -> (tensor<4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.compare  GT, %arg0, %arg1,  FLOAT : (tensor<4xf32>, tensor<4xf32>) -> tensor<4xi1>\n    %1 = call @_where(%0, %arg0, %arg1) : (tensor<4xi1>, tensor<4xf32>, tensor<4xf32>) -> tensor<4xf32>\n    return %1 : tensor<4xf32>\n  }\n  func.func private @_where(%arg0: tensor<4xi1>, %arg1: tensor<4xf32>, %arg2: tensor<4xf32>) -> tensor<4xf32> {\n    %0 = stablehlo.select %arg0, %arg1, %arg2 : tensor<4xi1>, tensor<4xf32>\n    return %0 : tensor<4xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      4
+    ],
+    [
+      4
+    ]
+  ]
+}

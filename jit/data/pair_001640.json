@@ -1,0 +1,11 @@
+{
+  "name": "reduce_m5kwm8",
+  "source": "def reduce_m5kwm8(x):\n    return jnp.prod(jnp.maximum(x, 0))",
+  "jaxpr": "{ lambda ; a:f32[16]. let\n    b:f32[16] = max a 0.0:f32[]\n    c:f32[] = reduce_prod[axes=(0,)] b\n  in (c,) }",
+  "hlo": "module @jit_reduce_m5kwm8 attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<16xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %0 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<16xf32>\n    %1 = stablehlo.maximum %arg0, %0 : tensor<16xf32>\n    %cst_0 = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %2 = stablehlo.reduce(%1 init: %cst_0) applies stablehlo.multiply across dimensions = [0] : (tensor<16xf32>, tensor<f32>) -> tensor<f32>\n    return %2 : tensor<f32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      16
+    ]
+  ]
+}

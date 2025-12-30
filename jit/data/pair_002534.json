@@ -1,0 +1,11 @@
+{
+  "name": "unary_80mdzp",
+  "source": "def unary_80mdzp(x):\n    return x ** 2",
+  "jaxpr": "{ lambda ; a:f32[8]. let b:f32[8] = integer_pow[y=2] a in (b,) }",
+  "hlo": "module @jit_unary_80mdzp attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<8xf32>) -> (tensor<8xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.multiply %arg0, %arg0 : tensor<8xf32>\n    return %0 : tensor<8xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      8
+    ]
+  ]
+}

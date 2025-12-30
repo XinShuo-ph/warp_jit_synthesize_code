@@ -1,0 +1,11 @@
+{
+  "name": "reduce_d5ux0x",
+  "source": "def reduce_d5ux0x(x):\n    return jnp.max(jnp.log(jnp.abs(x ** 2) + 1e-6))",
+  "jaxpr": "{ lambda ; a:f32[4]. let\n    b:f32[4] = integer_pow[y=2] a\n    c:f32[4] = abs b\n    d:f32[4] = add c 9.999999974752427e-07:f32[]\n    e:f32[4] = log d\n    f:f32[] = reduce_max[axes=(0,)] e\n  in (f,) }",
+  "hlo": "module @jit_reduce_d5ux0x attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.multiply %arg0, %arg0 : tensor<4xf32>\n    %1 = stablehlo.abs %0 : tensor<4xf32>\n    %cst = stablehlo.constant dense<9.99999997E-7> : tensor<f32>\n    %2 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %3 = stablehlo.add %1, %2 : tensor<4xf32>\n    %4 = stablehlo.log %3 : tensor<4xf32>\n    %cst_0 = stablehlo.constant dense<0xFF800000> : tensor<f32>\n    %5 = stablehlo.reduce(%4 init: %cst_0) applies stablehlo.maximum across dimensions = [0] : (tensor<4xf32>, tensor<f32>) -> tensor<f32>\n    return %5 : tensor<f32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      4
+    ]
+  ]
+}

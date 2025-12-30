@@ -1,0 +1,18 @@
+{
+  "name": "dense_layer",
+  "source": "def dense_layer(W, x, b):\n    \"\"\"Dense/fully-connected layer.\"\"\"\n    return jnp.tanh(jnp.dot(W, x) + b)\n",
+  "jaxpr": "{ lambda ; a:f32[2,2] b:f32[2] c:f32[2]. let\n    d:f32[2] = dot_general[\n      dimension_numbers=(([1], [0]), ([], []))\n      preferred_element_type=float32\n    ] a b\n    e:f32[2] = add d c\n    f:f32[2] = tanh e\n  in (f,) }",
+  "hlo": "module @jit_dense_layer attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2x2xf32>, %arg1: tensor<2xf32>, %arg2: tensor<2xf32>) -> (tensor<2xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.dot_general %arg0, %arg1, contracting_dims = [1] x [0], precision = [DEFAULT, DEFAULT] : (tensor<2x2xf32>, tensor<2xf32>) -> tensor<2xf32>\n    %1 = stablehlo.add %0, %arg2 : tensor<2xf32>\n    %2 = stablehlo.tanh %1 : tensor<2xf32>\n    return %2 : tensor<2xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      2,
+      2
+    ],
+    [
+      2
+    ],
+    [
+      2
+    ]
+  ]
+}

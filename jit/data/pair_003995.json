@@ -1,0 +1,11 @@
+{
+  "name": "cond_uq1wwg",
+  "source": "def cond_uq1wwg(x):\n    return jnp.where(x > jnp.mean(x), x, 0)",
+  "jaxpr": "{ lambda ; a:f32[4]. let\n    b:f32[] = reduce_sum[axes=(0,) out_sharding=None] a\n    c:f32[] = div b 4.0:f32[]\n    d:bool[4] = gt a c\n    e:f32[4] = jit[\n      name=_where\n      jaxpr={ lambda ; d:bool[4] a:f32[4] f:i32[]. let\n          g:f32[] = convert_element_type[new_dtype=float32 weak_type=False] f\n          h:f32[4] = broadcast_in_dim[\n            broadcast_dimensions=()\n            shape=(4,)\n            sharding=None\n          ] g\n          e:f32[4] = select_n d h a\n        in (e,) }\n    ] d a 0:i32[]\n  in (e,) }",
+  "hlo": "module @jit_cond_uq1wwg attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>) -> (tensor<4xf32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %0 = stablehlo.reduce(%arg0 init: %cst) applies stablehlo.add across dimensions = [0] : (tensor<4xf32>, tensor<f32>) -> tensor<f32>\n    %cst_0 = stablehlo.constant dense<4.000000e+00> : tensor<f32>\n    %1 = stablehlo.divide %0, %cst_0 : tensor<f32>\n    %2 = stablehlo.broadcast_in_dim %1, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %3 = stablehlo.compare  GT, %arg0, %2,  FLOAT : (tensor<4xf32>, tensor<4xf32>) -> tensor<4xi1>\n    %c = stablehlo.constant dense<0> : tensor<i32>\n    %4 = call @_where(%3, %arg0, %c) : (tensor<4xi1>, tensor<4xf32>, tensor<i32>) -> tensor<4xf32>\n    return %4 : tensor<4xf32>\n  }\n  func.func private @_where(%arg0: tensor<4xi1>, %arg1: tensor<4xf32>, %arg2: tensor<i32>) -> tensor<4xf32> {\n    %0 = stablehlo.convert %arg2 : (tensor<i32>) -> tensor<f32>\n    %1 = stablehlo.broadcast_in_dim %0, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %2 = stablehlo.select %arg0, %arg1, %1 : tensor<4xi1>, tensor<4xf32>\n    return %2 : tensor<4xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      4
+    ]
+  ]
+}

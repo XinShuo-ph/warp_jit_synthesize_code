@@ -1,0 +1,12 @@
+{
+  "name": "unary_qyk29z",
+  "source": "def unary_qyk29z(x):\n    return jnp.tanh(jnp.sqrt(jnp.abs(-x)))",
+  "jaxpr": "{ lambda ; a:f32[3,3]. let\n    b:f32[3,3] = neg a\n    c:f32[3,3] = abs b\n    d:f32[3,3] = sqrt c\n    e:f32[3,3] = tanh d\n  in (e,) }",
+  "hlo": "module @jit_unary_qyk29z attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<3x3xf32>) -> (tensor<3x3xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.negate %arg0 : tensor<3x3xf32>\n    %1 = stablehlo.abs %0 : tensor<3x3xf32>\n    %2 = stablehlo.sqrt %1 : tensor<3x3xf32>\n    %3 = stablehlo.tanh %2 : tensor<3x3xf32>\n    return %3 : tensor<3x3xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      3,
+      3
+    ]
+  ]
+}

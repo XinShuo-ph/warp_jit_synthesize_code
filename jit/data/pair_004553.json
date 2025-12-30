@@ -1,0 +1,14 @@
+{
+  "name": "mixed_akfoqz",
+  "source": "def mixed_akfoqz(x, y):\n    t1 = jnp.abs(x)\n    t2 = t1 / (y + 1e-6)\n    t3 = jnp.min(t2)\n    return t3",
+  "jaxpr": "{ lambda ; a:f32[8] b:f32[8]. let\n    c:f32[8] = abs a\n    d:f32[8] = add b 9.999999974752427e-07:f32[]\n    e:f32[8] = div c d\n    f:f32[] = reduce_min[axes=(0,)] e\n  in (f,) }",
+  "hlo": "module @jit_mixed_akfoqz attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<8xf32>, %arg1: tensor<8xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.abs %arg0 : tensor<8xf32>\n    %cst = stablehlo.constant dense<9.99999997E-7> : tensor<f32>\n    %1 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<8xf32>\n    %2 = stablehlo.add %arg1, %1 : tensor<8xf32>\n    %3 = stablehlo.divide %0, %2 : tensor<8xf32>\n    %cst_0 = stablehlo.constant dense<0x7F800000> : tensor<f32>\n    %4 = stablehlo.reduce(%3 init: %cst_0) applies stablehlo.minimum across dimensions = [0] : (tensor<8xf32>, tensor<f32>) -> tensor<f32>\n    return %4 : tensor<f32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      8
+    ],
+    [
+      8
+    ]
+  ]
+}

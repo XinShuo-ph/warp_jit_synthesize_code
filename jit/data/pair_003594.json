@@ -1,0 +1,14 @@
+{
+  "name": "mixed_gn7krk",
+  "source": "def mixed_gn7krk(x, y):\n    t1 = 1 / (1 + jnp.exp(-x))\n    t2 = t1 + y\n    t3 = jnp.mean(t2)\n    return t3",
+  "jaxpr": "{ lambda ; a:f32[8] b:f32[8]. let\n    c:f32[8] = neg a\n    d:f32[8] = exp c\n    e:f32[8] = add 1.0:f32[] d\n    f:f32[8] = div 1.0:f32[] e\n    g:f32[8] = add f b\n    h:f32[] = reduce_sum[axes=(0,) out_sharding=None] g\n    i:f32[] = div h 8.0:f32[]\n  in (i,) }",
+  "hlo": "module @jit_mixed_gn7krk attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<8xf32>, %arg1: tensor<8xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.negate %arg0 : tensor<8xf32>\n    %1 = stablehlo.exponential %0 : tensor<8xf32>\n    %cst = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %2 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<8xf32>\n    %3 = stablehlo.add %2, %1 : tensor<8xf32>\n    %cst_0 = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %4 = stablehlo.broadcast_in_dim %cst_0, dims = [] : (tensor<f32>) -> tensor<8xf32>\n    %5 = stablehlo.divide %4, %3 : tensor<8xf32>\n    %6 = stablehlo.add %5, %arg1 : tensor<8xf32>\n    %cst_1 = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %7 = stablehlo.reduce(%6 init: %cst_1) applies stablehlo.add across dimensions = [0] : (tensor<8xf32>, tensor<f32>) -> tensor<f32>\n    %cst_2 = stablehlo.constant dense<8.000000e+00> : tensor<f32>\n    %8 = stablehlo.divide %7, %cst_2 : tensor<f32>\n    return %8 : tensor<f32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      8
+    ],
+    [
+      8
+    ]
+  ]
+}

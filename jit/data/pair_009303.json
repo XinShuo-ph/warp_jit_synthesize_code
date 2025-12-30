@@ -1,0 +1,12 @@
+{
+  "name": "unary_olbglp",
+  "source": "def unary_olbglp(x):\n    return jnp.sqrt(jnp.abs(jnp.log(jnp.abs(jnp.maximum(x, 0)) + 1e-6)))",
+  "jaxpr": "{ lambda ; a:f32[3,3]. let\n    b:f32[3,3] = max a 0.0:f32[]\n    c:f32[3,3] = abs b\n    d:f32[3,3] = add c 9.999999974752427e-07:f32[]\n    e:f32[3,3] = log d\n    f:f32[3,3] = abs e\n    g:f32[3,3] = sqrt f\n  in (g,) }",
+  "hlo": "module @jit_unary_olbglp attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<3x3xf32>) -> (tensor<3x3xf32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %0 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<3x3xf32>\n    %1 = stablehlo.maximum %arg0, %0 : tensor<3x3xf32>\n    %2 = stablehlo.abs %1 : tensor<3x3xf32>\n    %cst_0 = stablehlo.constant dense<9.99999997E-7> : tensor<f32>\n    %3 = stablehlo.broadcast_in_dim %cst_0, dims = [] : (tensor<f32>) -> tensor<3x3xf32>\n    %4 = stablehlo.add %2, %3 : tensor<3x3xf32>\n    %5 = stablehlo.log %4 : tensor<3x3xf32>\n    %6 = stablehlo.abs %5 : tensor<3x3xf32>\n    %7 = stablehlo.sqrt %6 : tensor<3x3xf32>\n    return %7 : tensor<3x3xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      3,
+      3
+    ]
+  ]
+}

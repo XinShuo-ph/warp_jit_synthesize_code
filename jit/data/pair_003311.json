@@ -1,0 +1,11 @@
+{
+  "name": "unary_e6imhf",
+  "source": "def unary_e6imhf(x):\n    return jnp.exp(-jnp.tanh(x))",
+  "jaxpr": "{ lambda ; a:f32[4]. let\n    b:f32[4] = tanh a\n    c:f32[4] = neg b\n    d:f32[4] = exp c\n  in (d,) }",
+  "hlo": "module @jit_unary_e6imhf attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>) -> (tensor<4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.tanh %arg0 : tensor<4xf32>\n    %1 = stablehlo.negate %0 : tensor<4xf32>\n    %2 = stablehlo.exponential %1 : tensor<4xf32>\n    return %2 : tensor<4xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      4
+    ]
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "name": "unary_rab16v",
+  "source": "def unary_rab16v(x):\n    return jnp.sin(jnp.tan(x))",
+  "jaxpr": "{ lambda ; a:f32[2,4]. let b:f32[2,4] = tan a; c:f32[2,4] = sin b in (c,) }",
+  "hlo": "module @jit_unary_rab16v attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2x4xf32>) -> (tensor<2x4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.tan %arg0 : tensor<2x4xf32>\n    %1 = stablehlo.sine %0 : tensor<2x4xf32>\n    return %1 : tensor<2x4xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      2,
+      4
+    ]
+  ]
+}

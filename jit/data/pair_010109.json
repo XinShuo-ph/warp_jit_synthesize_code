@@ -1,0 +1,14 @@
+{
+  "name": "binary_iufsac",
+  "source": "def binary_iufsac(x, y):\n    return x / (y + 1e-6)",
+  "jaxpr": "{ lambda ; a:f32[4] b:f32[4]. let\n    c:f32[4] = add b 9.999999974752427e-07:f32[]\n    d:f32[4] = div a c\n  in (d,) }",
+  "hlo": "module @jit_binary_iufsac attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>, %arg1: tensor<4xf32>) -> (tensor<4xf32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<9.99999997E-7> : tensor<f32>\n    %0 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %1 = stablehlo.add %arg1, %0 : tensor<4xf32>\n    %2 = stablehlo.divide %arg0, %1 : tensor<4xf32>\n    return %2 : tensor<4xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      4
+    ],
+    [
+      4
+    ]
+  ]
+}

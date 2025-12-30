@@ -1,0 +1,14 @@
+{
+  "name": "mixed_5l0r5f",
+  "source": "def mixed_5l0r5f(x, y):\n    t1 = jnp.log(jnp.abs(x) + 1e-6)\n    t2 = jnp.maximum(t1, y)\n    t3 = jnp.prod(t2)\n    return t3",
+  "jaxpr": "{ lambda ; a:f32[8] b:f32[8]. let\n    c:f32[8] = abs a\n    d:f32[8] = add c 9.999999974752427e-07:f32[]\n    e:f32[8] = log d\n    f:f32[8] = max e b\n    g:f32[] = reduce_prod[axes=(0,)] f\n  in (g,) }",
+  "hlo": "module @jit_mixed_5l0r5f attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<8xf32>, %arg1: tensor<8xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.abs %arg0 : tensor<8xf32>\n    %cst = stablehlo.constant dense<9.99999997E-7> : tensor<f32>\n    %1 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<8xf32>\n    %2 = stablehlo.add %0, %1 : tensor<8xf32>\n    %3 = stablehlo.log %2 : tensor<8xf32>\n    %4 = stablehlo.maximum %3, %arg1 : tensor<8xf32>\n    %cst_0 = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %5 = stablehlo.reduce(%4 init: %cst_0) applies stablehlo.multiply across dimensions = [0] : (tensor<8xf32>, tensor<f32>) -> tensor<f32>\n    return %5 : tensor<f32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      8
+    ],
+    [
+      8
+    ]
+  ]
+}

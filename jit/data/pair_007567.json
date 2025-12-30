@@ -1,0 +1,12 @@
+{
+  "name": "unary_w83140",
+  "source": "def unary_w83140(x):\n    return jnp.sin(jnp.tan(jnp.sqrt(jnp.abs(x))))",
+  "jaxpr": "{ lambda ; a:f32[3,3]. let\n    b:f32[3,3] = abs a\n    c:f32[3,3] = sqrt b\n    d:f32[3,3] = tan c\n    e:f32[3,3] = sin d\n  in (e,) }",
+  "hlo": "module @jit_unary_w83140 attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<3x3xf32>) -> (tensor<3x3xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.abs %arg0 : tensor<3x3xf32>\n    %1 = stablehlo.sqrt %0 : tensor<3x3xf32>\n    %2 = stablehlo.tan %1 : tensor<3x3xf32>\n    %3 = stablehlo.sine %2 : tensor<3x3xf32>\n    return %3 : tensor<3x3xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      3,
+      3
+    ]
+  ]
+}

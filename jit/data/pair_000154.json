@@ -1,0 +1,11 @@
+{
+  "name": "unary_xzz2hp",
+  "source": "def unary_xzz2hp(x):\n    return jnp.log(jnp.abs(jnp.cos(jnp.sqrt(jnp.abs(x)))) + 1e-6)",
+  "jaxpr": "{ lambda ; a:f32[8]. let\n    b:f32[8] = abs a\n    c:f32[8] = sqrt b\n    d:f32[8] = cos c\n    e:f32[8] = abs d\n    f:f32[8] = add e 9.999999974752427e-07:f32[]\n    g:f32[8] = log f\n  in (g,) }",
+  "hlo": "module @jit_unary_xzz2hp attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<8xf32>) -> (tensor<8xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.abs %arg0 : tensor<8xf32>\n    %1 = stablehlo.sqrt %0 : tensor<8xf32>\n    %2 = stablehlo.cosine %1 : tensor<8xf32>\n    %3 = stablehlo.abs %2 : tensor<8xf32>\n    %cst = stablehlo.constant dense<9.99999997E-7> : tensor<f32>\n    %4 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<8xf32>\n    %5 = stablehlo.add %3, %4 : tensor<8xf32>\n    %6 = stablehlo.log %5 : tensor<8xf32>\n    return %6 : tensor<8xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      8
+    ]
+  ]
+}

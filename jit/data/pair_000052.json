@@ -1,0 +1,14 @@
+{
+  "name": "mixed_tekpar",
+  "source": "def mixed_tekpar(x, y):\n    t1 = jnp.log(jnp.abs(x) + 1e-6)\n    t2 = t1 / (y + 1e-6)\n    t3 = jnp.prod(t2)\n    return t3",
+  "jaxpr": "{ lambda ; a:f32[8] b:f32[8]. let\n    c:f32[8] = abs a\n    d:f32[8] = add c 9.999999974752427e-07:f32[]\n    e:f32[8] = log d\n    f:f32[8] = add b 9.999999974752427e-07:f32[]\n    g:f32[8] = div e f\n    h:f32[] = reduce_prod[axes=(0,)] g\n  in (h,) }",
+  "hlo": "module @jit_mixed_tekpar attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<8xf32>, %arg1: tensor<8xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.abs %arg0 : tensor<8xf32>\n    %cst = stablehlo.constant dense<9.99999997E-7> : tensor<f32>\n    %1 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<8xf32>\n    %2 = stablehlo.add %0, %1 : tensor<8xf32>\n    %3 = stablehlo.log %2 : tensor<8xf32>\n    %cst_0 = stablehlo.constant dense<9.99999997E-7> : tensor<f32>\n    %4 = stablehlo.broadcast_in_dim %cst_0, dims = [] : (tensor<f32>) -> tensor<8xf32>\n    %5 = stablehlo.add %arg1, %4 : tensor<8xf32>\n    %6 = stablehlo.divide %3, %5 : tensor<8xf32>\n    %cst_1 = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %7 = stablehlo.reduce(%6 init: %cst_1) applies stablehlo.multiply across dimensions = [0] : (tensor<8xf32>, tensor<f32>) -> tensor<f32>\n    return %7 : tensor<f32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      8
+    ],
+    [
+      8
+    ]
+  ]
+}

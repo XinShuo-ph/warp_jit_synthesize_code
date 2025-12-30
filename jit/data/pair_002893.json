@@ -1,0 +1,11 @@
+{
+  "name": "reduce_hqotqo",
+  "source": "def reduce_hqotqo(x):\n    return jnp.sum(jnp.sqrt(jnp.abs(-x)))",
+  "jaxpr": "{ lambda ; a:f32[16]. let\n    b:f32[16] = neg a\n    c:f32[16] = abs b\n    d:f32[16] = sqrt c\n    e:f32[] = reduce_sum[axes=(0,) out_sharding=None] d\n  in (e,) }",
+  "hlo": "module @jit_reduce_hqotqo attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<16xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.negate %arg0 : tensor<16xf32>\n    %1 = stablehlo.abs %0 : tensor<16xf32>\n    %2 = stablehlo.sqrt %1 : tensor<16xf32>\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %3 = stablehlo.reduce(%2 init: %cst) applies stablehlo.add across dimensions = [0] : (tensor<16xf32>, tensor<f32>) -> tensor<f32>\n    return %3 : tensor<f32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      16
+    ]
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "name": "reduce_z1sh7y",
+  "source": "def reduce_z1sh7y(x):\n    return jnp.prod(jnp.maximum(x, 0) ** 2)",
+  "jaxpr": "{ lambda ; a:f32[4]. let\n    b:f32[4] = max a 0.0:f32[]\n    c:f32[4] = integer_pow[y=2] b\n    d:f32[] = reduce_prod[axes=(0,)] c\n  in (d,) }",
+  "hlo": "module @jit_reduce_z1sh7y attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %0 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %1 = stablehlo.maximum %arg0, %0 : tensor<4xf32>\n    %2 = stablehlo.multiply %1, %1 : tensor<4xf32>\n    %cst_0 = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %3 = stablehlo.reduce(%2 init: %cst_0) applies stablehlo.multiply across dimensions = [0] : (tensor<4xf32>, tensor<f32>) -> tensor<f32>\n    return %3 : tensor<f32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      4
+    ]
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "name": "unary_2p6ljr",
+  "source": "def unary_2p6ljr(x):\n    return jnp.tanh(jnp.abs(jnp.log(jnp.abs(x) + 1e-6)))",
+  "jaxpr": "{ lambda ; a:f32[2,4]. let\n    b:f32[2,4] = abs a\n    c:f32[2,4] = add b 9.999999974752427e-07:f32[]\n    d:f32[2,4] = log c\n    e:f32[2,4] = abs d\n    f:f32[2,4] = tanh e\n  in (f,) }",
+  "hlo": "module @jit_unary_2p6ljr attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2x4xf32>) -> (tensor<2x4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.abs %arg0 : tensor<2x4xf32>\n    %cst = stablehlo.constant dense<9.99999997E-7> : tensor<f32>\n    %1 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<2x4xf32>\n    %2 = stablehlo.add %0, %1 : tensor<2x4xf32>\n    %3 = stablehlo.log %2 : tensor<2x4xf32>\n    %4 = stablehlo.abs %3 : tensor<2x4xf32>\n    %5 = stablehlo.tanh %4 : tensor<2x4xf32>\n    return %5 : tensor<2x4xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      2,
+      4
+    ]
+  ]
+}

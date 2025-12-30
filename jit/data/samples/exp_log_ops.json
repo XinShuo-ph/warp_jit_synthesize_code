@@ -1,0 +1,11 @@
+{
+  "name": "exp_log_ops",
+  "source": "def exp_log_ops(x):\n    \"\"\"Exponential and logarithmic operations.\"\"\"\n    return jnp.exp(x) + jnp.log(jnp.abs(x) + 1) + jnp.sqrt(jnp.abs(x))\n",
+  "jaxpr": "{ lambda ; a:f32[4]. let\n    b:f32[4] = exp a\n    c:f32[4] = abs a\n    d:f32[4] = add c 1.0:f32[]\n    e:f32[4] = log d\n    f:f32[4] = add b e\n    g:f32[4] = abs a\n    h:f32[4] = sqrt g\n    i:f32[4] = add f h\n  in (i,) }",
+  "hlo": "module @jit_exp_log_ops attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>) -> (tensor<4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.exponential %arg0 : tensor<4xf32>\n    %1 = stablehlo.abs %arg0 : tensor<4xf32>\n    %cst = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %2 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %3 = stablehlo.add %1, %2 : tensor<4xf32>\n    %4 = stablehlo.log %3 : tensor<4xf32>\n    %5 = stablehlo.add %0, %4 : tensor<4xf32>\n    %6 = stablehlo.abs %arg0 : tensor<4xf32>\n    %7 = stablehlo.sqrt %6 : tensor<4xf32>\n    %8 = stablehlo.add %5, %7 : tensor<4xf32>\n    return %8 : tensor<4xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      4
+    ]
+  ]
+}

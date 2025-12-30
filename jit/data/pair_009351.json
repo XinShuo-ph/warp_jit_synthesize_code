@@ -1,0 +1,11 @@
+{
+  "name": "norm_1pcxe6",
+  "source": "def norm_1pcxe6(x):\n    norm = jnp.sqrt(jnp.sum(x ** 2)) + 1e-6\n    return x / norm",
+  "jaxpr": "{ lambda ; a:f32[4]. let\n    b:f32[4] = integer_pow[y=2] a\n    c:f32[] = reduce_sum[axes=(0,) out_sharding=None] b\n    d:f32[] = sqrt c\n    e:f32[] = add d 9.999999974752427e-07:f32[]\n    f:f32[4] = div a e\n  in (f,) }",
+  "hlo": "module @jit_norm_1pcxe6 attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>) -> (tensor<4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.multiply %arg0, %arg0 : tensor<4xf32>\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %1 = stablehlo.reduce(%0 init: %cst) applies stablehlo.add across dimensions = [0] : (tensor<4xf32>, tensor<f32>) -> tensor<f32>\n    %2 = stablehlo.sqrt %1 : tensor<f32>\n    %cst_0 = stablehlo.constant dense<9.99999997E-7> : tensor<f32>\n    %3 = stablehlo.add %2, %cst_0 : tensor<f32>\n    %4 = stablehlo.broadcast_in_dim %3, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %5 = stablehlo.divide %arg0, %4 : tensor<4xf32>\n    return %5 : tensor<4xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      4
+    ]
+  ]
+}

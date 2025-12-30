@@ -1,0 +1,11 @@
+{
+  "name": "reduce_f3f6ab",
+  "source": "def reduce_f3f6ab(x):\n    return jnp.max(jnp.tan(jnp.maximum(x, 0)))",
+  "jaxpr": "{ lambda ; a:f32[4]. let\n    b:f32[4] = max a 0.0:f32[]\n    c:f32[4] = tan b\n    d:f32[] = reduce_max[axes=(0,)] c\n  in (d,) }",
+  "hlo": "module @jit_reduce_f3f6ab attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %0 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %1 = stablehlo.maximum %arg0, %0 : tensor<4xf32>\n    %2 = stablehlo.tan %1 : tensor<4xf32>\n    %cst_0 = stablehlo.constant dense<0xFF800000> : tensor<f32>\n    %3 = stablehlo.reduce(%2 init: %cst_0) applies stablehlo.maximum across dimensions = [0] : (tensor<4xf32>, tensor<f32>) -> tensor<f32>\n    return %3 : tensor<f32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      4
+    ]
+  ]
+}

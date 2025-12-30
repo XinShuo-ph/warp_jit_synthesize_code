@@ -1,0 +1,17 @@
+{
+  "name": "arithmetic_ops",
+  "source": "def arithmetic_ops(a, b, c):\n    \"\"\"Basic arithmetic: add, sub, mul, div.\"\"\"\n    return (a + b) * c - (a / b)\n",
+  "jaxpr": "{ lambda ; a:f32[4] b:f32[4] c:f32[4]. let\n    d:f32[4] = add a b\n    e:f32[4] = mul d c\n    f:f32[4] = div a b\n    g:f32[4] = sub e f\n  in (g,) }",
+  "hlo": "module @jit_arithmetic_ops attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>, %arg1: tensor<4xf32>, %arg2: tensor<4xf32>) -> (tensor<4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.add %arg0, %arg1 : tensor<4xf32>\n    %1 = stablehlo.multiply %0, %arg2 : tensor<4xf32>\n    %2 = stablehlo.divide %arg0, %arg1 : tensor<4xf32>\n    %3 = stablehlo.subtract %1, %2 : tensor<4xf32>\n    return %3 : tensor<4xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      4
+    ],
+    [
+      4
+    ],
+    [
+      4
+    ]
+  ]
+}

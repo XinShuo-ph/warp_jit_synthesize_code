@@ -1,0 +1,12 @@
+{
+  "name": "unary_7ci50i",
+  "source": "def unary_7ci50i(x):\n    return -x ** 2",
+  "jaxpr": "{ lambda ; a:f32[2,4]. let\n    b:f32[2,4] = integer_pow[y=2] a\n    c:f32[2,4] = neg b\n  in (c,) }",
+  "hlo": "module @jit_unary_7ci50i attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2x4xf32>) -> (tensor<2x4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.multiply %arg0, %arg0 : tensor<2x4xf32>\n    %1 = stablehlo.negate %0 : tensor<2x4xf32>\n    return %1 : tensor<2x4xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      2,
+      4
+    ]
+  ]
+}

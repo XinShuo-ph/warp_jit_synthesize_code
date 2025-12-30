@@ -1,0 +1,16 @@
+{
+  "name": "matmul_cl99mi",
+  "source": "def matmul_cl99mi(A, B):\n    return jnp.dot(A, B)",
+  "jaxpr": "{ lambda ; a:f32[2,3] b:f32[3,4]. let\n    c:f32[2,4] = dot_general[\n      dimension_numbers=(([1], [0]), ([], []))\n      preferred_element_type=float32\n    ] a b\n  in (c,) }",
+  "hlo": "module @jit_matmul_cl99mi attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2x3xf32>, %arg1: tensor<3x4xf32>) -> (tensor<2x4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.dot_general %arg0, %arg1, contracting_dims = [1] x [0], precision = [DEFAULT, DEFAULT] : (tensor<2x3xf32>, tensor<3x4xf32>) -> tensor<2x4xf32>\n    return %0 : tensor<2x4xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      2,
+      3
+    ],
+    [
+      3,
+      4
+    ]
+  ]
+}

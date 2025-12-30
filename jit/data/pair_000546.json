@@ -1,0 +1,11 @@
+{
+  "name": "unary_06oh6l",
+  "source": "def unary_06oh6l(x):\n    return jnp.sqrt(jnp.abs(x))",
+  "jaxpr": "{ lambda ; a:f32[4]. let b:f32[4] = abs a; c:f32[4] = sqrt b in (c,) }",
+  "hlo": "module @jit_unary_06oh6l attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>) -> (tensor<4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.abs %arg0 : tensor<4xf32>\n    %1 = stablehlo.sqrt %0 : tensor<4xf32>\n    return %1 : tensor<4xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      4
+    ]
+  ]
+}

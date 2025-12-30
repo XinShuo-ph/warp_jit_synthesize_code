@@ -1,0 +1,11 @@
+{
+  "name": "unary_ckurq3",
+  "source": "def unary_ckurq3(x):\n    return jnp.sin(-jnp.cos(x))",
+  "jaxpr": "{ lambda ; a:f32[4]. let\n    b:f32[4] = cos a\n    c:f32[4] = neg b\n    d:f32[4] = sin c\n  in (d,) }",
+  "hlo": "module @jit_unary_ckurq3 attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>) -> (tensor<4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.cosine %arg0 : tensor<4xf32>\n    %1 = stablehlo.negate %0 : tensor<4xf32>\n    %2 = stablehlo.sine %1 : tensor<4xf32>\n    return %2 : tensor<4xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      4
+    ]
+  ]
+}

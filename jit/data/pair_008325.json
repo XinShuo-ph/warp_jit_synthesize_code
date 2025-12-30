@@ -1,0 +1,11 @@
+{
+  "name": "reduce_a4p8xg",
+  "source": "def reduce_a4p8xg(x):\n    return jnp.max(jnp.sqrt(jnp.abs(x)))",
+  "jaxpr": "{ lambda ; a:f32[16]. let\n    b:f32[16] = abs a\n    c:f32[16] = sqrt b\n    d:f32[] = reduce_max[axes=(0,)] c\n  in (d,) }",
+  "hlo": "module @jit_reduce_a4p8xg attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<16xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.abs %arg0 : tensor<16xf32>\n    %1 = stablehlo.sqrt %0 : tensor<16xf32>\n    %cst = stablehlo.constant dense<0xFF800000> : tensor<f32>\n    %2 = stablehlo.reduce(%1 init: %cst) applies stablehlo.maximum across dimensions = [0] : (tensor<16xf32>, tensor<f32>) -> tensor<f32>\n    return %2 : tensor<f32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      16
+    ]
+  ]
+}

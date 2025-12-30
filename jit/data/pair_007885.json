@@ -1,0 +1,16 @@
+{
+  "name": "mixed_704jj1",
+  "source": "def mixed_704jj1(x, y):\n    t1 = jnp.abs(x)\n    t2 = jnp.maximum(t1, y)\n    t3 = jnp.prod(t2)\n    return t3",
+  "jaxpr": "{ lambda ; a:f32[2,4] b:f32[2,4]. let\n    c:f32[2,4] = abs a\n    d:f32[2,4] = max c b\n    e:f32[] = reduce_prod[axes=(0, 1)] d\n  in (e,) }",
+  "hlo": "module @jit_mixed_704jj1 attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2x4xf32>, %arg1: tensor<2x4xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.abs %arg0 : tensor<2x4xf32>\n    %1 = stablehlo.maximum %0, %arg1 : tensor<2x4xf32>\n    %cst = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %2 = stablehlo.reduce(%1 init: %cst) applies stablehlo.multiply across dimensions = [0, 1] : (tensor<2x4xf32>, tensor<f32>) -> tensor<f32>\n    return %2 : tensor<f32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      2,
+      4
+    ],
+    [
+      2,
+      4
+    ]
+  ]
+}

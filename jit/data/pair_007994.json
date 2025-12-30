@@ -1,0 +1,11 @@
+{
+  "name": "unary_5jh215",
+  "source": "def unary_5jh215(x):\n    return -jnp.cos(jnp.exp(x))",
+  "jaxpr": "{ lambda ; a:f32[4]. let\n    b:f32[4] = exp a\n    c:f32[4] = cos b\n    d:f32[4] = neg c\n  in (d,) }",
+  "hlo": "module @jit_unary_5jh215 attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>) -> (tensor<4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.exponential %arg0 : tensor<4xf32>\n    %1 = stablehlo.cosine %0 : tensor<4xf32>\n    %2 = stablehlo.negate %1 : tensor<4xf32>\n    return %2 : tensor<4xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      4
+    ]
+  ]
+}

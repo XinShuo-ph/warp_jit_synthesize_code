@@ -1,0 +1,12 @@
+{
+  "name": "reduce_w40axg",
+  "source": "def reduce_w40axg(x):\n    return jnp.min(jnp.cos(x))",
+  "jaxpr": "{ lambda ; a:f32[2,4]. let\n    b:f32[2,4] = cos a\n    c:f32[] = reduce_min[axes=(0, 1)] b\n  in (c,) }",
+  "hlo": "module @jit_reduce_w40axg attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2x4xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.cosine %arg0 : tensor<2x4xf32>\n    %cst = stablehlo.constant dense<0x7F800000> : tensor<f32>\n    %1 = stablehlo.reduce(%0 init: %cst) applies stablehlo.minimum across dimensions = [0, 1] : (tensor<2x4xf32>, tensor<f32>) -> tensor<f32>\n    return %1 : tensor<f32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      2,
+      4
+    ]
+  ]
+}

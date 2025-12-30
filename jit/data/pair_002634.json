@@ -1,0 +1,11 @@
+{
+  "name": "reduce_jrrugs",
+  "source": "def reduce_jrrugs(x):\n    return jnp.prod(jnp.tanh(-x))",
+  "jaxpr": "{ lambda ; a:f32[8]. let\n    b:f32[8] = neg a\n    c:f32[8] = tanh b\n    d:f32[] = reduce_prod[axes=(0,)] c\n  in (d,) }",
+  "hlo": "module @jit_reduce_jrrugs attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<8xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.negate %arg0 : tensor<8xf32>\n    %1 = stablehlo.tanh %0 : tensor<8xf32>\n    %cst = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %2 = stablehlo.reduce(%1 init: %cst) applies stablehlo.multiply across dimensions = [0] : (tensor<8xf32>, tensor<f32>) -> tensor<f32>\n    return %2 : tensor<f32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      8
+    ]
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "name": "binary_cxehxl",
+  "source": "def binary_cxehxl(x, y):\n    return x * y",
+  "jaxpr": "{ lambda ; a:f32[4] b:f32[4]. let c:f32[4] = mul a b in (c,) }",
+  "hlo": "module @jit_binary_cxehxl attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>, %arg1: tensor<4xf32>) -> (tensor<4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.multiply %arg0, %arg1 : tensor<4xf32>\n    return %0 : tensor<4xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      4
+    ],
+    [
+      4
+    ]
+  ]
+}

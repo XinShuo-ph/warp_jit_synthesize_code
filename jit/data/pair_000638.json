@@ -1,0 +1,16 @@
+{
+  "name": "binary_w4e2st",
+  "source": "def binary_w4e2st(x, y):\n    return jnp.minimum(x, y) / (y + 1e-6)",
+  "jaxpr": "{ lambda ; a:f32[2,4] b:f32[2,4]. let\n    c:f32[2,4] = min a b\n    d:f32[2,4] = add b 9.999999974752427e-07:f32[]\n    e:f32[2,4] = div c d\n  in (e,) }",
+  "hlo": "module @jit_binary_w4e2st attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2x4xf32>, %arg1: tensor<2x4xf32>) -> (tensor<2x4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.minimum %arg0, %arg1 : tensor<2x4xf32>\n    %cst = stablehlo.constant dense<9.99999997E-7> : tensor<f32>\n    %1 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<2x4xf32>\n    %2 = stablehlo.add %arg1, %1 : tensor<2x4xf32>\n    %3 = stablehlo.divide %0, %2 : tensor<2x4xf32>\n    return %3 : tensor<2x4xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      2,
+      4
+    ],
+    [
+      2,
+      4
+    ]
+  ]
+}

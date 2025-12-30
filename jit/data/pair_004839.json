@@ -1,0 +1,11 @@
+{
+  "name": "reduce_b1wy5n",
+  "source": "def reduce_b1wy5n(x):\n    return jnp.min(x)",
+  "jaxpr": "{ lambda ; a:f32[16]. let b:f32[] = reduce_min[axes=(0,)] a in (b,) }",
+  "hlo": "module @jit_reduce_b1wy5n attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<16xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<0x7F800000> : tensor<f32>\n    %0 = stablehlo.reduce(%arg0 init: %cst) applies stablehlo.minimum across dimensions = [0] : (tensor<16xf32>, tensor<f32>) -> tensor<f32>\n    return %0 : tensor<f32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      16
+    ]
+  ]
+}

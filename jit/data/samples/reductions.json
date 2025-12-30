@@ -1,0 +1,11 @@
+{
+  "name": "reductions",
+  "source": "def reductions(x):\n    \"\"\"Reduction operations: sum, mean, max, min.\"\"\"\n    return jnp.sum(x) + jnp.mean(x) + jnp.max(x) - jnp.min(x)\n",
+  "jaxpr": "{ lambda ; a:f32[4]. let\n    b:f32[] = reduce_sum[axes=(0,) out_sharding=None] a\n    c:f32[] = reduce_sum[axes=(0,) out_sharding=None] a\n    d:f32[] = div c 4.0:f32[]\n    e:f32[] = add b d\n    f:f32[] = reduce_max[axes=(0,)] a\n    g:f32[] = add e f\n    h:f32[] = reduce_min[axes=(0,)] a\n    i:f32[] = sub g h\n  in (i,) }",
+  "hlo": "module @jit_reductions attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %0 = stablehlo.reduce(%arg0 init: %cst) applies stablehlo.add across dimensions = [0] : (tensor<4xf32>, tensor<f32>) -> tensor<f32>\n    %cst_0 = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %1 = stablehlo.reduce(%arg0 init: %cst_0) applies stablehlo.add across dimensions = [0] : (tensor<4xf32>, tensor<f32>) -> tensor<f32>\n    %cst_1 = stablehlo.constant dense<4.000000e+00> : tensor<f32>\n    %2 = stablehlo.divide %1, %cst_1 : tensor<f32>\n    %3 = stablehlo.add %0, %2 : tensor<f32>\n    %cst_2 = stablehlo.constant dense<0xFF800000> : tensor<f32>\n    %4 = stablehlo.reduce(%arg0 init: %cst_2) applies stablehlo.maximum across dimensions = [0] : (tensor<4xf32>, tensor<f32>) -> tensor<f32>\n    %5 = stablehlo.add %3, %4 : tensor<f32>\n    %cst_3 = stablehlo.constant dense<0x7F800000> : tensor<f32>\n    %6 = stablehlo.reduce(%arg0 init: %cst_3) applies stablehlo.minimum across dimensions = [0] : (tensor<4xf32>, tensor<f32>) -> tensor<f32>\n    %7 = stablehlo.subtract %5, %6 : tensor<f32>\n    return %7 : tensor<f32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      4
+    ]
+  ]
+}

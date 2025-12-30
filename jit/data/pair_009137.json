@@ -1,0 +1,11 @@
+{
+  "name": "reduce_4thl21",
+  "source": "def reduce_4thl21(x):\n    return jnp.max(jnp.abs(jnp.tan(x)))",
+  "jaxpr": "{ lambda ; a:f32[4]. let\n    b:f32[4] = tan a\n    c:f32[4] = abs b\n    d:f32[] = reduce_max[axes=(0,)] c\n  in (d,) }",
+  "hlo": "module @jit_reduce_4thl21 attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.tan %arg0 : tensor<4xf32>\n    %1 = stablehlo.abs %0 : tensor<4xf32>\n    %cst = stablehlo.constant dense<0xFF800000> : tensor<f32>\n    %2 = stablehlo.reduce(%1 init: %cst) applies stablehlo.maximum across dimensions = [0] : (tensor<4xf32>, tensor<f32>) -> tensor<f32>\n    return %2 : tensor<f32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      4
+    ]
+  ]
+}

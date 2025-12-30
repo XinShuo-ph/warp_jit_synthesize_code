@@ -1,0 +1,16 @@
+{
+  "name": "binary_4e6i7y",
+  "source": "def binary_4e6i7y(x, y):\n    return x - y * y",
+  "jaxpr": "{ lambda ; a:f32[2,4] b:f32[2,4]. let\n    c:f32[2,4] = mul b b\n    d:f32[2,4] = sub a c\n  in (d,) }",
+  "hlo": "module @jit_binary_4e6i7y attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2x4xf32>, %arg1: tensor<2x4xf32>) -> (tensor<2x4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.multiply %arg1, %arg1 : tensor<2x4xf32>\n    %1 = stablehlo.subtract %arg0, %0 : tensor<2x4xf32>\n    return %1 : tensor<2x4xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      2,
+      4
+    ],
+    [
+      2,
+      4
+    ]
+  ]
+}

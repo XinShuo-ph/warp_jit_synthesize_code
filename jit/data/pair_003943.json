@@ -1,0 +1,11 @@
+{
+  "name": "reduce_dlj9nh",
+  "source": "def reduce_dlj9nh(x):\n    return jnp.prod(jnp.cos(x))",
+  "jaxpr": "{ lambda ; a:f32[16]. let\n    b:f32[16] = cos a\n    c:f32[] = reduce_prod[axes=(0,)] b\n  in (c,) }",
+  "hlo": "module @jit_reduce_dlj9nh attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<16xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.cosine %arg0 : tensor<16xf32>\n    %cst = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %1 = stablehlo.reduce(%0 init: %cst) applies stablehlo.multiply across dimensions = [0] : (tensor<16xf32>, tensor<f32>) -> tensor<f32>\n    return %1 : tensor<f32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      16
+    ]
+  ]
+}

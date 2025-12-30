@@ -1,0 +1,11 @@
+{
+  "name": "unary_gz0j3h",
+  "source": "def unary_gz0j3h(x):\n    return 1 / (1 + jnp.exp(-jnp.log(jnp.abs(jnp.sqrt(jnp.abs(x))) + 1e-6)))",
+  "jaxpr": "{ lambda ; a:f32[4]. let\n    b:f32[4] = abs a\n    c:f32[4] = sqrt b\n    d:f32[4] = abs c\n    e:f32[4] = add d 9.999999974752427e-07:f32[]\n    f:f32[4] = log e\n    g:f32[4] = neg f\n    h:f32[4] = exp g\n    i:f32[4] = add 1.0:f32[] h\n    j:f32[4] = div 1.0:f32[] i\n  in (j,) }",
+  "hlo": "module @jit_unary_gz0j3h attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>) -> (tensor<4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.abs %arg0 : tensor<4xf32>\n    %1 = stablehlo.sqrt %0 : tensor<4xf32>\n    %2 = stablehlo.abs %1 : tensor<4xf32>\n    %cst = stablehlo.constant dense<9.99999997E-7> : tensor<f32>\n    %3 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %4 = stablehlo.add %2, %3 : tensor<4xf32>\n    %5 = stablehlo.log %4 : tensor<4xf32>\n    %6 = stablehlo.negate %5 : tensor<4xf32>\n    %7 = stablehlo.exponential %6 : tensor<4xf32>\n    %cst_0 = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %8 = stablehlo.broadcast_in_dim %cst_0, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %9 = stablehlo.add %8, %7 : tensor<4xf32>\n    %cst_1 = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %10 = stablehlo.broadcast_in_dim %cst_1, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %11 = stablehlo.divide %10, %9 : tensor<4xf32>\n    return %11 : tensor<4xf32>\n  }\n}\n",
+  "input_shapes": [
+    [
+      4
+    ]
+  ]
+}
