@@ -1,4 +1,4 @@
-"""Batch Generator - Efficient large-scale kernel pair generation."""
+"""Batch Generator - Efficient large-scale kernel pair generation (JAX IR)."""
 import json
 import os
 import sys
@@ -13,12 +13,9 @@ import argparse
 # Add extraction module to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "extraction"))
 
-import warp as wp
-
-
 def init_worker():
-    """Initialize warp in each worker process."""
-    wp.init()
+    """Initialize worker process (reserved for future JAX config)."""
+    return None
 
 
 def generate_single_pair(args):
@@ -47,7 +44,9 @@ def generate_single_pair(args):
         # Create temp module
         module_name = f"batch_module_{pair_id}"
         with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
-            f.write("import warp as wp\n\n")
+            f.write("import jax\n")
+            f.write("import jax.numpy as jnp\n")
+            f.write("from jax import lax\n\n")
             f.write(kernel_source)
             temp_path = f.name
         
@@ -58,25 +57,26 @@ def generate_single_pair(args):
             sys.modules[module_name] = module
             spec.loader.exec_module(module)
             
-            # Find kernel
-            kernel = None
-            for name in dir(module):
-                obj = getattr(module, name)
-                if isinstance(obj, wp.Kernel):
-                    kernel = obj
-                    break
-            
-            if kernel is None:
-                raise ValueError("No kernel found")
-            
+            if not hasattr(module, kernel_name):
+                raise ValueError("No kernel function found")
+            fn = getattr(module, kernel_name)
+            if not callable(fn):
+                raise ValueError("Kernel is not callable")
+            if not hasattr(module, "EXAMPLE_ARGS"):
+                raise ValueError("Missing EXAMPLE_ARGS")
+
+            example_args = getattr(module, "EXAMPLE_ARGS")
+            grad_argnums = getattr(module, "GRAD_ARGNUMS", (0,))
+
             # Extract IR
-            ir = extract_ir(kernel)
+            ir = extract_ir(fn, example_args, kernel_name=kernel_name, grad_argnums=tuple(grad_argnums))
             
             result = {
                 "id": pair_id,
                 "kernel_name": kernel_name,
                 "python": kernel_source.strip(),
-                "cpp": ir.cpp_code,
+                "cpu_ir": ir.cpu_code,
+                "cpu_backward_ir": ir.cpu_backward_code,
                 "type": generator.__name__
             }
             
@@ -104,8 +104,6 @@ def batch_generate_sequential(
     checkpoint_every: int = 100
 ):
     """Generate pairs sequentially with checkpointing."""
-    wp.init()
-    
     output_path = Path(output_path)
     checkpoint_path = output_path.with_suffix('.checkpoint')
     

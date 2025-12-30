@@ -1,102 +1,157 @@
-"""IR Extractor - Extracts generated C++/CUDA code from Warp kernels."""
+"""IR Extractor - Extracts JAX compiler IR (StableHLO/MLIR) from JITted functions."""
+
+from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import Optional
-import warp as wp
-import warp._src.codegen
-import warp._src.context
+from typing import Any, Callable, Optional, Sequence
+import inspect
+
+import jax
+import jax.numpy as jnp
 
 
 @dataclass
 class ExtractedIR:
-    """Container for extracted IR from a warp kernel."""
+    """Container for extracted compiler IR from a JAX function."""
+
     kernel_name: str
     python_source: str
-    cpp_code: str  # CPU code with forward + backward
-    cuda_code: Optional[str] = None  # CUDA code with forward + backward
+    cpu_code: str  # StableHLO/MLIR for CPU compilation target
+    cuda_code: Optional[str] = None  # StableHLO/MLIR for GPU target (if available)
+    cpu_backward_code: Optional[str] = None
+    cuda_backward_code: Optional[str] = None
 
 
-def extract_ir(kernel: wp.Kernel, enable_backward: bool = True) -> ExtractedIR:
+def _compiler_ir_text(lowered: Any) -> str:
     """
-    Extract IR (C++/CUDA code) from a Warp kernel.
-    
-    Args:
-        kernel: A warp kernel decorated with @wp.kernel
-        enable_backward: Whether to include backward (adjoint) code
-        
-    Returns:
-        ExtractedIR containing Python source and generated C++/CUDA code
+    Convert JAX lowered compiler IR to text.
+
+    JAX has changed return types here a few times; handle the common shapes.
     """
-    # Ensure the kernel's adjoint is built
-    if not hasattr(kernel, 'adj') or kernel.adj is None:
-        raise ValueError("Kernel has no adjoint - ensure it's decorated with @wp.kernel")
-    
-    module = kernel.module
-    
-    # Get or create hasher for the module
-    hasher = warp._src.context.ModuleHasher(module)
-    
-    # Create options dict
-    options = module.options.copy() if module.options else {}
-    options.setdefault("block_dim", 256)
-    options.setdefault("enable_backward", enable_backward)
-    options.setdefault("mode", "release")
-    
-    # Create a builder to generate code
-    builder = warp._src.context.ModuleBuilder(module, options, hasher)
-    
-    # Generate CPU code (includes both forward and backward)
-    cpp_code = builder.codegen("cpu")
-    
-    # Generate CUDA code (includes both forward and backward)
-    cuda_code = None
+    ir = lowered.compiler_ir(dialect="stablehlo")
+    if hasattr(ir, "as_text"):
+        return ir.as_text()
+    return str(ir)
+
+
+def _extract_for_device(
+    fn: Callable[..., Any],
+    example_args: Sequence[Any],
+    device: jax.Device,
+) -> str:
+    jit_fn = jax.jit(fn, device=device)
+    lowered = jit_fn.lower(*example_args)
+    return _compiler_ir_text(lowered)
+
+
+def _maybe_devices(kind: str) -> list[jax.Device]:
     try:
-        cuda_code = builder.codegen("cuda")
+        return list(jax.devices(kind))
     except Exception:
-        pass  # CUDA codegen may not be available
-    
+        return []
+
+
+def extract_ir(
+    fn: Callable[..., Any],
+    example_args: Sequence[Any],
+    *,
+    kernel_name: Optional[str] = None,
+    enable_backward: bool = True,
+    grad_argnums: tuple[int, ...] = (0,),
+) -> ExtractedIR:
+    """
+    Extract compiler IR (StableHLO/MLIR text) for a JAX function.
+
+    - CPU: always attempted.
+    - CUDA: attempted only if a GPU device is present.
+    - Backward: compiled as grad of sum(output) when possible.
+    """
+    name = kernel_name or getattr(fn, "__name__", "jax_fn")
+
+    try:
+        python_source = inspect.getsource(fn).strip()
+    except Exception:
+        python_source = f"# Source unavailable for {name}"
+
+    cpu_devs = _maybe_devices("cpu")
+    if not cpu_devs:
+        raise RuntimeError("No CPU device found for JAX")
+
+    cpu_code = _extract_for_device(fn, example_args, cpu_devs[0])
+
+    cuda_code = None
+    cuda_devs = _maybe_devices("gpu")
+    if cuda_devs:
+        try:
+            cuda_code = _extract_for_device(fn, example_args, cuda_devs[0])
+        except Exception:
+            cuda_code = None
+
+    cpu_backward_code = None
+    cuda_backward_code = None
+
+    if enable_backward:
+        # Define a scalar loss to make grad well-defined.
+        def loss(*args):
+            out = fn(*args)
+            return jnp.sum(out)
+
+        try:
+            bwd = jax.grad(loss, argnums=grad_argnums)
+            cpu_backward_code = _extract_for_device(bwd, example_args, cpu_devs[0])
+            if cuda_devs:
+                try:
+                    cuda_backward_code = _extract_for_device(bwd, example_args, cuda_devs[0])
+                except Exception:
+                    cuda_backward_code = None
+        except Exception:
+            # Not all functions/arg types are differentiable (e.g., integer ops).
+            cpu_backward_code = None
+            cuda_backward_code = None
+
     return ExtractedIR(
-        kernel_name=kernel.key,
-        python_source=kernel.adj.source,
-        cpp_code=cpp_code,
+        kernel_name=name,
+        python_source=python_source,
+        cpu_code=cpu_code,
         cuda_code=cuda_code,
+        cpu_backward_code=cpu_backward_code,
+        cuda_backward_code=cuda_backward_code,
     )
 
 
-def extract_ir_pair(kernel: wp.Kernel, device: str = "cpu") -> tuple[str, str]:
+def extract_ir_pair(
+    fn: Callable[..., Any],
+    example_args: Sequence[Any],
+    *,
+    device: str = "cpu",
+) -> tuple[str, str]:
     """
-    Extract Python→C++ pair suitable for LLM training.
-    
+    Extract Python→IR pair suitable for LLM training.
+
     Args:
-        kernel: A warp kernel
+        fn: JAX function (will be jitted)
+        example_args: Example inputs used for lowering/compilation
         device: "cpu" or "cuda"
-        
-    Returns:
-        Tuple of (python_source, code)
     """
-    ir = extract_ir(kernel)
+    ir = extract_ir(fn, example_args)
     if device == "cuda" and ir.cuda_code:
         return (ir.python_source, ir.cuda_code)
-    return (ir.python_source, ir.cpp_code)
+    return (ir.python_source, ir.cpu_code)
 
 
 if __name__ == "__main__":
-    # Test with a simple kernel
-    wp.init()
-    
-    @wp.kernel
-    def test_kernel(a: wp.array(dtype=float), b: wp.array(dtype=float)):
-        tid = wp.tid()
-        b[tid] = a[tid] * 2.0
-    
-    ir = extract_ir(test_kernel)
+    # Minimal smoke test
+    def test_kernel(a: jnp.ndarray) -> jnp.ndarray:
+        return a * 2.0
+
+    args = (jnp.arange(8, dtype=jnp.float32),)
+    ir = extract_ir(test_kernel, args)
+
     print("=== Kernel Name ===")
     print(ir.kernel_name)
     print("\n=== Python Source ===")
     print(ir.python_source)
-    print("\n=== C++ Code (first 1500 chars) ===")
-    print(ir.cpp_code[:1500])
-    print("\n=== CUDA Code available ===")
+    print("\n=== CPU StableHLO/MLIR (first 1500 chars) ===")
+    print(ir.cpu_code[:1500])
+    print("\n=== CUDA code available ===")
     print("Yes" if ir.cuda_code else "No")
-    if ir.cuda_code:
-        print("\n=== CUDA Code (first 1500 chars) ===")
-        print(ir.cuda_code[:1500])

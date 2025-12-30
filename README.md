@@ -1,19 +1,19 @@
-# Warp JIT Code Synthesis Dataset
+# JAX JIT Code Synthesis Dataset
 
 Training data generation pipeline for LLM code translation: Python → C++/CUDA (with forward and backward passes).
 
 ## Overview
 
-This project uses NVIDIA Warp's JIT compilation to generate high-quality Python→C++/CUDA training pairs for large language models. Each sample contains:
-- Python kernel source code
-- **CPU C++ code** with forward and backward functions
-- **CUDA code** with forward and backward functions
+This project uses JAX compilation to generate high-quality **Python→StableHLO/MLIR** training pairs for large language models. Each sample contains:
+- Python function source code
+- **CPU StableHLO/MLIR** (lowered compiler IR), optionally with a backward pass
+- **GPU StableHLO/MLIR** when a CUDA-capable JAX backend is available
 
 ## Dataset
 
-**Location:** `jit/data/training_all.jsonl`  
-**Size:** 1,500 training pairs (18MB)  
-**Format:** JSONL (one JSON per line)
+This repo currently includes a **legacy Warp-generated** dataset at `jit/data/training_all.jsonl`.
+
+With the JAX pipeline in this branch, newly generated datasets will use `cpu_ir` / `cuda_ir` (StableHLO/MLIR text).
 
 ### Sample Format
 
@@ -21,9 +21,9 @@ This project uses NVIDIA Warp's JIT compilation to generate high-quality Python�
 {
   "id": 0,
   "kernel_name": "scalar_arr_qahf",
-  "python": "@wp.kernel\ndef scalar_arr_qahf(...):\n    ...",
-  "cpp": "... _cpu_kernel_forward(...) {...}\n... _cpu_kernel_backward(...) {...}",
-  "cuda": "... _cuda_kernel_forward(...) {...}\n... _cuda_kernel_backward(...) {...}",
+  "python": "def scalar_arr_qahf(...):\n    ...",
+  "cpu_ir": "module @jit_fn ...",
+  "cuda_ir": "module @jit_fn ...",
   "type": "generate_scalar_array_op"
 }
 ```
@@ -51,7 +51,7 @@ Each sample includes:
 
 ### Requirements
 ```bash
-pip install warp-lang
+pip install "jax[cpu]"
 ```
 
 ### Generate Training Data
@@ -98,9 +98,9 @@ jit/
 ## How It Works
 
 1. **Kernel Generation**: `generator.py` creates random Python kernels from 10 templates
-2. **JIT Compilation**: Warp compiles kernels for both CPU and CUDA backends
-3. **IR Extraction**: `ir_extractor.py` captures the generated code for both backends
-4. **Pair Creation**: Pipeline combines Python + C++ + CUDA into training samples
+2. **JIT Compilation**: JAX lowers/jits functions (CPU always; GPU if available)
+3. **IR Extraction**: `ir_extractor.py` captures StableHLO/MLIR text
+4. **Pair Creation**: Pipeline combines Python + IR into training samples
 
 ## Key Features
 
@@ -123,4 +123,4 @@ jit/
 
 ## License
 
-Uses NVIDIA Warp (BSD-3-Clause license).
+Uses JAX (Apache-2.0 license) and associated dependencies.

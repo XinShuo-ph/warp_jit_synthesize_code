@@ -1,4 +1,4 @@
-"""Synthesis Pipeline - Generates Python→C++ pairs for LLM training."""
+"""Synthesis Pipeline - Generates Python→IR pairs for LLM training (JAX StableHLO/MLIR)."""
 import json
 import os
 import sys
@@ -11,18 +11,19 @@ from dataclasses import dataclass, asdict
 # Add extraction module to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "extraction"))
 
-import warp as wp
 from generator import generate_kernel_batch, GENERATORS
 
 
 @dataclass
 class TrainingPair:
-    """A Python→C++ training pair."""
+    """A Python→IR training pair."""
     id: int
     kernel_name: str
     python_source: str
-    cpp_code: str
-    cuda_code: Optional[str]
+    cpu_ir: str
+    cuda_ir: Optional[str]
+    cpu_backward_ir: Optional[str]
+    cuda_backward_ir: Optional[str]
     generator_type: str
     
 
@@ -30,7 +31,9 @@ def create_module_from_source(source: str, module_name: str):
     """Create a Python module from source code string."""
     # Create a temp file to store the kernel
     with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
-        f.write("import warp as wp\n\n")
+        f.write("import jax\n")
+        f.write("import jax.numpy as jnp\n")
+        f.write("from jax import lax\n\n")
         f.write(source)
         temp_path = f.name
     
@@ -47,7 +50,7 @@ def create_module_from_source(source: str, module_name: str):
 
 
 def extract_ir_from_source(kernel_source: str, kernel_name: str, module_id: int):
-    """Extract C++ and CUDA IR from kernel source code."""
+    """Extract CPU/GPU StableHLO/MLIR from kernel source code."""
     from ir_extractor import extract_ir
     
     module_name = f"synth_module_{module_id}"
@@ -55,26 +58,28 @@ def extract_ir_from_source(kernel_source: str, kernel_name: str, module_id: int)
     try:
         module, temp_path = create_module_from_source(kernel_source, module_name)
         
-        # Find the kernel in the module
-        kernel = None
-        for name in dir(module):
-            obj = getattr(module, name)
-            if isinstance(obj, wp.Kernel):
-                kernel = obj
-                break
-        
-        if kernel is None:
-            raise ValueError(f"No kernel found in generated source")
-        
+        if not hasattr(module, kernel_name):
+            raise ValueError("No kernel function found in generated source")
+
+        fn = getattr(module, kernel_name)
+        if not callable(fn):
+            raise ValueError("Kernel name exists but is not callable")
+
+        if not hasattr(module, "EXAMPLE_ARGS"):
+            raise ValueError("Generated module missing EXAMPLE_ARGS")
+
+        example_args = getattr(module, "EXAMPLE_ARGS")
+        grad_argnums = getattr(module, "GRAD_ARGNUMS", (0,))
+
         # Extract IR
-        ir = extract_ir(kernel)
+        ir = extract_ir(fn, example_args, kernel_name=kernel_name, grad_argnums=tuple(grad_argnums))
         
         # Cleanup
         os.unlink(temp_path)
         if module_name in sys.modules:
             del sys.modules[module_name]
         
-        return ir.cpp_code, ir.cuda_code
+        return ir
         
     except Exception as e:
         # Cleanup on error
@@ -93,9 +98,7 @@ def generate_training_pairs(
     base_seed: int = 42,
     output_dir: Optional[str] = None
 ) -> List[TrainingPair]:
-    """Generate training pairs with both CPU and CUDA code."""
-    wp.init()
-    
+    """Generate training pairs with CPU and (optional) GPU IR."""
     pairs = []
     failed = 0
     
@@ -114,14 +117,16 @@ def generate_training_pairs(
         kernel_name = match.group(1) if match else f"kernel_{i}"
         
         try:
-            cpp_code, cuda_code = extract_ir_from_source(kernel_source, kernel_name, i)
+            ir = extract_ir_from_source(kernel_source, kernel_name, i)
             
             pair = TrainingPair(
                 id=i,
                 kernel_name=kernel_name,
                 python_source=kernel_source.strip(),
-                cpp_code=cpp_code,
-                cuda_code=cuda_code,
+                cpu_ir=ir.cpu_code,
+                cuda_ir=ir.cuda_code,
+                cpu_backward_ir=ir.cpu_backward_code,
+                cuda_backward_ir=ir.cuda_backward_code,
                 generator_type=generator.__name__
             )
             pairs.append(pair)
@@ -163,8 +168,6 @@ def generate_batch_to_jsonl(
         base_seed: Random seed base
         device: "cpu", "cuda", or "both"
     """
-    wp.init()
-    
     with open(output_path, 'w') as f:
         generated = 0
         failed = 0
@@ -182,7 +185,7 @@ def generate_batch_to_jsonl(
             kernel_name = match.group(1) if match else f"kernel_{i}"
             
             try:
-                cpp_code, cuda_code = extract_ir_from_source(kernel_source, kernel_name, i)
+                ir = extract_ir_from_source(kernel_source, kernel_name, i)
                 
                 pair = {
                     "id": i,
@@ -192,16 +195,24 @@ def generate_batch_to_jsonl(
                 }
                 
                 if device == "cpu":
-                    pair["cpp"] = cpp_code
+                    pair["cpu_ir"] = ir.cpu_code
+                    if ir.cpu_backward_code:
+                        pair["cpu_backward_ir"] = ir.cpu_backward_code
                 elif device == "cuda":
-                    if cuda_code:
-                        pair["cuda"] = cuda_code
+                    if ir.cuda_code:
+                        pair["cuda_ir"] = ir.cuda_code
+                        if ir.cuda_backward_code:
+                            pair["cuda_backward_ir"] = ir.cuda_backward_code
                     else:
                         continue  # Skip if no CUDA code
                 else:  # both
-                    pair["cpp"] = cpp_code
-                    if cuda_code:
-                        pair["cuda"] = cuda_code
+                    pair["cpu_ir"] = ir.cpu_code
+                    if ir.cpu_backward_code:
+                        pair["cpu_backward_ir"] = ir.cpu_backward_code
+                    if ir.cuda_code:
+                        pair["cuda_ir"] = ir.cuda_code
+                        if ir.cuda_backward_code:
+                            pair["cuda_backward_ir"] = ir.cuda_backward_code
                 
                 f.write(json.dumps(pair) + '\n')
                 generated += 1
@@ -225,8 +236,13 @@ if __name__ == "__main__":
     parser.add_argument("--output", type=str, default=None, help="Output directory or file")
     parser.add_argument("--seed", type=int, default=42, help="Base random seed")
     parser.add_argument("--jsonl", action="store_true", help="Output as JSONL")
-    parser.add_argument("--device", type=str, default="both", choices=["cpu", "cuda", "both"],
-                        help="Target device(s) for code generation")
+    parser.add_argument(
+        "--device",
+        type=str,
+        default="both",
+        choices=["cpu", "cuda", "both"],
+        help="Target device(s) for IR extraction",
+    )
     
     args = parser.parse_args()
     
@@ -243,8 +259,8 @@ if __name__ == "__main__":
             print(f"\n--- {pair.kernel_name} ({pair.generator_type}) ---")
             print("Python:")
             print(pair.python_source)
-            print(f"\nC++ ({len(pair.cpp_code)} chars):")
-            print(pair.cpp_code[:500] + "...")
-            if pair.cuda_code:
-                print(f"\nCUDA ({len(pair.cuda_code)} chars):")
-                print(pair.cuda_code[:500] + "...")
+            print(f"\nCPU IR ({len(pair.cpu_ir)} chars):")
+            print(pair.cpu_ir[:500] + "...")
+            if pair.cuda_ir:
+                print(f"\nCUDA IR ({len(pair.cuda_ir)} chars):")
+                print(pair.cuda_ir[:500] + "...")
