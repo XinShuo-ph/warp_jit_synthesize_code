@@ -1,23 +1,19 @@
-"""SAXPY (Single-precision A*X Plus Y) kernel test."""
-import warp as wp
+"""SAXPY (Single-precision A*X Plus Y) kernel test using JAX."""
 
-wp.init()
+import jax
+import jax.numpy as jnp
 
-@wp.kernel
-def saxpy(a: float, x: wp.array(dtype=float), y: wp.array(dtype=float), out: wp.array(dtype=float)):
-    tid = wp.tid()
-    out[tid] = a * x[tid] + y[tid]
+
+def saxpy(a, x, y):
+    return a * x + y
 
 if __name__ == "__main__":
     n = 8
     a = 2.0
-    x = wp.array([float(i) for i in range(n)], dtype=float)
-    y = wp.array([float(i * 10) for i in range(n)], dtype=float)
-    out = wp.zeros(n, dtype=float)
-    
-    wp.launch(saxpy, dim=n, inputs=[a, x, y, out])
-    
-    result = out.numpy()
+    x = jnp.arange(n, dtype=jnp.float32)
+    y = (jnp.arange(n, dtype=jnp.float32) * 10.0)
+
+    result = jax.jit(saxpy)(jnp.array(a, dtype=jnp.float32), x, y)
     expected = [a * i + i * 10 for i in range(n)]
     print(f"SAXPY result: {list(result)}")
     print(f"Expected: {expected}")

@@ -1,4 +1,9 @@
-"""Synthesis Pipeline - Generates Python→C++ pairs for LLM training."""
+"""Synthesis Pipeline - Generates Python→IR pairs for LLM training (JAX backend).
+
+Historical note: this repo originally used NVIDIA Warp to extract generated
+C++/CUDA. The JAX version extracts JAX compiler IR (e.g. StableHLO) for CPU and,
+when available, GPU.
+"""
 import json
 import os
 import sys
@@ -11,7 +16,6 @@ from dataclasses import dataclass, asdict
 # Add extraction module to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "extraction"))
 
-import warp as wp
 from generator import generate_kernel_batch, GENERATORS
 
 
@@ -30,7 +34,6 @@ def create_module_from_source(source: str, module_name: str):
     """Create a Python module from source code string."""
     # Create a temp file to store the kernel
     with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
-        f.write("import warp as wp\n\n")
         f.write(source)
         temp_path = f.name
     
@@ -47,7 +50,7 @@ def create_module_from_source(source: str, module_name: str):
 
 
 def extract_ir_from_source(kernel_source: str, kernel_name: str, module_id: int):
-    """Extract C++ and CUDA IR from kernel source code."""
+    """Extract CPU and CUDA IR from kernel source code."""
     from ir_extractor import extract_ir
     
     module_name = f"synth_module_{module_id}"
@@ -55,19 +58,31 @@ def extract_ir_from_source(kernel_source: str, kernel_name: str, module_id: int)
     try:
         module, temp_path = create_module_from_source(kernel_source, module_name)
         
-        # Find the kernel in the module
-        kernel = None
-        for name in dir(module):
-            obj = getattr(module, name)
-            if isinstance(obj, wp.Kernel):
-                kernel = obj
-                break
-        
-        if kernel is None:
-            raise ValueError(f"No kernel found in generated source")
+        # Find the function in the module (by name)
+        fn = getattr(module, kernel_name, None)
+        if fn is None or not callable(fn):
+            # Fall back: first callable defined in module scope
+            fn = None
+            for name in dir(module):
+                obj = getattr(module, name)
+                if callable(obj) and getattr(obj, "__module__", None) == module.__name__:
+                    fn = obj
+                    kernel_name = name
+                    break
+        if fn is None:
+            raise ValueError("No callable kernel function found in generated source")
+
+        # Example args are required for JAX lowering.
+        example_args = getattr(module, "EXAMPLE_ARGS", None)
+        if example_args is None:
+            example_args_fn = getattr(module, "example_args", None)
+            if callable(example_args_fn):
+                example_args = example_args_fn()
+        if example_args is None:
+            raise ValueError("Generated source did not define EXAMPLE_ARGS (required for JAX lowering)")
         
         # Extract IR
-        ir = extract_ir(kernel)
+        ir = extract_ir(fn, example_args, kernel_name=kernel_name, python_source=kernel_source.strip())
         
         # Cleanup
         os.unlink(temp_path)
@@ -94,8 +109,6 @@ def generate_training_pairs(
     output_dir: Optional[str] = None
 ) -> List[TrainingPair]:
     """Generate training pairs with both CPU and CUDA code."""
-    wp.init()
-    
     pairs = []
     failed = 0
     
@@ -163,8 +176,6 @@ def generate_batch_to_jsonl(
         base_seed: Random seed base
         device: "cpu", "cuda", or "both"
     """
-    wp.init()
-    
     with open(output_path, 'w') as f:
         generated = 0
         failed = 0
@@ -243,8 +254,8 @@ if __name__ == "__main__":
             print(f"\n--- {pair.kernel_name} ({pair.generator_type}) ---")
             print("Python:")
             print(pair.python_source)
-            print(f"\nC++ ({len(pair.cpp_code)} chars):")
+            print(f"\nCPU IR ({len(pair.cpp_code)} chars):")
             print(pair.cpp_code[:500] + "...")
             if pair.cuda_code:
-                print(f"\nCUDA ({len(pair.cuda_code)} chars):")
+                print(f"\nGPU IR ({len(pair.cuda_code)} chars):")
                 print(pair.cuda_code[:500] + "...")
