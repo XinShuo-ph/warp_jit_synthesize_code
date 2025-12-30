@@ -1,102 +1,139 @@
-"""IR Extractor - Extracts generated C++/CUDA code from Warp kernels."""
+"""IR Extractor - Extracts generated HLO/XLA code from JAX functions."""
 from dataclasses import dataclass
-from typing import Optional
-import warp as wp
-import warp._src.codegen
-import warp._src.context
+from typing import Optional, Callable, Any
+import jax
+import jax.numpy as jnp
+from jax import make_jaxpr
+from jax._src.interpreters import mlir
+from jax._src.lib import xla_client
+import inspect
 
 
 @dataclass
 class ExtractedIR:
-    """Container for extracted IR from a warp kernel."""
-    kernel_name: str
+    """Container for extracted IR from a JAX function."""
+    function_name: str
     python_source: str
-    cpp_code: str  # CPU code with forward + backward
-    cuda_code: Optional[str] = None  # CUDA code with forward + backward
+    jaxpr_code: str  # JAX intermediate representation
+    hlo_code: Optional[str] = None  # HLO (High-Level Optimizer) representation
+    optimized_hlo_code: Optional[str] = None  # Optimized HLO
+    
 
-
-def extract_ir(kernel: wp.Kernel, enable_backward: bool = True) -> ExtractedIR:
+def extract_ir(func: Callable, *args, enable_backward: bool = True, **kwargs) -> ExtractedIR:
     """
-    Extract IR (C++/CUDA code) from a Warp kernel.
+    Extract IR (JAXPR/HLO code) from a JAX function.
     
     Args:
-        kernel: A warp kernel decorated with @wp.kernel
-        enable_backward: Whether to include backward (adjoint) code
+        func: A Python function to be JIT-compiled
+        *args: Example inputs for the function
+        enable_backward: Whether to include backward (gradient) code
+        **kwargs: Additional keyword arguments for the function
         
     Returns:
-        ExtractedIR containing Python source and generated C++/CUDA code
+        ExtractedIR containing Python source and generated JAXPR/HLO code
     """
-    # Ensure the kernel's adjoint is built
-    if not hasattr(kernel, 'adj') or kernel.adj is None:
-        raise ValueError("Kernel has no adjoint - ensure it's decorated with @wp.kernel")
-    
-    module = kernel.module
-    
-    # Get or create hasher for the module
-    hasher = warp._src.context.ModuleHasher(module)
-    
-    # Create options dict
-    options = module.options.copy() if module.options else {}
-    options.setdefault("block_dim", 256)
-    options.setdefault("enable_backward", enable_backward)
-    options.setdefault("mode", "release")
-    
-    # Create a builder to generate code
-    builder = warp._src.context.ModuleBuilder(module, options, hasher)
-    
-    # Generate CPU code (includes both forward and backward)
-    cpp_code = builder.codegen("cpu")
-    
-    # Generate CUDA code (includes both forward and backward)
-    cuda_code = None
+    # Get Python source
     try:
-        cuda_code = builder.codegen("cuda")
-    except Exception:
-        pass  # CUDA codegen may not be available
+        python_source = inspect.getsource(func)
+    except:
+        python_source = f"# Source not available for {func.__name__}"
+    
+    # Get JAXPR (JAX's intermediate representation)
+    jaxpr = make_jaxpr(func)(*args, **kwargs)
+    jaxpr_str = str(jaxpr)
+    
+    # Get HLO representation
+    hlo_code = None
+    optimized_hlo_code = None
+    
+    try:
+        # Create a JIT-compiled version
+        jitted_func = jax.jit(func)
+        
+        # Lower to get HLO
+        lowered = jax.jit(func).lower(*args, **kwargs)
+        
+        # Get HLO text representation
+        hlo_code = lowered.as_text()
+        
+        # Get optimized HLO (after compilation)
+        compiled = lowered.compile()
+        try:
+            # Try to get optimized HLO from compiled object
+            optimized_hlo_code = compiled.as_text()
+        except:
+            optimized_hlo_code = "# Optimized HLO not available"
+            
+    except Exception as e:
+        hlo_code = f"# HLO extraction failed: {e}"
+        optimized_hlo_code = "# Optimized HLO not available"
+    
+    # If backward is enabled, also extract gradient function IR
+    if enable_backward:
+        try:
+            # Create gradient function
+            grad_func = jax.grad(func) if len(args) > 0 else None
+            if grad_func is not None:
+                grad_jaxpr = make_jaxpr(grad_func)(*args, **kwargs)
+                jaxpr_str += "\n\n# Backward (Gradient) JAXPR:\n" + str(grad_jaxpr)
+                
+                # Get HLO for gradient
+                grad_lowered = jax.jit(grad_func).lower(*args, **kwargs)
+                grad_hlo = grad_lowered.as_text()
+                hlo_code += "\n\n# Backward (Gradient) HLO:\n" + grad_hlo
+        except Exception as e:
+            jaxpr_str += f"\n\n# Gradient extraction failed: {e}"
     
     return ExtractedIR(
-        kernel_name=kernel.key,
-        python_source=kernel.adj.source,
-        cpp_code=cpp_code,
-        cuda_code=cuda_code,
+        function_name=func.__name__,
+        python_source=python_source,
+        jaxpr_code=jaxpr_str,
+        hlo_code=hlo_code,
+        optimized_hlo_code=optimized_hlo_code,
     )
 
 
-def extract_ir_pair(kernel: wp.Kernel, device: str = "cpu") -> tuple[str, str]:
+def extract_ir_pair(func: Callable, *args, device: str = "cpu", **kwargs) -> tuple[str, str]:
     """
-    Extract Python→C++ pair suitable for LLM training.
+    Extract Python→HLO pair suitable for LLM training.
     
     Args:
-        kernel: A warp kernel
-        device: "cpu" or "cuda"
+        func: A JAX function
+        *args: Example inputs
+        device: "cpu" or "gpu" (JAX automatically handles device placement)
+        **kwargs: Additional keyword arguments
         
     Returns:
-        Tuple of (python_source, code)
+        Tuple of (python_source, ir_code)
     """
-    ir = extract_ir(kernel)
-    if device == "cuda" and ir.cuda_code:
-        return (ir.python_source, ir.cuda_code)
-    return (ir.python_source, ir.cpp_code)
+    ir = extract_ir(func, *args, **kwargs)
+    # For JAX, we use HLO as the primary IR representation
+    ir_code = ir.hlo_code if ir.hlo_code else ir.jaxpr_code
+    return (ir.python_source, ir_code)
 
 
 if __name__ == "__main__":
-    # Test with a simple kernel
-    wp.init()
+    # Test with a simple function
+    def test_function(a, b):
+        """Simple test function."""
+        return a * 2.0 + b
     
-    @wp.kernel
-    def test_kernel(a: wp.array(dtype=float), b: wp.array(dtype=float)):
-        tid = wp.tid()
-        b[tid] = a[tid] * 2.0
+    # Create example inputs
+    a = jnp.array([1.0, 2.0, 3.0])
+    b = jnp.array([4.0, 5.0, 6.0])
     
-    ir = extract_ir(test_kernel)
-    print("=== Kernel Name ===")
-    print(ir.kernel_name)
+    ir = extract_ir(test_function, a, b)
+    print("=== Function Name ===")
+    print(ir.function_name)
     print("\n=== Python Source ===")
     print(ir.python_source)
-    print("\n=== C++ Code (first 1500 chars) ===")
-    print(ir.cpp_code[:1500])
-    print("\n=== CUDA Code available ===")
-    print("Yes" if ir.cuda_code else "No")
-    if ir.cuda_code:
-        print("\n=== CUDA Code (first 1500 chars) ===")
-        print(ir.cuda_code[:1500])
+    print("\n=== JAXPR Code ===")
+    print(ir.jaxpr_code)
+    print("\n=== HLO Code available ===")
+    print("Yes" if ir.hlo_code else "No")
+    if ir.hlo_code and len(ir.hlo_code) < 2000:
+        print("\n=== HLO Code ===")
+        print(ir.hlo_code)
+    elif ir.hlo_code:
+        print("\n=== HLO Code (first 1500 chars) ===")
+        print(ir.hlo_code[:1500])
