@@ -1,9 +1,11 @@
-"""Kernel Generator - Generates varied Warp kernels programmatically."""
+"""Kernel Generator - Generates varied JAX kernels programmatically."""
 import random
 import string
 from dataclasses import dataclass
 from typing import List, Optional
 
+# JAX imports are generated in the source strings, but we don't strictly need them here 
+# unless we want to validate.
 
 @dataclass
 class KernelSpec:
@@ -14,29 +16,19 @@ class KernelSpec:
     imports: List[str] = None
 
 
-# Type definitions for kernel arguments
-ARRAY_TYPES = [
-    "wp.array(dtype=float)",
-    "wp.array(dtype=int)",
-    "wp.array(dtype=wp.vec3)",
-    "wp.array(dtype=wp.vec2)",
-]
-
-SCALAR_TYPES = ["float", "int"]
-
 # Binary operations
 BINARY_OPS = [
-    ("+", "wp.add"),
-    ("-", "wp.sub"),
-    ("*", "wp.mul"),
+    ("+", "jnp.add"),
+    ("-", "jnp.subtract"),
+    ("*", "jnp.multiply"),
 ]
 
 # Unary operations
 UNARY_OPS = [
-    ("wp.sqrt", "sqrt"),
-    ("wp.abs", "abs"),
-    ("wp.sin", "sin"),
-    ("wp.cos", "cos"),
+    ("jnp.sqrt", "sqrt"),
+    ("jnp.abs", "abs"),
+    ("jnp.sin", "sin"),
+    ("jnp.cos", "cos"),
 ]
 
 
@@ -54,10 +46,13 @@ def generate_simple_elementwise(seed: int = None) -> str:
     name = random_name("elementwise")
     op_sym, _ = random.choice(BINARY_OPS)
     
-    return f'''@wp.kernel
-def {name}(a: wp.array(dtype=float), b: wp.array(dtype=float), c: wp.array(dtype=float)):
-    tid = wp.tid()
-    c[tid] = a[tid] {op_sym} b[tid]
+    return f'''import jax
+import jax.numpy as jnp
+
+@jax.jit
+def {name}(a, b):
+    # Elementwise {op_sym}
+    return a {op_sym} b
 '''
 
 
@@ -70,10 +65,13 @@ def generate_scalar_array_op(seed: int = None) -> str:
     op1_sym, _ = random.choice(BINARY_OPS)
     op2_sym, _ = random.choice(BINARY_OPS)
     
-    return f'''@wp.kernel
-def {name}(alpha: float, x: wp.array(dtype=float), y: wp.array(dtype=float), out: wp.array(dtype=float)):
-    tid = wp.tid()
-    out[tid] = alpha {op1_sym} x[tid] {op2_sym} y[tid]
+    return f'''import jax
+import jax.numpy as jnp
+
+@jax.jit
+def {name}(alpha, x, y):
+    # Scalar-array operations
+    return alpha {op1_sym} x {op2_sym} y
 '''
 
 
@@ -85,15 +83,18 @@ def generate_unary_kernel(seed: int = None) -> str:
     name = random_name("unary")
     op_func, _ = random.choice(UNARY_OPS)
     
-    return f'''@wp.kernel
-def {name}(a: wp.array(dtype=float), b: wp.array(dtype=float)):
-    tid = wp.tid()
-    b[tid] = {op_func}(a[tid])
+    return f'''import jax
+import jax.numpy as jnp
+
+@jax.jit
+def {name}(a):
+    # Unary operation {op_func}
+    return {op_func}(a)
 '''
 
 
 def generate_branch_kernel(seed: int = None) -> str:
-    """Generate a kernel with branching."""
+    """Generate a kernel with branching using jnp.where."""
     if seed is not None:
         random.seed(seed)
     
@@ -104,46 +105,65 @@ def generate_branch_kernel(seed: int = None) -> str:
     const1 = round(random.uniform(0.5, 3.0), 1)
     const2 = round(random.uniform(0.5, 3.0), 1)
     
-    return f'''@wp.kernel
-def {name}(a: wp.array(dtype=float), b: wp.array(dtype=float)):
-    tid = wp.tid()
-    val = a[tid]
-    if val > {threshold}:
-        b[tid] = val {op1_sym} {const1}
-    else:
-        b[tid] = val {op2_sym} {const2}
+    return f'''import jax
+import jax.numpy as jnp
+
+@jax.jit
+def {name}(a):
+    # Branching with where
+    # if a > {threshold}: a {op1_sym} {const1} else: a {op2_sym} {const2}
+    return jnp.where(a > {threshold}, a {op1_sym} {const1}, a {op2_sym} {const2})
 '''
 
 
 def generate_loop_kernel(seed: int = None) -> str:
-    """Generate a kernel with a loop."""
+    """Generate a kernel with a loop using lax.scan or fori_loop."""
     if seed is not None:
         random.seed(seed)
     
     name = random_name("loop")
     op_sym, _ = random.choice(BINARY_OPS)
     
-    return f'''@wp.kernel
-def {name}(a: wp.array(dtype=float), b: wp.array(dtype=float), n: int):
-    tid = wp.tid()
-    total = float(0.0)
-    for i in range(n):
-        total = total {op_sym} a[tid]
-    b[tid] = total
+    # Simulating:
+    # total = 0
+    # for i in range(n):
+    #    total = total {op} a
+    # This implies repeated application.
+    # To keep it consistent with the Warp kernel which did `total = total op a[tid]` n times:
+    # Warp: `for i in range(n): total = total {op_sym} a[tid]`
+    # This means adding `a[tid]` n times to total.
+    # In JAX: `val = jax.lax.fori_loop(0, n, lambda i, v: v {op_sym} a, 0.0)`
+    
+    return f'''import jax
+import jax.numpy as jnp
+
+@jax.jit
+def {name}(a, n):
+    # Loop operation
+    def body_fun(i, val):
+        return val {op_sym} a
+    
+    # We apply the body_fun n times starting from 0.0
+    # Since 'a' is an array, this operates elementwise across 'a'
+    init_val = jnp.zeros_like(a)
+    return jax.lax.fori_loop(0, n, body_fun, init_val)
 '''
 
 
 def generate_reduction_kernel(seed: int = None) -> str:
-    """Generate an atomic reduction kernel."""
+    """Generate a reduction kernel."""
     if seed is not None:
         random.seed(seed)
     
     name = random_name("reduce")
     
-    return f'''@wp.kernel
-def {name}(a: wp.array(dtype=float), result: wp.array(dtype=float)):
-    tid = wp.tid()
-    wp.atomic_add(result, 0, a[tid])
+    return f'''import jax
+import jax.numpy as jnp
+
+@jax.jit
+def {name}(a):
+    # Reduction (sum)
+    return jnp.sum(a)
 '''
 
 
@@ -153,20 +173,34 @@ def generate_vector_kernel(seed: int = None) -> str:
         random.seed(seed)
     
     name = random_name("vec")
-    ops = ["wp.dot", "wp.length", "wp.cross"]
-    op = random.choice(ops[:2])  # dot or length
+    ops = ["jnp.dot", "jnp.linalg.norm"] # replacing length with norm
+    op = random.choice(ops)
     
-    if op == "wp.dot":
-        return f'''@wp.kernel
-def {name}(a: wp.array(dtype=wp.vec3), b: wp.array(dtype=wp.vec3), c: wp.array(dtype=float)):
-    tid = wp.tid()
-    c[tid] = wp.dot(a[tid], b[tid])
+    # Warp vec3 kernel operated on arrays of vec3.
+    # JAX: Inputs should be (N, 3).
+    # Operations should be mapped or vectorized along axis 1.
+    
+    if op == "jnp.dot":
+        # dot product of two (N, 3) arrays row-wise -> (N,)
+        return f'''import jax
+import jax.numpy as jnp
+
+@jax.jit
+def {name}(a, b):
+    # Vector dot product (row-wise for N x 3 arrays)
+    # a and b are expected to be shape (N, 3)
+    # contract over last axis
+    return jnp.sum(a * b, axis=-1)
 '''
     else:
-        return f'''@wp.kernel
-def {name}(a: wp.array(dtype=wp.vec3), b: wp.array(dtype=float)):
-    tid = wp.tid()
-    b[tid] = wp.length(a[tid])
+        # length/norm
+        return f'''import jax
+import jax.numpy as jnp
+
+@jax.jit
+def {name}(a):
+    # Vector length (row-wise for N x 3 arrays)
+    return jnp.linalg.norm(a, axis=-1)
 '''
 
 
@@ -180,12 +214,15 @@ def generate_multi_statement_kernel(seed: int = None) -> str:
     op2_sym, _ = random.choice(BINARY_OPS)
     unary_op, _ = random.choice(UNARY_OPS)
     
-    return f'''@wp.kernel
-def {name}(a: wp.array(dtype=float), b: wp.array(dtype=float), c: wp.array(dtype=float)):
-    tid = wp.tid()
-    temp1 = a[tid] {op1_sym} b[tid]
+    return f'''import jax
+import jax.numpy as jnp
+
+@jax.jit
+def {name}(a, b):
+    # Multi-statement
+    temp1 = a {op1_sym} b
     temp2 = {unary_op}(temp1)
-    c[tid] = temp2 {op2_sym} a[tid]
+    return temp2 {op2_sym} a
 '''
 
 
@@ -198,17 +235,19 @@ def generate_nested_branch_kernel(seed: int = None) -> str:
     t1 = round(random.uniform(-0.5, 0.5), 2)
     t2 = round(random.uniform(0.5, 1.5), 2)
     
-    return f'''@wp.kernel
-def {name}(a: wp.array(dtype=float), b: wp.array(dtype=float)):
-    tid = wp.tid()
-    val = a[tid]
-    if val > {t1}:
-        if val > {t2}:
-            b[tid] = val * 3.0
-        else:
-            b[tid] = val * 2.0
-    else:
-        b[tid] = val * 0.5
+    return f'''import jax
+import jax.numpy as jnp
+
+@jax.jit
+def {name}(a):
+    # Nested branching
+    # if a > {t1}:
+    #   if a > {t2}: a * 3.0
+    #   else: a * 2.0
+    # else: a * 0.5
+    
+    inner_branch = jnp.where(a > {t2}, a * 3.0, a * 2.0)
+    return jnp.where(a > {t1}, inner_branch, a * 0.5)
 '''
 
 
@@ -219,14 +258,17 @@ def generate_compound_kernel(seed: int = None) -> str:
     
     name = random_name("compound")
     
-    return f'''@wp.kernel
-def {name}(a: wp.array(dtype=float), b: wp.array(dtype=float), c: wp.array(dtype=float), scale: float):
-    tid = wp.tid()
-    x = a[tid]
-    y = b[tid]
+    return f'''import jax
+import jax.numpy as jnp
+
+@jax.jit
+def {name}(a, b, scale):
+    # Compound operations
+    x = a
+    y = b
     result = (x + y) * scale
-    result = result - wp.floor(result)
-    c[tid] = wp.abs(result)
+    result = result - jnp.floor(result)
+    return jnp.abs(result)
 '''
 
 
@@ -264,7 +306,7 @@ def generate_kernel_batch(count: int, base_seed: int = 42) -> List[str]:
 
 if __name__ == "__main__":
     # Test kernel generation
-    print("=== Testing Kernel Generator ===\n")
+    print("=== Testing JAX Kernel Generator ===\n")
     
     for i, gen_func in enumerate(GENERATORS):
         print(f"--- Generator: {gen_func.__name__} ---")
