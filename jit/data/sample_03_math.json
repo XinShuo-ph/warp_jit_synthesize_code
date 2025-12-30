@@ -1,0 +1,16 @@
+{
+  "function_name": "math_ops",
+  "python_source": "    def math_ops(x):\n        \"\"\"Combined math operations.\"\"\"\n        return jnp.tanh(jnp.sin(x) + jnp.exp(x))\n",
+  "ir_code": "module @jit_math_ops attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<3xf32>) -> (tensor<3xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.sine %arg0 : tensor<3xf32>\n    %1 = stablehlo.exponential %arg0 : tensor<3xf32>\n    %2 = stablehlo.add %0, %1 : tensor<3xf32>\n    %3 = stablehlo.tanh %2 : tensor<3xf32>\n    return %3 : tensor<3xf32>\n  }\n}\n",
+  "dialect": "stablehlo",
+  "signature": "(x)",
+  "input_info": [
+    {
+      "index": 0,
+      "shape": [
+        3
+      ],
+      "dtype": "float32"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "function_name": "array_transpose_1184",
+  "python_source": "# Source not available for array_transpose_1184",
+  "ir_code": "module @jit_array_transpose_1184 attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2x3xf32>) -> (tensor<3x2xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.transpose %arg0, dims = [1, 0] : (tensor<2x3xf32>) -> tensor<3x2xf32>\n    return %0 : tensor<3x2xf32>\n  }\n}\n",
+  "dialect": "stablehlo",
+  "signature": "(A)",
+  "input_info": [
+    {
+      "index": 0,
+      "shape": [
+        2,
+        3
+      ],
+      "dtype": "float32"
+    }
+  ],
+  "category": "array",
+  "operation": "transpose",
+  "complexity": "simple",
+  "generator_info": {
+    "category": "array",
+    "seed": 1185
+  }
+}

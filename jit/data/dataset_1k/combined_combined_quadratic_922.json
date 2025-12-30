@@ -1,0 +1,23 @@
+{
+  "function_name": "combined_quadratic_922",
+  "python_source": "# Source not available for combined_quadratic_922",
+  "ir_code": "module @jit_combined_quadratic_922 attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<3xf32>) -> (tensor<3xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.multiply %arg0, %arg0 : tensor<3xf32>\n    %cst = stablehlo.constant dense<2.000000e+00> : tensor<f32>\n    %1 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<3xf32>\n    %2 = stablehlo.multiply %1, %arg0 : tensor<3xf32>\n    %3 = stablehlo.add %0, %2 : tensor<3xf32>\n    %cst_0 = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %4 = stablehlo.broadcast_in_dim %cst_0, dims = [] : (tensor<f32>) -> tensor<3xf32>\n    %5 = stablehlo.add %3, %4 : tensor<3xf32>\n    return %5 : tensor<3xf32>\n  }\n}\n",
+  "dialect": "stablehlo",
+  "signature": "(x)",
+  "input_info": [
+    {
+      "index": 0,
+      "shape": [
+        3
+      ],
+      "dtype": "float32"
+    }
+  ],
+  "category": "combined",
+  "pattern": "quadratic",
+  "complexity": "medium",
+  "generator_info": {
+    "category": "combined",
+    "seed": 923
+  }
+}

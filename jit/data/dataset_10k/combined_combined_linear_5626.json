@@ -1,0 +1,38 @@
+{
+  "function_name": "combined_linear_5626",
+  "python_source": "# Source not available for combined_linear_5626",
+  "ir_code": "module @jit_combined_linear_5626 attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2x3xf32>, %arg1: tensor<3xf32>, %arg2: tensor<2xf32>) -> (tensor<2xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.dot_general %arg0, %arg1, contracting_dims = [1] x [0], precision = [DEFAULT, DEFAULT] : (tensor<2x3xf32>, tensor<3xf32>) -> tensor<2xf32>\n    %1 = stablehlo.add %0, %arg2 : tensor<2xf32>\n    return %1 : tensor<2xf32>\n  }\n}\n",
+  "dialect": "stablehlo",
+  "signature": "(W, x, b)",
+  "input_info": [
+    {
+      "index": 0,
+      "shape": [
+        2,
+        3
+      ],
+      "dtype": "float32"
+    },
+    {
+      "index": 1,
+      "shape": [
+        3
+      ],
+      "dtype": "float32"
+    },
+    {
+      "index": 2,
+      "shape": [
+        2
+      ],
+      "dtype": "float32"
+    }
+  ],
+  "category": "combined",
+  "pattern": "linear",
+  "complexity": "medium",
+  "generator_info": {
+    "category": "combined",
+    "seed": 5627
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "function_name": "control_where_9260",
+  "python_source": "# Source not available for control_where_9260",
+  "ir_code": "module @jit_control_where_9260 attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<5xf32>) -> (tensor<5xf32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %0 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<5xf32>\n    %1 = stablehlo.compare  GT, %arg0, %0,  FLOAT : (tensor<5xf32>, tensor<5xf32>) -> tensor<5xi1>\n    %2 = stablehlo.multiply %arg0, %arg0 : tensor<5xf32>\n    %3 = stablehlo.negate %arg0 : tensor<5xf32>\n    %4 = call @_where(%1, %2, %3) : (tensor<5xi1>, tensor<5xf32>, tensor<5xf32>) -> tensor<5xf32>\n    return %4 : tensor<5xf32>\n  }\n  func.func private @_where(%arg0: tensor<5xi1>, %arg1: tensor<5xf32>, %arg2: tensor<5xf32>) -> tensor<5xf32> {\n    %0 = stablehlo.select %arg0, %arg1, %arg2 : tensor<5xi1>, tensor<5xf32>\n    return %0 : tensor<5xf32>\n  }\n}\n",
+  "dialect": "stablehlo",
+  "signature": "(x)",
+  "input_info": [
+    {
+      "index": 0,
+      "shape": [
+        5
+      ],
+      "dtype": "float32"
+    }
+  ],
+  "category": "control_flow",
+  "type": "where",
+  "complexity": "medium",
+  "generator_info": {
+    "category": "control_flow",
+    "seed": 9261
+  }
+}

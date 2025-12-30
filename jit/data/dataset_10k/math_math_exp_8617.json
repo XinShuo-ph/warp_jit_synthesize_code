@@ -1,0 +1,23 @@
+{
+  "function_name": "math_exp_8617",
+  "python_source": "# Source not available for math_exp_8617",
+  "ir_code": "module @jit_math_exp_8617 attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<3xf32>) -> (tensor<3xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.exponential %arg0 : tensor<3xf32>\n    return %0 : tensor<3xf32>\n  }\n}\n",
+  "dialect": "stablehlo",
+  "signature": "(x)",
+  "input_info": [
+    {
+      "index": 0,
+      "shape": [
+        3
+      ],
+      "dtype": "float32"
+    }
+  ],
+  "category": "math",
+  "function": "exp",
+  "complexity": "simple",
+  "generator_info": {
+    "category": "math",
+    "seed": 8618
+  }
+}

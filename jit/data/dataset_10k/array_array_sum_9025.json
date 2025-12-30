@@ -1,0 +1,23 @@
+{
+  "function_name": "array_sum_9025",
+  "python_source": "# Source not available for array_sum_9025",
+  "ir_code": "module @jit_array_sum_9025 attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %0 = stablehlo.reduce(%arg0 init: %cst) applies stablehlo.add across dimensions = [0] : (tensor<4xf32>, tensor<f32>) -> tensor<f32>\n    return %0 : tensor<f32>\n  }\n}\n",
+  "dialect": "stablehlo",
+  "signature": "(x)",
+  "input_info": [
+    {
+      "index": 0,
+      "shape": [
+        4
+      ],
+      "dtype": "float32"
+    }
+  ],
+  "category": "array",
+  "operation": "sum",
+  "complexity": "simple",
+  "generator_info": {
+    "category": "array",
+    "seed": 9026
+  }
+}

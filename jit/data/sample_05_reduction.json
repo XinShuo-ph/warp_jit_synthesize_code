@@ -1,0 +1,16 @@
+{
+  "function_name": "sum_squares",
+  "python_source": "    def sum_squares(x):\n        \"\"\"Sum of squares.\"\"\"\n        return jnp.sum(x ** 2)\n",
+  "ir_code": "module @jit_sum_squares attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.multiply %arg0, %arg0 : tensor<4xf32>\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %1 = stablehlo.reduce(%0 init: %cst) applies stablehlo.add across dimensions = [0] : (tensor<4xf32>, tensor<f32>) -> tensor<f32>\n    return %1 : tensor<f32>\n  }\n}\n",
+  "dialect": "stablehlo",
+  "signature": "(x)",
+  "input_info": [
+    {
+      "index": 0,
+      "shape": [
+        4
+      ],
+      "dtype": "float32"
+    }
+  ]
+}

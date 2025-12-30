@@ -1,0 +1,32 @@
+{
+  "function_name": "array_matmul_2896",
+  "python_source": "# Source not available for array_matmul_2896",
+  "ir_code": "module @jit_array_matmul_2896 attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2x2xf32>, %arg1: tensor<2x2xf32>) -> (tensor<2x2xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.dot_general %arg0, %arg1, contracting_dims = [1] x [0], precision = [DEFAULT, DEFAULT] : (tensor<2x2xf32>, tensor<2x2xf32>) -> tensor<2x2xf32>\n    return %0 : tensor<2x2xf32>\n  }\n}\n",
+  "dialect": "stablehlo",
+  "signature": "(A, B)",
+  "input_info": [
+    {
+      "index": 0,
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "float32"
+    },
+    {
+      "index": 1,
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "float32"
+    }
+  ],
+  "category": "array",
+  "operation": "matmul",
+  "complexity": "simple",
+  "generator_info": {
+    "category": "array",
+    "seed": 2897
+  }
+}

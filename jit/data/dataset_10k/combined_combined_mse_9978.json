@@ -1,0 +1,30 @@
+{
+  "function_name": "combined_mse_9978",
+  "python_source": "# Source not available for combined_mse_9978",
+  "ir_code": "module @jit_combined_mse_9978 attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<3xf32>, %arg1: tensor<3xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.subtract %arg0, %arg1 : tensor<3xf32>\n    %1 = stablehlo.multiply %0, %0 : tensor<3xf32>\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %2 = stablehlo.reduce(%1 init: %cst) applies stablehlo.add across dimensions = [0] : (tensor<3xf32>, tensor<f32>) -> tensor<f32>\n    %cst_0 = stablehlo.constant dense<3.000000e+00> : tensor<f32>\n    %3 = stablehlo.divide %2, %cst_0 : tensor<f32>\n    return %3 : tensor<f32>\n  }\n}\n",
+  "dialect": "stablehlo",
+  "signature": "(pred, target)",
+  "input_info": [
+    {
+      "index": 0,
+      "shape": [
+        3
+      ],
+      "dtype": "float32"
+    },
+    {
+      "index": 1,
+      "shape": [
+        3
+      ],
+      "dtype": "float32"
+    }
+  ],
+  "category": "combined",
+  "pattern": "mse",
+  "complexity": "medium",
+  "generator_info": {
+    "category": "combined",
+    "seed": 9979
+  }
+}

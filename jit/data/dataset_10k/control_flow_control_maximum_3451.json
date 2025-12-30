@@ -1,0 +1,30 @@
+{
+  "function_name": "control_maximum_3451",
+  "python_source": "# Source not available for control_maximum_3451",
+  "ir_code": "module @jit_control_maximum_3451 attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<3xf32>, %arg1: tensor<3xf32>) -> (tensor<3xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.maximum %arg0, %arg1 : tensor<3xf32>\n    return %0 : tensor<3xf32>\n  }\n}\n",
+  "dialect": "stablehlo",
+  "signature": "(x, y)",
+  "input_info": [
+    {
+      "index": 0,
+      "shape": [
+        3
+      ],
+      "dtype": "float32"
+    },
+    {
+      "index": 1,
+      "shape": [
+        3
+      ],
+      "dtype": "float32"
+    }
+  ],
+  "category": "control_flow",
+  "type": "maximum",
+  "complexity": "medium",
+  "generator_info": {
+    "category": "control_flow",
+    "seed": 3452
+  }
+}
