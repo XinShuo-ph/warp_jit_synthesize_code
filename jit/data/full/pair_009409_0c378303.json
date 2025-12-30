@@ -1,0 +1,10 @@
+{
+  "python_source": "def f(x, y): return ((((x * y) + y) ** y) + y)",
+  "jaxpr": "{ lambda ; a:f32[8] b:f32[8]. let\n    c:f32[8] = mul a b\n    d:f32[8] = add c b\n    e:f32[8] = integer_pow[y=2] d\n    f:f32[8] = add e b\n  in (f,) }",
+  "hlo_text": "module @jit_fn attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<8xf32>, %arg1: tensor<8xf32>) -> (tensor<8xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.multiply %arg0, %arg1 : tensor<8xf32>\n    %1 = stablehlo.add %0, %arg1 : tensor<8xf32>\n    %2 = stablehlo.multiply %1, %1 : tensor<8xf32>\n    %3 = stablehlo.add %2, %arg1 : tensor<8xf32>\n    return %3 : tensor<8xf32>\n  }\n}\n",
+  "input_shapes": [
+    "float32[8]",
+    "float32[8]"
+  ],
+  "seed": 9409
+}

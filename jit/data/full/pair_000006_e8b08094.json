@@ -1,0 +1,10 @@
+{
+  "python_source": "def f(x, y): return ((jnp.minimum(x, y) * y) + y)",
+  "jaxpr": "{ lambda ; a:f32[4] b:f32[4]. let\n    c:f32[4] = min a b\n    d:f32[4] = mul c b\n    e:f32[4] = add d b\n  in (e,) }",
+  "hlo_text": "module @jit_fn attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>, %arg1: tensor<4xf32>) -> (tensor<4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.minimum %arg0, %arg1 : tensor<4xf32>\n    %1 = stablehlo.multiply %0, %arg1 : tensor<4xf32>\n    %2 = stablehlo.add %1, %arg1 : tensor<4xf32>\n    return %2 : tensor<4xf32>\n  }\n}\n",
+  "input_shapes": [
+    "float32[4]",
+    "float32[4]"
+  ],
+  "seed": 6
+}

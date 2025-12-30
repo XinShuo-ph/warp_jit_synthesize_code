@@ -1,0 +1,10 @@
+{
+  "python_source": "def f(x, y): return jnp.minimum((jnp.maximum((x * y), y) / y), y)",
+  "jaxpr": "{ lambda ; a:f32[16] b:f32[16]. let\n    c:f32[16] = mul a b\n    d:f32[16] = max c b\n    e:f32[16] = add b 0.10000000149011612:f32[]\n    f:f32[16] = div d e\n    g:f32[16] = min f b\n  in (g,) }",
+  "hlo_text": "module @jit_fn attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<16xf32>, %arg1: tensor<16xf32>) -> (tensor<16xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.multiply %arg0, %arg1 : tensor<16xf32>\n    %1 = stablehlo.maximum %0, %arg1 : tensor<16xf32>\n    %cst = stablehlo.constant dense<1.000000e-01> : tensor<f32>\n    %2 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<16xf32>\n    %3 = stablehlo.add %arg1, %2 : tensor<16xf32>\n    %4 = stablehlo.divide %1, %3 : tensor<16xf32>\n    %5 = stablehlo.minimum %4, %arg1 : tensor<16xf32>\n    return %5 : tensor<16xf32>\n  }\n}\n",
+  "input_shapes": [
+    "float32[16]",
+    "float32[16]"
+  ],
+  "seed": 471
+}

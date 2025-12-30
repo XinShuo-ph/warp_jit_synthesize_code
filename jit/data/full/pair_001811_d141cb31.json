@@ -1,0 +1,9 @@
+{
+  "python_source": "def f(x): return x / jnp.sqrt(jnp.sum(x**2, axis=-1, keepdims=True) + 1e-5)",
+  "jaxpr": "{ lambda ; a:f32[8,8]. let\n    b:f32[8,8] = integer_pow[y=2] a\n    c:f32[8] = reduce_sum[axes=(1,) out_sharding=None] b\n    d:f32[8,1] = broadcast_in_dim[\n      broadcast_dimensions=(0,)\n      shape=(8, 1)\n      sharding=None\n    ] c\n    e:f32[8,1] = add d 9.999999747378752e-06:f32[]\n    f:f32[8,1] = sqrt e\n    g:f32[8,8] = div a f\n  in (g,) }",
+  "hlo_text": "module @jit_fn attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<8x8xf32>) -> (tensor<8x8xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.multiply %arg0, %arg0 : tensor<8x8xf32>\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %1 = stablehlo.reduce(%0 init: %cst) applies stablehlo.add across dimensions = [1] : (tensor<8x8xf32>, tensor<f32>) -> tensor<8xf32>\n    %2 = stablehlo.broadcast_in_dim %1, dims = [0] : (tensor<8xf32>) -> tensor<8x1xf32>\n    %cst_0 = stablehlo.constant dense<9.99999974E-6> : tensor<f32>\n    %3 = stablehlo.broadcast_in_dim %cst_0, dims = [] : (tensor<f32>) -> tensor<8x1xf32>\n    %4 = stablehlo.add %2, %3 : tensor<8x1xf32>\n    %5 = stablehlo.sqrt %4 : tensor<8x1xf32>\n    %6 = stablehlo.broadcast_in_dim %5, dims = [0, 1] : (tensor<8x1xf32>) -> tensor<8x8xf32>\n    %7 = stablehlo.divide %arg0, %6 : tensor<8x8xf32>\n    return %7 : tensor<8x8xf32>\n  }\n}\n",
+  "input_shapes": [
+    "float32[8, 8]"
+  ],
+  "seed": 1811
+}

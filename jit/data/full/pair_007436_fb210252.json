@@ -1,0 +1,9 @@
+{
+  "python_source": "def f(x): return jnp.mean(x)",
+  "jaxpr": "{ lambda ; a:f32[2,4,4]. let\n    b:f32[] = reduce_sum[axes=(0, 1, 2) out_sharding=None] a\n    c:f32[] = div b 32.0:f32[]\n  in (c,) }",
+  "hlo_text": "module @jit_fn attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2x4x4xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %0 = stablehlo.reduce(%arg0 init: %cst) applies stablehlo.add across dimensions = [0, 1, 2] : (tensor<2x4x4xf32>, tensor<f32>) -> tensor<f32>\n    %cst_0 = stablehlo.constant dense<3.200000e+01> : tensor<f32>\n    %1 = stablehlo.divide %0, %cst_0 : tensor<f32>\n    return %1 : tensor<f32>\n  }\n}\n",
+  "input_shapes": [
+    "float32[2, 4, 4]"
+  ],
+  "seed": 7436
+}

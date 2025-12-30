@@ -1,0 +1,9 @@
+{
+  "python_source": "def f(x): return 1 / (1 + jnp.exp(-x))",
+  "jaxpr": "{ lambda ; a:f32[16]. let\n    b:f32[16] = neg a\n    c:f32[16] = exp b\n    d:f32[16] = add 1.0:f32[] c\n    e:f32[16] = div 1.0:f32[] d\n  in (e,) }",
+  "hlo_text": "module @jit_fn attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<16xf32>) -> (tensor<16xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.negate %arg0 : tensor<16xf32>\n    %1 = stablehlo.exponential %0 : tensor<16xf32>\n    %cst = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %2 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<16xf32>\n    %3 = stablehlo.add %2, %1 : tensor<16xf32>\n    %cst_0 = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %4 = stablehlo.broadcast_in_dim %cst_0, dims = [] : (tensor<f32>) -> tensor<16xf32>\n    %5 = stablehlo.divide %4, %3 : tensor<16xf32>\n    return %5 : tensor<16xf32>\n  }\n}\n",
+  "input_shapes": [
+    "float32[16]"
+  ],
+  "seed": 10285
+}

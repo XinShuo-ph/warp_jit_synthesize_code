@@ -1,0 +1,9 @@
+{
+  "python_source": "def f(x): return jnp.prod(x, axis=-1)",
+  "jaxpr": "{ lambda ; a:f32[8,8]. let b:f32[8] = reduce_prod[axes=(1,)] a in (b,) }",
+  "hlo_text": "module @jit_fn attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<8x8xf32>) -> (tensor<8xf32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %0 = stablehlo.reduce(%arg0 init: %cst) applies stablehlo.multiply across dimensions = [1] : (tensor<8x8xf32>, tensor<f32>) -> tensor<8xf32>\n    return %0 : tensor<8xf32>\n  }\n}\n",
+  "input_shapes": [
+    "float32[8, 8]"
+  ],
+  "seed": 2551
+}

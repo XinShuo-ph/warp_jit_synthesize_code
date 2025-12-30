@@ -1,0 +1,10 @@
+{
+  "python_source": "def f(x, y): return jax.vmap(lambda a, b: jnp.dot(a, b))(x, y)",
+  "jaxpr": "{ lambda ; a:f32[8,4,4] b:f32[8,4,4]. let\n    c:f32[8,4,4] = dot_general[\n      dimension_numbers=(([2], [1]), ([0], [0]))\n      preferred_element_type=float32\n    ] a b\n  in (c,) }",
+  "hlo_text": "module @jit_fn attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<8x4x4xf32>, %arg1: tensor<8x4x4xf32>) -> (tensor<8x4x4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.dot_general %arg0, %arg1, batching_dims = [0] x [0], contracting_dims = [2] x [1], precision = [DEFAULT, DEFAULT] : (tensor<8x4x4xf32>, tensor<8x4x4xf32>) -> tensor<8x4x4xf32>\n    return %0 : tensor<8x4x4xf32>\n  }\n}\n",
+  "input_shapes": [
+    "float32[8, 4, 4]",
+    "float32[8, 4, 4]"
+  ],
+  "seed": 4493
+}

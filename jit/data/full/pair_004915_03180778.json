@@ -1,0 +1,9 @@
+{
+  "python_source": "def f(x): return jnp.where(x > 0, x, 0.01 * x)",
+  "jaxpr": "{ lambda ; a:f32[4,4]. let\n    b:bool[4,4] = gt a 0.0:f32[]\n    c:f32[4,4] = mul 0.009999999776482582:f32[] a\n    d:f32[4,4] = jit[\n      name=_where\n      jaxpr={ lambda ; b:bool[4,4] a:f32[4,4] c:f32[4,4]. let\n          d:f32[4,4] = select_n b c a\n        in (d,) }\n    ] b a c\n  in (d,) }",
+  "hlo_text": "module @jit_fn attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4x4xf32>) -> (tensor<4x4xf32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %0 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<4x4xf32>\n    %1 = stablehlo.compare  GT, %arg0, %0,  FLOAT : (tensor<4x4xf32>, tensor<4x4xf32>) -> tensor<4x4xi1>\n    %cst_0 = stablehlo.constant dense<0.00999999977> : tensor<f32>\n    %2 = stablehlo.broadcast_in_dim %cst_0, dims = [] : (tensor<f32>) -> tensor<4x4xf32>\n    %3 = stablehlo.multiply %2, %arg0 : tensor<4x4xf32>\n    %4 = call @_where(%1, %arg0, %3) : (tensor<4x4xi1>, tensor<4x4xf32>, tensor<4x4xf32>) -> tensor<4x4xf32>\n    return %4 : tensor<4x4xf32>\n  }\n  func.func private @_where(%arg0: tensor<4x4xi1>, %arg1: tensor<4x4xf32>, %arg2: tensor<4x4xf32>) -> tensor<4x4xf32> {\n    %0 = stablehlo.select %arg0, %arg1, %arg2 : tensor<4x4xi1>, tensor<4x4xf32>\n    return %0 : tensor<4x4xf32>\n  }\n}\n",
+  "input_shapes": [
+    "float32[4, 4]"
+  ],
+  "seed": 4915
+}

@@ -1,0 +1,9 @@
+{
+  "python_source": "def f(x): return jnp.exp(x)",
+  "jaxpr": "{ lambda ; a:f32[4]. let b:f32[4] = exp a in (b,) }",
+  "hlo_text": "module @jit_fn attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>) -> (tensor<4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.exponential %arg0 : tensor<4xf32>\n    return %0 : tensor<4xf32>\n  }\n}\n",
+  "input_shapes": [
+    "float32[4]"
+  ],
+  "seed": 9800
+}

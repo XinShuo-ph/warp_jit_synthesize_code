@@ -1,0 +1,10 @@
+{
+  "python_source": "def f(x, y): return ((((x + y) ** y) - y) * y)",
+  "jaxpr": "{ lambda ; a:f32[4,4] b:f32[4,4]. let\n    c:f32[4,4] = add a b\n    d:f32[4,4] = integer_pow[y=2] c\n    e:f32[4,4] = sub d b\n    f:f32[4,4] = mul e b\n  in (f,) }",
+  "hlo_text": "module @jit_fn attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4x4xf32>, %arg1: tensor<4x4xf32>) -> (tensor<4x4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.add %arg0, %arg1 : tensor<4x4xf32>\n    %1 = stablehlo.multiply %0, %0 : tensor<4x4xf32>\n    %2 = stablehlo.subtract %1, %arg1 : tensor<4x4xf32>\n    %3 = stablehlo.multiply %2, %arg1 : tensor<4x4xf32>\n    return %3 : tensor<4x4xf32>\n  }\n}\n",
+  "input_shapes": [
+    "float32[4, 4]",
+    "float32[4, 4]"
+  ],
+  "seed": 3946
+}

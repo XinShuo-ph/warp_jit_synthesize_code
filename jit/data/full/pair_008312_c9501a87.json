@@ -1,0 +1,9 @@
+{
+  "python_source": "def f(x): return x * 0.5 * (1 + jnp.tanh(0.7978845608 * (x + 0.044715 * x**3)))",
+  "jaxpr": "{ lambda ; a:f32[4]. let\n    b:f32[4] = mul a 0.5:f32[]\n    c:f32[4] = integer_pow[y=3] a\n    d:f32[4] = mul 0.044714998453855515:f32[] c\n    e:f32[4] = add a d\n    f:f32[4] = mul 0.7978845834732056:f32[] e\n    g:f32[4] = tanh f\n    h:f32[4] = add 1.0:f32[] g\n    i:f32[4] = mul b h\n  in (i,) }",
+  "hlo_text": "module @jit_fn attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>) -> (tensor<4xf32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<5.000000e-01> : tensor<f32>\n    %0 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %1 = stablehlo.multiply %arg0, %0 : tensor<4xf32>\n    %2 = stablehlo.multiply %arg0, %arg0 : tensor<4xf32>\n    %3 = stablehlo.multiply %2, %arg0 : tensor<4xf32>\n    %cst_0 = stablehlo.constant dense<4.471500e-02> : tensor<f32>\n    %4 = stablehlo.broadcast_in_dim %cst_0, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %5 = stablehlo.multiply %4, %3 : tensor<4xf32>\n    %6 = stablehlo.add %arg0, %5 : tensor<4xf32>\n    %cst_1 = stablehlo.constant dense<0.797884583> : tensor<f32>\n    %7 = stablehlo.broadcast_in_dim %cst_1, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %8 = stablehlo.multiply %7, %6 : tensor<4xf32>\n    %9 = stablehlo.tanh %8 : tensor<4xf32>\n    %cst_2 = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %10 = stablehlo.broadcast_in_dim %cst_2, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %11 = stablehlo.add %10, %9 : tensor<4xf32>\n    %12 = stablehlo.multiply %1, %11 : tensor<4xf32>\n    return %12 : tensor<4xf32>\n  }\n}\n",
+  "input_shapes": [
+    "float32[4]"
+  ],
+  "seed": 8312
+}

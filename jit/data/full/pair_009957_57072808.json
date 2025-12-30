@@ -1,0 +1,9 @@
+{
+  "python_source": "def f(x): return jnp.max(x)",
+  "jaxpr": "{ lambda ; a:f32[8,8]. let b:f32[] = reduce_max[axes=(0, 1)] a in (b,) }",
+  "hlo_text": "module @jit_fn attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<8x8xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<0xFF800000> : tensor<f32>\n    %0 = stablehlo.reduce(%arg0 init: %cst) applies stablehlo.maximum across dimensions = [0, 1] : (tensor<8x8xf32>, tensor<f32>) -> tensor<f32>\n    return %0 : tensor<f32>\n  }\n}\n",
+  "input_shapes": [
+    "float32[8, 8]"
+  ],
+  "seed": 9957
+}

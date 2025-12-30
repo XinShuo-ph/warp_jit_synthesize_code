@@ -1,0 +1,9 @@
+{
+  "python_source": "def f(x): return jnp.log(jnp.abs(x) + 0.1)",
+  "jaxpr": "{ lambda ; a:f32[16]. let\n    b:f32[16] = abs a\n    c:f32[16] = add b 0.10000000149011612:f32[]\n    d:f32[16] = log c\n  in (d,) }",
+  "hlo_text": "module @jit_fn attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<16xf32>) -> (tensor<16xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.abs %arg0 : tensor<16xf32>\n    %cst = stablehlo.constant dense<1.000000e-01> : tensor<f32>\n    %1 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<16xf32>\n    %2 = stablehlo.add %0, %1 : tensor<16xf32>\n    %3 = stablehlo.log %2 : tensor<16xf32>\n    return %3 : tensor<16xf32>\n  }\n}\n",
+  "input_shapes": [
+    "float32[16]"
+  ],
+  "seed": 7810
+}

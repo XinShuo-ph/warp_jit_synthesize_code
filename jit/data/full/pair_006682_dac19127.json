@@ -1,0 +1,10 @@
+{
+  "python_source": "def f(x, y): return (jnp.maximum(((x / y) / y), y) / y)",
+  "jaxpr": "{ lambda ; a:f32[8] b:f32[8]. let\n    c:f32[8] = add b 0.10000000149011612:f32[]\n    d:f32[8] = div a c\n    e:f32[8] = add b 0.10000000149011612:f32[]\n    f:f32[8] = div d e\n    g:f32[8] = max f b\n    h:f32[8] = add b 0.10000000149011612:f32[]\n    i:f32[8] = div g h\n  in (i,) }",
+  "hlo_text": "module @jit_fn attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<8xf32>, %arg1: tensor<8xf32>) -> (tensor<8xf32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<1.000000e-01> : tensor<f32>\n    %0 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<8xf32>\n    %1 = stablehlo.add %arg1, %0 : tensor<8xf32>\n    %2 = stablehlo.divide %arg0, %1 : tensor<8xf32>\n    %cst_0 = stablehlo.constant dense<1.000000e-01> : tensor<f32>\n    %3 = stablehlo.broadcast_in_dim %cst_0, dims = [] : (tensor<f32>) -> tensor<8xf32>\n    %4 = stablehlo.add %arg1, %3 : tensor<8xf32>\n    %5 = stablehlo.divide %2, %4 : tensor<8xf32>\n    %6 = stablehlo.maximum %5, %arg1 : tensor<8xf32>\n    %cst_1 = stablehlo.constant dense<1.000000e-01> : tensor<f32>\n    %7 = stablehlo.broadcast_in_dim %cst_1, dims = [] : (tensor<f32>) -> tensor<8xf32>\n    %8 = stablehlo.add %arg1, %7 : tensor<8xf32>\n    %9 = stablehlo.divide %6, %8 : tensor<8xf32>\n    return %9 : tensor<8xf32>\n  }\n}\n",
+  "input_shapes": [
+    "float32[8]",
+    "float32[8]"
+  ],
+  "seed": 6682
+}
