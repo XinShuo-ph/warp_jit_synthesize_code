@@ -1,18 +1,17 @@
-# Warp JIT Code Synthesis Dataset
+# JAX JIT Code Synthesis Dataset
 
-Training data generation pipeline for LLM code translation: Python → C++/CUDA (with forward and backward passes).
+Training data generation pipeline for LLM code translation: Python → XLA HLO (with forward and backward passes).
 
 ## Overview
 
-This project uses NVIDIA Warp's JIT compilation to generate high-quality Python→C++/CUDA training pairs for large language models. Each sample contains:
-- Python kernel source code
-- **CPU C++ code** with forward and backward functions
-- **CUDA code** with forward and backward functions
+This project uses Google JAX's JIT compilation to generate high-quality Python→XLA HLO training pairs for large language models. Each sample contains:
+- Python function source code
+- **XLA HLO representation** with forward and backward (gradient) functions
+- **Optimized HLO** (when available)
 
 ## Dataset
 
 **Location:** `jit/data/training_all.jsonl`  
-**Size:** 1,500 training pairs (18MB)  
 **Format:** JSONL (one JSON per line)
 
 ### Sample Format
@@ -21,59 +20,60 @@ This project uses NVIDIA Warp's JIT compilation to generate high-quality Python�
 {
   "id": 0,
   "kernel_name": "scalar_arr_qahf",
-  "python": "@wp.kernel\ndef scalar_arr_qahf(...):\n    ...",
-  "cpp": "... _cpu_kernel_forward(...) {...}\n... _cpu_kernel_backward(...) {...}",
-  "cuda": "... _cuda_kernel_forward(...) {...}\n... _cuda_kernel_backward(...) {...}",
+  "python": "def scalar_arr_qahf(alpha, x, y):\n    \"\"\"Scalar and array operations.\"\"\"\n    return alpha * x + y",
+  "hlo": "... HloModule with forward and backward passes ...",
+  "optimized_hlo": "... optimized XLA HLO code ...",
   "type": "generate_scalar_array_op"
 }
 ```
 
 Each sample includes:
-- **`cpp`**: Full CPU C++ code with forward + backward functions
-- **`cuda`**: Full CUDA code with forward + backward functions
+- **`python`**: Python function source code
+- **`hlo`**: XLA HLO intermediate representation with forward + backward passes
+- **`optimized_hlo`**: Optimized HLO (when available)
 
 ## Kernel Types (10 categories)
 
 | Type | Description | Example |
 |------|-------------|---------|
-| `elementwise` | Basic arithmetic (+, -, *) | `c[i] = a[i] + b[i]` |
-| `scalar_array` | Scalar + array ops | `out[i] = alpha * x[i]` |
-| `unary` | Math functions | `b[i] = wp.sin(a[i])` |
-| `branch` | Conditionals | `if val > 0: ...` |
-| `loop` | For loops | `for i in range(n): ...` |
-| `reduction` | Atomic ops | `wp.atomic_add(result, 0, a[i])` |
-| `vector` | Vec3 operations | `c[i] = wp.dot(a[i], b[i])` |
-| `multi_statement` | Chained ops | `temp = a+b; c = sqrt(temp)` |
-| `nested_branch` | Nested if/else | `if a > 0: if a > 1: ...` |
-| `compound` | Mixed patterns | Complex multi-op kernels |
+| `elementwise` | Basic arithmetic (+, -, *) | `return a + b` |
+| `scalar_array` | Scalar + array ops | `return alpha * x + y` |
+| `unary` | Math functions | `return jnp.sin(a)` |
+| `branch` | Conditionals | `jnp.where(a > 0, ...)` |
+| `loop` | Reductions/scans | `jax.lax.scan(...)` |
+| `reduction` | Sum/reduce ops | `return jnp.sum(a)` |
+| `vector` | Vector operations | `return jnp.sum(a * b, axis=-1)` |
+| `multi_statement` | Chained ops | `temp = a+b; return jnp.sqrt(temp)` |
+| `nested_branch` | Nested conditionals | `jnp.where(a > 0, jnp.where(...))` |
+| `compound` | Mixed patterns | Complex multi-op functions |
 
 ## Quick Start
 
 ### Requirements
 ```bash
-pip install warp-lang
+pip install -r requirements.txt
+# or manually:
+pip install jax[cpu] jaxlib numpy
 ```
 
 ### Generate Training Data
 ```bash
 cd jit
 
-# Generate 100 pairs with both CPU and CUDA (demo)
+# Generate 100 pairs (demo)
 python3 code/synthesis/pipeline.py --count 100
 
-# Generate to JSONL file with both CPU and CUDA
-python3 code/synthesis/pipeline.py --count 1000 --output data/my_data.jsonl --jsonl --device both
+# Generate to JSONL file
+python3 code/synthesis/pipeline.py --count 1000 --output data/my_data.jsonl --jsonl
 
-# Generate CPU-only data
-python3 code/synthesis/pipeline.py --count 1000 --output data/cpu_only.jsonl --jsonl --device cpu
-
-# Generate CUDA-only data
-python3 code/synthesis/pipeline.py --count 1000 --output data/cuda_only.jsonl --jsonl --device cuda
+# Specify device (note: JAX HLO is device-agnostic until final compilation)
+python3 code/synthesis/pipeline.py --count 1000 --output data/training.jsonl --jsonl --device both
 ```
 
 ### Test IR Extraction
 ```bash
 python3 jit/code/extraction/ir_extractor.py
+python3 jit/code/extraction/test_ir_extractor.py
 ```
 
 ## Project Structure
@@ -82,45 +82,55 @@ python3 jit/code/extraction/ir_extractor.py
 jit/
 ├── code/
 │   ├── extraction/
-│   │   └── ir_extractor.py      # Core IR extraction (CPU + CUDA)
-│   └── synthesis/
-│       ├── generator.py         # 10 kernel type generators
-│       ├── pipeline.py          # Main synthesis pipeline
-│       └── batch_generator.py   # Scalable batch generation
+│   │   ├── ir_extractor.py      # Core XLA HLO extraction
+│   │   └── test_ir_extractor.py # Test IR extraction
+│   ├── synthesis/
+│   │   ├── generator.py         # 10 kernel type generators
+│   │   ├── pipeline.py          # Main synthesis pipeline
+│   │   └── batch_generator.py   # Scalable batch generation
+│   └── examples/
+│       ├── test_add_kernel.py   # Simple addition example
+│       ├── test_saxpy.py        # SAXPY example
+│       └── test_dot_product.py  # Dot product example
 ├── data/
-│   ├── training_all.jsonl       # Main dataset (1,500 pairs, 18MB)
+│   ├── training_all.jsonl       # Main dataset
 │   └── samples/                 # Sample pairs (JSON)
 └── notes/
-    ├── warp_basics.md           # Warp compilation flow
-    └── ir_format.md             # C++ IR structure docs
+    ├── warp_basics.md           # (legacy) Warp documentation
+    └── ir_format.md             # (legacy) C++ IR docs
 ```
 
 ## How It Works
 
-1. **Kernel Generation**: `generator.py` creates random Python kernels from 10 templates
-2. **JIT Compilation**: Warp compiles kernels for both CPU and CUDA backends
-3. **IR Extraction**: `ir_extractor.py` captures the generated code for both backends
-4. **Pair Creation**: Pipeline combines Python + C++ + CUDA into training samples
+1. **Function Generation**: `generator.py` creates random Python functions from 10 templates
+2. **JIT Compilation**: JAX compiles functions to XLA HLO (High-Level Operations)
+3. **IR Extraction**: `ir_extractor.py` captures XLA HLO and optimized representations
+4. **Pair Creation**: Pipeline combines Python source + XLA HLO into training samples
 
 ## Key Features
 
-- **CPU + CUDA**: Both backends included in every sample
-- **Forward + Backward**: Both gradient functions included (critical for differentiable programming)
+- **XLA HLO**: Standard intermediate representation used by JAX, TensorFlow, and PyTorch 2.0+
+- **Forward + Backward**: Automatic differentiation with gradient functions
+- **Device-Agnostic**: XLA HLO compiles to CPU, GPU, TPU
 - **Reproducible**: Seeded random generation for reproducibility
-- **10 Kernel Types**: Balanced coverage of common GPU patterns
+- **10 Function Types**: Balanced coverage of common array operations
 - **Production Ready**: Validated, clean JSONL format
 
-## CPU vs CUDA Code Differences
+## XLA HLO Advantages
 
-**CPU code** uses:
-- Sequential execution via `for (task_index = 0; ...)`
-- Args passed via struct pointer
+**XLA HLO** (High-Level Operations):
+- Device-agnostic intermediate representation
+- Used by JAX, TensorFlow, PyTorch 2.0+
+- Optimized by XLA compiler for target hardware
+- Includes fusion, layout optimization, memory planning
+- Supports automatic differentiation
 
-**CUDA code** uses:
-- Parallel execution via `blockIdx`, `threadIdx`
-- Grid-stride loop pattern
-- Direct parameter passing
+**JAX Benefits**:
+- Pure functional programming model
+- Composable transformations (jit, grad, vmap, pmap)
+- NumPy-compatible API
+- Strong ecosystem and community
 
 ## License
 
-Uses NVIDIA Warp (BSD-3-Clause license).
+Uses Google JAX (Apache 2.0 license).

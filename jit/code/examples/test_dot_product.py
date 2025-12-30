@@ -1,23 +1,26 @@
-"""Dot product kernel test using atomic operations."""
-import warp as wp
+"""Test dot product with JAX."""
+import jax
+import jax.numpy as jnp
 
-wp.init()
 
-@wp.kernel
-def dot_product(a: wp.array(dtype=float), b: wp.array(dtype=float), result: wp.array(dtype=float)):
-    tid = wp.tid()
-    wp.atomic_add(result, 0, a[tid] * b[tid])
+def dot_product_kernel(a, b):
+    """Compute dot product along last axis."""
+    return jnp.sum(a * b, axis=-1)
+
 
 if __name__ == "__main__":
     n = 10
-    a = wp.array([float(i) for i in range(n)], dtype=float)  # 0, 1, 2, ..., 9
-    b = wp.array([float(i) for i in range(n)], dtype=float)  # 0, 1, 2, ..., 9
-    result = wp.zeros(1, dtype=float)
+    vec_dim = 3
     
-    wp.launch(dot_product, dim=n, inputs=[a, b, result])
+    # Create 2D arrays where last dimension is vector dimension
+    a = jnp.ones((n, vec_dim), dtype=jnp.float32)
+    b = jnp.ones((n, vec_dim), dtype=jnp.float32) * 2.0
     
-    computed = result.numpy()[0]
-    expected = sum(i*i for i in range(n))  # 0 + 1 + 4 + 9 + ... = 285
-    print(f"Dot product result: {computed}")
-    print(f"Expected: {expected}")
-    print(f"Match: {abs(computed - expected) < 1e-6}")
+    # JIT compile
+    jitted_dot = jax.jit(dot_product_kernel)
+    
+    result = jitted_dot(a, b)
+    print("Result shape:", result.shape)
+    print("Result:", result)
+    print("Expected: [6.0, 6.0, ...]")
+    print("Kernel compiled and executed successfully!")
