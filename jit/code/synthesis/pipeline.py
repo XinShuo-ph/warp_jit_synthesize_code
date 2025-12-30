@@ -1,4 +1,4 @@
-"""Synthesis Pipeline - Generates Python→C++ pairs for LLM training."""
+"""Synthesis Pipeline - Generates Python→HLO pairs for LLM training."""
 import json
 import os
 import sys
@@ -11,17 +11,18 @@ from dataclasses import dataclass, asdict
 # Add extraction module to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "extraction"))
 
-import warp as wp
+import jax
+import jax.numpy as jnp
 from generator import generate_kernel_batch, GENERATORS
 
 
 @dataclass
 class TrainingPair:
-    """A Python→C++ training pair."""
+    """A Python→HLO training pair."""
     id: int
     kernel_name: str
     python_source: str
-    cpp_code: str
+    cpp_code: str # Stores HLO
     cuda_code: Optional[str]
     generator_type: str
     
@@ -30,7 +31,7 @@ def create_module_from_source(source: str, module_name: str):
     """Create a Python module from source code string."""
     # Create a temp file to store the kernel
     with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
-        f.write("import warp as wp\n\n")
+        f.write("import jax\nimport jax.numpy as jnp\n\n")
         f.write(source)
         temp_path = f.name
     
@@ -47,7 +48,7 @@ def create_module_from_source(source: str, module_name: str):
 
 
 def extract_ir_from_source(kernel_source: str, kernel_name: str, module_id: int):
-    """Extract C++ and CUDA IR from kernel source code."""
+    """Extract HLO from kernel source code."""
     from ir_extractor import extract_ir
     
     module_name = f"synth_module_{module_id}"
@@ -59,12 +60,15 @@ def extract_ir_from_source(kernel_source: str, kernel_name: str, module_id: int)
         kernel = None
         for name in dir(module):
             obj = getattr(module, name)
-            if isinstance(obj, wp.Kernel):
+            # Check if it's a JAX jitted function
+            # We look for the 'lower' method which exists on Pjit objects
+            # Also ensure it's not a string (since strings have .lower())
+            if hasattr(obj, 'lower') and callable(obj.lower) and not isinstance(obj, str):
                 kernel = obj
                 break
         
         if kernel is None:
-            raise ValueError(f"No kernel found in generated source")
+            raise ValueError(f"No jitted function found in generated source")
         
         # Extract IR
         ir = extract_ir(kernel)
@@ -93,8 +97,7 @@ def generate_training_pairs(
     base_seed: int = 42,
     output_dir: Optional[str] = None
 ) -> List[TrainingPair]:
-    """Generate training pairs with both CPU and CUDA code."""
-    wp.init()
+    """Generate training pairs with HLO code."""
     
     pairs = []
     failed = 0
@@ -132,6 +135,8 @@ def generate_training_pairs(
         except Exception as e:
             failed += 1
             print(f"Failed to generate pair {i}: {e}")
+            import traceback
+            traceback.print_exc()
             continue
     
     print(f"\nTotal: {len(pairs)} pairs generated, {failed} failed")
@@ -161,9 +166,8 @@ def generate_batch_to_jsonl(
         count: Number of pairs to generate
         output_path: Output file path
         base_seed: Random seed base
-        device: "cpu", "cuda", or "both"
+        device: "cpu", "cuda", or "both" (Ignored for HLO as it is device independent usually)
     """
-    wp.init()
     
     with open(output_path, 'w') as f:
         generated = 0
@@ -191,17 +195,20 @@ def generate_batch_to_jsonl(
                     "type": generator.__name__
                 }
                 
+                # We put HLO in both cpp and cuda fields if requested, or just cpp
                 if device == "cpu":
                     pair["cpp"] = cpp_code
                 elif device == "cuda":
+                    # If we had cuda specific code we would use it, but for now we might just skip or use HLO
                     if cuda_code:
                         pair["cuda"] = cuda_code
                     else:
-                        continue  # Skip if no CUDA code
+                        # Fallback to HLO or skip?
+                        # Let's use HLO as it is compiled to CUDA
+                        pair["cuda"] = cpp_code 
                 else:  # both
                     pair["cpp"] = cpp_code
-                    if cuda_code:
-                        pair["cuda"] = cuda_code
+                    pair["cuda"] = cuda_code if cuda_code else cpp_code
                 
                 f.write(json.dumps(pair) + '\n')
                 generated += 1
@@ -211,6 +218,7 @@ def generate_batch_to_jsonl(
                     
             except Exception as e:
                 failed += 1
+                print(f"Failed to generate pair {i}: {e}")
                 continue
     
     print(f"\nTotal: {generated} pairs saved to {output_path}, {failed} failed")
@@ -220,7 +228,7 @@ def generate_batch_to_jsonl(
 if __name__ == "__main__":
     import argparse
     
-    parser = argparse.ArgumentParser(description="Generate Python→C++/CUDA training pairs")
+    parser = argparse.ArgumentParser(description="Generate Python→HLO training pairs")
     parser.add_argument("--count", type=int, default=10, help="Number of pairs to generate")
     parser.add_argument("--output", type=str, default=None, help="Output directory or file")
     parser.add_argument("--seed", type=int, default=42, help="Base random seed")
@@ -243,8 +251,8 @@ if __name__ == "__main__":
             print(f"\n--- {pair.kernel_name} ({pair.generator_type}) ---")
             print("Python:")
             print(pair.python_source)
-            print(f"\nC++ ({len(pair.cpp_code)} chars):")
+            print(f"\nHLO ({len(pair.cpp_code)} chars):")
             print(pair.cpp_code[:500] + "...")
             if pair.cuda_code:
-                print(f"\nCUDA ({len(pair.cuda_code)} chars):")
+                print(f"\nCUDA/Optimized HLO ({len(pair.cuda_code)} chars):")
                 print(pair.cuda_code[:500] + "...")

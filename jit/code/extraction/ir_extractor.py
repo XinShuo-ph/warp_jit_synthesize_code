@@ -1,102 +1,125 @@
-"""IR Extractor - Extracts generated C++/CUDA code from Warp kernels."""
+"""IR Extractor - Extracts generated JAX HLO from kernels."""
 from dataclasses import dataclass
 from typing import Optional
-import warp as wp
-import warp._src.codegen
-import warp._src.context
-
+import jax
+import jax.numpy as jnp
+import inspect
+import numpy as np
 
 @dataclass
 class ExtractedIR:
-    """Container for extracted IR from a warp kernel."""
+    """Container for extracted IR from a kernel."""
     kernel_name: str
     python_source: str
-    cpp_code: str  # CPU code with forward + backward
-    cuda_code: Optional[str] = None  # CUDA code with forward + backward
+    cpp_code: str  # We will store HLO here
+    cuda_code: Optional[str] = None  # We will store optimized HLO or backend specific code here if possible
 
+def get_dummy_inputs(func_name, arg_names):
+    """Generate dummy inputs based on argument names and kernel type."""
+    N = 128
+    inputs = []
+    
+    is_vector_kernel = "vec" in func_name
+    
+    for name in arg_names:
+        if name in ["n"]:
+            inputs.append(N)
+        elif name in ["scale", "alpha", "threshold", "val", "const1", "const2"]:
+            inputs.append(1.0) # float scalar
+        elif name in ["a", "b", "c", "x", "y", "out", "result", "temp1", "temp2"]:
+            if is_vector_kernel and name in ["a", "b"]:
+                inputs.append(jnp.ones((N, 3), dtype=jnp.float32))
+            else:
+                inputs.append(jnp.ones((N,), dtype=jnp.float32))
+        else:
+            # Default to float array
+            inputs.append(jnp.ones((N,), dtype=jnp.float32))
+            
+    return inputs
 
-def extract_ir(kernel: wp.Kernel, enable_backward: bool = True) -> ExtractedIR:
+def extract_ir(kernel_func, enable_backward: bool = True) -> ExtractedIR:
     """
-    Extract IR (C++/CUDA code) from a Warp kernel.
+    Extract IR (HLO) from a JAX kernel.
     
     Args:
-        kernel: A warp kernel decorated with @wp.kernel
-        enable_backward: Whether to include backward (adjoint) code
+        kernel_func: A JAX jitted function
+        enable_backward: Whether to include backward (adjoint) code (Not implemented for JAX HLO extraction yet in this simple script, usually handled by jax.grad)
         
     Returns:
-        ExtractedIR containing Python source and generated C++/CUDA code
+        ExtractedIR containing Python source and generated HLO
     """
-    # Ensure the kernel's adjoint is built
-    if not hasattr(kernel, 'adj') or kernel.adj is None:
-        raise ValueError("Kernel has no adjoint - ensure it's decorated with @wp.kernel")
     
-    module = kernel.module
+    # Unwrap jit to get original function for inspection if needed, 
+    # but we need the jitted version for lowering.
+    # jax.jit returns a Pjit object.
     
-    # Get or create hasher for the module
-    hasher = warp._src.context.ModuleHasher(module)
+    # Get argument names
+    # If it's a Pjit object, we might need to look at the wrapped function
+    if hasattr(kernel_func, '__wrapped__'):
+        orig_func = kernel_func.__wrapped__
+    else:
+        orig_func = kernel_func
+        
+    sig = inspect.signature(orig_func)
+    arg_names = list(sig.parameters.keys())
     
-    # Create options dict
-    options = module.options.copy() if module.options else {}
-    options.setdefault("block_dim", 256)
-    options.setdefault("enable_backward", enable_backward)
-    options.setdefault("mode", "release")
+    # Generate dummy inputs
+    inputs = get_dummy_inputs(orig_func.__name__, arg_names)
     
-    # Create a builder to generate code
-    builder = warp._src.context.ModuleBuilder(module, options, hasher)
+    # Lower to HLO
+    # We produce HLO text
+    lowered = kernel_func.lower(*inputs)
+    hlo_text = lowered.as_text()
     
-    # Generate CPU code (includes both forward and backward)
-    cpp_code = builder.codegen("cpu")
+    # If we want backend specific compilation:
+    # compiled = lowered.compile()
+    # asm = compiled.as_text() # This might be assembly
     
-    # Generate CUDA code (includes both forward and backward)
+    # For now, let's put HLO in cpp_code
+    cpp_code = hlo_text
+    
+    # If we want to simulate "CUDA code", we could try to compile for GPU if available,
+    # or just leave it empty.
+    # Or we can put the "optimized" HLO in cuda_code?
     cuda_code = None
-    try:
-        cuda_code = builder.codegen("cuda")
-    except Exception:
-        pass  # CUDA codegen may not be available
+    
+    # Extract source
+    source = inspect.getsource(orig_func)
     
     return ExtractedIR(
-        kernel_name=kernel.key,
-        python_source=kernel.adj.source,
+        kernel_name=orig_func.__name__,
+        python_source=source,
         cpp_code=cpp_code,
         cuda_code=cuda_code,
     )
 
 
-def extract_ir_pair(kernel: wp.Kernel, device: str = "cpu") -> tuple[str, str]:
+def extract_ir_pair(kernel, device: str = "cpu") -> tuple[str, str]:
     """
-    Extract Python→C++ pair suitable for LLM training.
+    Extract Python→HLO pair.
     
     Args:
-        kernel: A warp kernel
-        device: "cpu" or "cuda"
+        kernel: A JAX kernel
+        device: "cpu" or "cuda" (ignored for HLO usually)
         
     Returns:
         Tuple of (python_source, code)
     """
     ir = extract_ir(kernel)
-    if device == "cuda" and ir.cuda_code:
-        return (ir.python_source, ir.cuda_code)
     return (ir.python_source, ir.cpp_code)
 
 
 if __name__ == "__main__":
     # Test with a simple kernel
-    wp.init()
     
-    @wp.kernel
-    def test_kernel(a: wp.array(dtype=float), b: wp.array(dtype=float)):
-        tid = wp.tid()
-        b[tid] = a[tid] * 2.0
+    @jax.jit
+    def test_kernel(a, b):
+        return a * 2.0 + b
     
     ir = extract_ir(test_kernel)
     print("=== Kernel Name ===")
     print(ir.kernel_name)
     print("\n=== Python Source ===")
     print(ir.python_source)
-    print("\n=== C++ Code (first 1500 chars) ===")
+    print("\n=== HLO Code (first 1500 chars) ===")
     print(ir.cpp_code[:1500])
-    print("\n=== CUDA Code available ===")
-    print("Yes" if ir.cuda_code else "No")
-    if ir.cuda_code:
-        print("\n=== CUDA Code (first 1500 chars) ===")
-        print(ir.cuda_code[:1500])
