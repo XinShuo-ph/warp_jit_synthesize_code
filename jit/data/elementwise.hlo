@@ -1,0 +1,9 @@
+module @jit_elementwise_kernel attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {
+  func.func public @main(%arg0: tensor<100xf32>, %arg1: tensor<100xf32>) -> (tensor<100xf32> {jax.result_info = "result"}) {
+    %cst = stablehlo.constant dense<2.000000e+00> : tensor<f32>
+    %0 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<100xf32>
+    %1 = stablehlo.multiply %arg0, %0 : tensor<100xf32>
+    %2 = stablehlo.add %1, %arg1 : tensor<100xf32>
+    return %2 : tensor<100xf32>
+  }
+}

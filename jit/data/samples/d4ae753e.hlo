@@ -1,0 +1,8 @@
+module @jit_generated_fn attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {
+  func.func public @main(%arg0: tensor<7x1xf32>) -> (tensor<7x1xf32> {jax.result_info = "result"}) {
+    %0 = stablehlo.multiply %arg0, %arg0 : tensor<7x1xf32>
+    %1 = chlo.square %0 : tensor<7x1xf32> -> tensor<7x1xf32>
+    %2 = stablehlo.maximum %0, %1 : tensor<7x1xf32>
+    return %2 : tensor<7x1xf32>
+  }
+}

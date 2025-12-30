@@ -1,0 +1,10 @@
+module @jit_generated_fn attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {
+  func.func public @main(%arg0: tensor<5x3xf32>, %arg1: tensor<5x3xf32>) -> (tensor<5x3xf32> {jax.result_info = "result"}) {
+    %0 = stablehlo.sine %arg1 : tensor<5x3xf32>
+    %1 = stablehlo.exponential %0 : tensor<5x3xf32>
+    %2 = stablehlo.multiply %arg0, %arg1 : tensor<5x3xf32>
+    %3 = stablehlo.minimum %2, %1 : tensor<5x3xf32>
+    %4 = stablehlo.cosine %3 : tensor<5x3xf32>
+    return %4 : tensor<5x3xf32>
+  }
+}

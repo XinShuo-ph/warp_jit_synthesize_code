@@ -1,0 +1,44 @@
+module @jit_solve_poisson_jacobi attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {
+  func.func public @main(%arg0: tensor<20x20xf32>, %arg1: tensor<20x20xf32>) -> (tensor<20x20xf32> {jax.result_info = "result"}) {
+    %c = stablehlo.constant dense<0> : tensor<i32>
+    %0:3 = stablehlo.while(%iterArg = %arg0, %iterArg_0 = %c, %iterArg_1 = %arg1) : tensor<20x20xf32>, tensor<i32>, tensor<20x20xf32>
+    cond {
+      %c_2 = stablehlo.constant dense<100> : tensor<i32>
+      %1 = stablehlo.compare  LT, %iterArg_0, %c_2,  SIGNED : (tensor<i32>, tensor<i32>) -> tensor<i1>
+      stablehlo.return %1 : tensor<i1>
+    } do {
+      %1 = func.call @closed_call(%iterArg, %iterArg_1) : (tensor<20x20xf32>, tensor<20x20xf32>) -> tensor<20x20xf32>
+      %c_2 = stablehlo.constant dense<1> : tensor<i32>
+      %2 = stablehlo.add %iterArg_0, %c_2 : tensor<i32>
+      stablehlo.return %iterArg, %2, %1 : tensor<20x20xf32>, tensor<i32>, tensor<20x20xf32>
+    }
+    return %0#2 : tensor<20x20xf32>
+  }
+  func.func private @closed_call(%arg0: tensor<20x20xf32>, %arg1: tensor<20x20xf32>) -> tensor<20x20xf32> {
+    %0 = stablehlo.slice %arg1 [0:18, 1:19] : (tensor<20x20xf32>) -> tensor<18x18xf32>
+    %1 = stablehlo.slice %arg1 [2:20, 1:19] : (tensor<20x20xf32>) -> tensor<18x18xf32>
+    %2 = stablehlo.slice %arg1 [1:19, 0:18] : (tensor<20x20xf32>) -> tensor<18x18xf32>
+    %3 = stablehlo.slice %arg1 [1:19, 2:20] : (tensor<20x20xf32>) -> tensor<18x18xf32>
+    %4 = stablehlo.slice %arg0 [1:19, 1:19] : (tensor<20x20xf32>) -> tensor<18x18xf32>
+    %5 = stablehlo.add %0, %1 : tensor<18x18xf32>
+    %6 = stablehlo.add %5, %2 : tensor<18x18xf32>
+    %7 = stablehlo.add %6, %3 : tensor<18x18xf32>
+    %cst = stablehlo.constant dense<0.00999999977> : tensor<f32>
+    %8 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<18x18xf32>
+    %9 = stablehlo.multiply %8, %4 : tensor<18x18xf32>
+    %10 = stablehlo.subtract %7, %9 : tensor<18x18xf32>
+    %cst_0 = stablehlo.constant dense<2.500000e-01> : tensor<f32>
+    %11 = stablehlo.broadcast_in_dim %cst_0, dims = [] : (tensor<f32>) -> tensor<18x18xf32>
+    %12 = stablehlo.multiply %11, %10 : tensor<18x18xf32>
+    %c = stablehlo.constant dense<1> : tensor<i32>
+    %13 = stablehlo.broadcast_in_dim %c, dims = [] : (tensor<i32>) -> tensor<1xi32>
+    %c_1 = stablehlo.constant dense<1> : tensor<i32>
+    %14 = stablehlo.broadcast_in_dim %c_1, dims = [] : (tensor<i32>) -> tensor<1xi32>
+    %15 = stablehlo.concatenate %13, %14, dim = 0 : (tensor<1xi32>, tensor<1xi32>) -> tensor<2xi32>
+    %16 = "stablehlo.scatter"(%arg1, %15, %12) <{indices_are_sorted = true, scatter_dimension_numbers = #stablehlo.scatter<update_window_dims = [0, 1], scatter_dims_to_operand_dims = [0, 1]>, unique_indices = true}> ({
+    ^bb0(%arg2: tensor<f32>, %arg3: tensor<f32>):
+      stablehlo.return %arg3 : tensor<f32>
+    }) : (tensor<20x20xf32>, tensor<2xi32>, tensor<18x18xf32>) -> tensor<20x20xf32>
+    return %16 : tensor<20x20xf32>
+  }
+}
