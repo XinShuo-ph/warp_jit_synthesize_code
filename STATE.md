@@ -4,9 +4,8 @@
 - **Status**: ready_for_next
 
 ## Next Action
-1. Clone or access warp repo: https://github.com/NVIDIA/warp.git
-2. Install warp package (`pip install warp-lang`)
-3. Run a basic example from `warp/examples/`
+1. Install JAX (CPU): `pip install -U "jax[cpu]"`
+2. Run a basic `jax.jit` example and dump IR (JAXPR and/or StableHLO)
 4. Create `tasks/m1_tasks.md` with detailed task breakdown
 
 ## Blockers

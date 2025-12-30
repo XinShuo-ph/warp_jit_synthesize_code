@@ -262,8 +262,8 @@ From generator.py across branches:
 - math (unary functions)
 - loop (for loops)
 - conditional (if/else)
-- vector (wp.vec3 ops)
-- matrix (wp.mat33 ops)
+- vector (array ops, e.g. `jnp.ndarray` shape `(3,)`)
+- matrix (matrix ops, e.g. `jnp.matmul`, shape `(3,3)` or `(N,N)`)
 - combined (multi-pattern)
 
 ---

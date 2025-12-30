@@ -1,12 +1,12 @@
 # JIT Branch Progress Summary
 
 ## Overview
-16 branches working on Python→IR code synthesis for LLM training data using NVIDIA Warp.
+16 branches working on Python→IR code synthesis for LLM training data using JAX.
 
 ## Milestone Reference
-- **M1**: Environment setup, run warp examples
+- **M1**: Environment setup, run JAX examples
 - **M2**: IR extraction mechanism
-- **M3**: FEM deep dive, Poisson solver
+- **M3**: Numerical PDE deep dive, Poisson solver
 - **M4**: Synthesis pipeline
 - **M5**: Scale up (batch generation)
 
@@ -26,7 +26,7 @@
 - `code/extraction/ir_extractor.py`, `save_sample_pairs.py`
 - `code/synthesis/generator.py`, `pipeline.py`, `batch_generator.py`
 - `code/examples/poisson_solver.py`, `test_poisson.py`
-- `notes/data_stats.md`, `ir_format.md`, `warp_basics.md`
+- `notes/data_stats.md`, `ir_format.md`, `jax_basics.md`
 
 **9177 Files:**
 - `code/extraction/ir_extractor.py`, `test_ir_extractor.py`
@@ -103,7 +103,7 @@
 **0fbe Files:**
 - `code/extraction/ir_extractor.py`, `test_ir_extractor.py`, `fixture_kernels.py`
 - `code/examples/poisson_solver.py`, `test_poisson.py`
-- `notes/ir_format.md`, `warp_basics.md`
+- `notes/ir_format.md`, `jax_basics.md`
 
 **7288 Files:**
 - `code/extraction/ir_extractor.py`, `m2_generate_pairs.py`
@@ -125,7 +125,7 @@
 
 **4b76 Files:**
 - `code/extraction/ir_extractor.py`, `test_ir_extractor.py`
-- `notes/ir_format.md`, `warp_basics.md`
+- `notes/ir_format.md`, `jax_basics.md`
 
 **d623 Files:**
 - `code/extraction/ir_extractor.py`, `test_cases.py`
@@ -166,11 +166,11 @@ Most complete branches follow:
 ```
 jit/
 ├── code/
-│   ├── examples/         # Warp example kernels
+│   ├── examples/         # JAX example programs
 │   ├── extraction/       # ir_extractor.py + tests
 │   └── synthesis/        # generator.py, pipeline.py, batch_generator.py
 ├── data/                 # Generated JSON pairs
-├── notes/                # ir_format.md, warp_basics.md, data_stats.md
+├── notes/                # ir_format.md, jax_basics.md, data_stats.md
 └── tasks/                # m1_tasks.md through m5_tasks.md
 ```
 
