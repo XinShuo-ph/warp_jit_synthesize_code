@@ -1,24 +1,25 @@
 """SAXPY (Single-precision A*X Plus Y) kernel test."""
-import warp as wp
+import jax
+import jax.numpy as jnp
 
-wp.init()
-
-@wp.kernel
-def saxpy(a: float, x: wp.array(dtype=float), y: wp.array(dtype=float), out: wp.array(dtype=float)):
-    tid = wp.tid()
-    out[tid] = a * x[tid] + y[tid]
+def saxpy(a, x, y):
+    """SAXPY operation: out = a * x + y"""
+    return a * x + y
 
 if __name__ == "__main__":
     n = 8
     a = 2.0
-    x = wp.array([float(i) for i in range(n)], dtype=float)
-    y = wp.array([float(i * 10) for i in range(n)], dtype=float)
-    out = wp.zeros(n, dtype=float)
+    x = jnp.array([float(i) for i in range(n)])
+    y = jnp.array([float(i * 10) for i in range(n)])
     
-    wp.launch(saxpy, dim=n, inputs=[a, x, y, out])
+    # JIT compile
+    jit_saxpy = jax.jit(saxpy)
     
-    result = out.numpy()
-    expected = [a * i + i * 10 for i in range(n)]
-    print(f"SAXPY result: {list(result)}")
+    # Execute
+    out = jit_saxpy(a, x, y)
+    
+    result = out
+    expected = jnp.array([a * i + i * 10 for i in range(n)])
+    print(f"SAXPY result: {result}")
     print(f"Expected: {expected}")
-    print(f"Match: {all(abs(r - e) < 1e-6 for r, e in zip(result, expected))}")
+    print(f"Match: {jnp.allclose(result, expected)}")

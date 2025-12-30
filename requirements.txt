@@ -1,2 +1,2 @@
-warp-lang>=1.10.0
+jax[cpu]>=0.4.23
 numpy
