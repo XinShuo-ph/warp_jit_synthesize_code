@@ -1,9 +1,7 @@
-"""Synthesis Pipeline - Generates Python→C++ pairs for LLM training."""
+"""Synthesis Pipeline - Generates Python→HLO/jaxpr pairs for LLM training."""
 import json
 import os
 import sys
-import tempfile
-import importlib.util
 from pathlib import Path
 from typing import List, Optional
 from dataclasses import dataclass, asdict
@@ -11,81 +9,34 @@ from dataclasses import dataclass, asdict
 # Add extraction module to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "extraction"))
 
-import warp as wp
-from generator import generate_kernel_batch, GENERATORS
+import jax
+import jax.numpy as jnp
+from generator import generate_function_batch, generate_random_function, GENERATORS
 
 
 @dataclass
 class TrainingPair:
-    """A Python→C++ training pair."""
+    """A Python→IR training pair."""
     id: int
-    kernel_name: str
+    function_name: str
     python_source: str
-    cpp_code: str
-    cuda_code: Optional[str]
+    jaxpr: str
+    hlo: str
+    stablehlo: Optional[str]
     generator_type: str
-    
-
-def create_module_from_source(source: str, module_name: str):
-    """Create a Python module from source code string."""
-    # Create a temp file to store the kernel
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
-        f.write("import warp as wp\n\n")
-        f.write(source)
-        temp_path = f.name
-    
-    try:
-        # Load the module
-        spec = importlib.util.spec_from_file_location(module_name, temp_path)
-        module = importlib.util.module_from_spec(spec)
-        sys.modules[module_name] = module
-        spec.loader.exec_module(module)
-        return module, temp_path
-    except Exception as e:
-        os.unlink(temp_path)
-        raise e
 
 
-def extract_ir_from_source(kernel_source: str, kernel_name: str, module_id: int):
-    """Extract C++ and CUDA IR from kernel source code."""
+def extract_ir_from_spec(func_spec, enable_backward: bool = True):
+    """Extract IR from a FunctionSpec."""
     from ir_extractor import extract_ir
     
-    module_name = f"synth_module_{module_id}"
+    ir = extract_ir(
+        func_spec.func,
+        func_spec.sample_inputs,
+        enable_backward=enable_backward
+    )
     
-    try:
-        module, temp_path = create_module_from_source(kernel_source, module_name)
-        
-        # Find the kernel in the module
-        kernel = None
-        for name in dir(module):
-            obj = getattr(module, name)
-            if isinstance(obj, wp.Kernel):
-                kernel = obj
-                break
-        
-        if kernel is None:
-            raise ValueError(f"No kernel found in generated source")
-        
-        # Extract IR
-        ir = extract_ir(kernel)
-        
-        # Cleanup
-        os.unlink(temp_path)
-        if module_name in sys.modules:
-            del sys.modules[module_name]
-        
-        return ir.cpp_code, ir.cuda_code
-        
-    except Exception as e:
-        # Cleanup on error
-        if 'temp_path' in locals():
-            try:
-                os.unlink(temp_path)
-            except:
-                pass
-        if module_name in sys.modules:
-            del sys.modules[module_name]
-        raise e
+    return ir.jaxpr, ir.hlo, ir.stablehlo
 
 
 def generate_training_pairs(
@@ -93,8 +44,8 @@ def generate_training_pairs(
     base_seed: int = 42,
     output_dir: Optional[str] = None
 ) -> List[TrainingPair]:
-    """Generate training pairs with both CPU and CUDA code."""
-    wp.init()
+    """Generate training pairs with jaxpr and HLO code."""
+    import random
     
     pairs = []
     failed = 0
@@ -102,26 +53,21 @@ def generate_training_pairs(
     for i in range(count):
         seed = base_seed + i
         
-        # Pick a generator and generate kernel
-        import random
+        # Pick a generator and generate function
         random.seed(seed)
         generator = random.choice(GENERATORS)
-        kernel_source = generator(seed)
-        
-        # Extract kernel name from source
-        import re
-        match = re.search(r'def (\w+)\(', kernel_source)
-        kernel_name = match.group(1) if match else f"kernel_{i}"
         
         try:
-            cpp_code, cuda_code = extract_ir_from_source(kernel_source, kernel_name, i)
+            func_spec = generator(seed)
+            jaxpr, hlo, stablehlo = extract_ir_from_spec(func_spec)
             
             pair = TrainingPair(
                 id=i,
-                kernel_name=kernel_name,
-                python_source=kernel_source.strip(),
-                cpp_code=cpp_code,
-                cuda_code=cuda_code,
+                function_name=func_spec.name,
+                python_source=func_spec.source.strip(),
+                jaxpr=jaxpr,
+                hlo=hlo,
+                stablehlo=stablehlo,
                 generator_type=generator.__name__
             )
             pairs.append(pair)
@@ -153,7 +99,7 @@ def generate_batch_to_jsonl(
     count: int,
     output_path: str,
     base_seed: int = 42,
-    device: str = "both"
+    ir_type: str = "both"
 ):
     """Generate pairs and save as JSONL.
     
@@ -161,9 +107,9 @@ def generate_batch_to_jsonl(
         count: Number of pairs to generate
         output_path: Output file path
         base_seed: Random seed base
-        device: "cpu", "cuda", or "both"
+        ir_type: "jaxpr", "hlo", "stablehlo", or "both" (jaxpr + hlo)
     """
-    wp.init()
+    import random
     
     with open(output_path, 'w') as f:
         generated = 0
@@ -172,36 +118,34 @@ def generate_batch_to_jsonl(
         for i in range(count):
             seed = base_seed + i
             
-            import random
             random.seed(seed)
             generator = random.choice(GENERATORS)
-            kernel_source = generator(seed)
-            
-            import re
-            match = re.search(r'def (\w+)\(', kernel_source)
-            kernel_name = match.group(1) if match else f"kernel_{i}"
             
             try:
-                cpp_code, cuda_code = extract_ir_from_source(kernel_source, kernel_name, i)
+                func_spec = generator(seed)
+                jaxpr, hlo, stablehlo = extract_ir_from_spec(func_spec)
                 
                 pair = {
                     "id": i,
-                    "kernel_name": kernel_name,
-                    "python": kernel_source.strip(),
+                    "function_name": func_spec.name,
+                    "python": func_spec.source.strip(),
                     "type": generator.__name__
                 }
                 
-                if device == "cpu":
-                    pair["cpp"] = cpp_code
-                elif device == "cuda":
-                    if cuda_code:
-                        pair["cuda"] = cuda_code
+                if ir_type == "jaxpr":
+                    pair["jaxpr"] = jaxpr
+                elif ir_type == "hlo":
+                    pair["hlo"] = hlo
+                elif ir_type == "stablehlo":
+                    if stablehlo:
+                        pair["stablehlo"] = stablehlo
                     else:
-                        continue  # Skip if no CUDA code
+                        pair["hlo"] = hlo  # Fallback
                 else:  # both
-                    pair["cpp"] = cpp_code
-                    if cuda_code:
-                        pair["cuda"] = cuda_code
+                    pair["jaxpr"] = jaxpr
+                    pair["hlo"] = hlo
+                    if stablehlo:
+                        pair["stablehlo"] = stablehlo
                 
                 f.write(json.dumps(pair) + '\n')
                 generated += 1
@@ -211,6 +155,7 @@ def generate_batch_to_jsonl(
                     
             except Exception as e:
                 failed += 1
+                print(f"Failed pair {i}: {e}")
                 continue
     
     print(f"\nTotal: {generated} pairs saved to {output_path}, {failed} failed")
@@ -220,18 +165,19 @@ def generate_batch_to_jsonl(
 if __name__ == "__main__":
     import argparse
     
-    parser = argparse.ArgumentParser(description="Generate Python→C++/CUDA training pairs")
+    parser = argparse.ArgumentParser(description="Generate Python→HLO/jaxpr training pairs")
     parser.add_argument("--count", type=int, default=10, help="Number of pairs to generate")
     parser.add_argument("--output", type=str, default=None, help="Output directory or file")
     parser.add_argument("--seed", type=int, default=42, help="Base random seed")
     parser.add_argument("--jsonl", action="store_true", help="Output as JSONL")
-    parser.add_argument("--device", type=str, default="both", choices=["cpu", "cuda", "both"],
-                        help="Target device(s) for code generation")
+    parser.add_argument("--ir-type", type=str, default="both", 
+                        choices=["jaxpr", "hlo", "stablehlo", "both"],
+                        help="IR type(s) to include")
     
     args = parser.parse_args()
     
     if args.jsonl and args.output:
-        generate_batch_to_jsonl(args.count, args.output, args.seed, args.device)
+        generate_batch_to_jsonl(args.count, args.output, args.seed, args.ir_type)
     elif args.output:
         generate_training_pairs(args.count, args.seed, args.output)
     else:
@@ -240,11 +186,10 @@ if __name__ == "__main__":
         
         print("\n=== Sample Pairs ===")
         for pair in pairs[:3]:
-            print(f"\n--- {pair.kernel_name} ({pair.generator_type}) ---")
+            print(f"\n--- {pair.function_name} ({pair.generator_type}) ---")
             print("Python:")
             print(pair.python_source)
-            print(f"\nC++ ({len(pair.cpp_code)} chars):")
-            print(pair.cpp_code[:500] + "...")
-            if pair.cuda_code:
-                print(f"\nCUDA ({len(pair.cuda_code)} chars):")
-                print(pair.cuda_code[:500] + "...")
+            print(f"\nJaxpr ({len(pair.jaxpr)} chars):")
+            print(pair.jaxpr[:500] + "..." if len(pair.jaxpr) > 500 else pair.jaxpr)
+            print(f"\nHLO ({len(pair.hlo)} chars):")
+            print(pair.hlo[:500] + "..." if len(pair.hlo) > 500 else pair.hlo)

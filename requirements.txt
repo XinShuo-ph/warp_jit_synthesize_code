@@ -1,2 +1,4 @@
-warp-lang>=1.10.0
+# JAX JIT Code Synthesis Dataset
+jax>=0.4.20
+jaxlib>=0.4.20
 numpy

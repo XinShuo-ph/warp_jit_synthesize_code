@@ -1,105 +1,192 @@
-"""Test IR extraction with various kernel types."""
+"""Tests for JAX IR extractor."""
 import sys
-sys.path.insert(0, '/workspace/jit/code/extraction')
+from pathlib import Path
 
-import warp as wp
-from ir_extractor import extract_ir, extract_ir_pair
+import jax
+import jax.numpy as jnp
 
-wp.init()
+# Add extraction module to path
+sys.path.insert(0, str(Path(__file__).parent))
 
-# Test 1: Simple array addition
-@wp.kernel
-def add_kernel(a: wp.array(dtype=float), b: wp.array(dtype=float), c: wp.array(dtype=float)):
-    tid = wp.tid()
-    c[tid] = a[tid] + b[tid]
-
-# Test 2: Atomic operations (dot product)
-@wp.kernel
-def dot_product(a: wp.array(dtype=float), b: wp.array(dtype=float), result: wp.array(dtype=float)):
-    tid = wp.tid()
-    wp.atomic_add(result, 0, a[tid] * b[tid])
-
-# Test 3: Scalar + array operations (SAXPY)
-@wp.kernel
-def saxpy(alpha: float, x: wp.array(dtype=float), y: wp.array(dtype=float), out: wp.array(dtype=float)):
-    tid = wp.tid()
-    out[tid] = alpha * x[tid] + y[tid]
-
-# Test 4: Branching kernel
-@wp.kernel
-def branch_kernel(a: wp.array(dtype=float), b: wp.array(dtype=float)):
-    tid = wp.tid()
-    val = a[tid]
-    if val > 0.0:
-        b[tid] = val * 2.0
-    else:
-        b[tid] = val * -1.0
-
-# Test 5: Loop kernel
-@wp.kernel
-def loop_kernel(a: wp.array(dtype=float), b: wp.array(dtype=float), n: int):
-    tid = wp.tid()
-    total = float(0.0)
-    for i in range(n):
-        total = total + a[tid]
-    b[tid] = total
-
-# Test 6: Vector operations
-@wp.kernel
-def vec_kernel(a: wp.array(dtype=wp.vec3), b: wp.array(dtype=wp.vec3), c: wp.array(dtype=float)):
-    tid = wp.tid()
-    c[tid] = wp.dot(a[tid], b[tid])
+from ir_extractor import extract_ir, extract_ir_pair, extract_vmap_ir, ExtractedIR
 
 
-def run_tests():
-    kernels = [
-        ("add_kernel", add_kernel),
-        ("dot_product", dot_product),
-        ("saxpy", saxpy),
-        ("branch_kernel", branch_kernel),
-        ("loop_kernel", loop_kernel),
-        ("vec_kernel", vec_kernel),
-    ]
+class TestExtractIR:
+    """Tests for extract_ir function."""
     
-    results = []
-    for name, kernel in kernels:
-        print(f"\n{'='*60}")
-        print(f"Testing: {name}")
-        print('='*60)
+    def test_simple_add(self):
+        """Test IR extraction for simple addition."""
+        def add(a, b):
+            return a + b
         
-        try:
-            ir = extract_ir(kernel)
-            py_src, cpp_code = ir.python_source, ir.cpp_code
-            
-            print(f"Python source length: {len(py_src)} chars")
-            print(f"C++ code length: {len(cpp_code)} chars")
-            print(f"Has forward pass: {'_forward' in cpp_code}")
-            print(f"Has backward pass: {'_backward' in cpp_code}")
-            
-            results.append((name, True, len(py_src), len(cpp_code)))
-            
-            # Print first part of Python source
-            print(f"\nPython source:")
-            print(py_src[:300])
-            
-        except Exception as e:
-            print(f"FAILED: {e}")
-            results.append((name, False, 0, 0))
+        a = jnp.ones((64,), dtype=jnp.float32)
+        b = jnp.ones((64,), dtype=jnp.float32)
+        
+        ir = extract_ir(add, (a, b))
+        
+        assert isinstance(ir, ExtractedIR)
+        assert ir.function_name == "add"
+        assert "add" in ir.jaxpr.lower()
+        assert "HloModule" in ir.hlo or "module" in ir.hlo.lower()
     
-    print(f"\n{'='*60}")
-    print("SUMMARY")
-    print('='*60)
+    def test_unary_function(self):
+        """Test IR extraction for unary function."""
+        def sin_func(x):
+            return jnp.sin(x)
+        
+        x = jnp.ones((32,), dtype=jnp.float32)
+        ir = extract_ir(sin_func, (x,))
+        
+        assert "sin" in ir.jaxpr.lower()
+        assert len(ir.hlo) > 0
     
-    success_count = sum(1 for _, success, _, _ in results if success)
-    print(f"Passed: {success_count}/{len(results)}")
+    def test_reduction(self):
+        """Test IR extraction for reduction."""
+        def sum_func(x):
+            return jnp.sum(x)
+        
+        x = jnp.ones((64,), dtype=jnp.float32)
+        ir = extract_ir(sum_func, (x,))
+        
+        assert "reduce" in ir.jaxpr.lower() or "sum" in ir.jaxpr.lower()
     
-    for name, success, py_len, cpp_len in results:
-        status = "✓" if success else "✗"
-        print(f"  {status} {name}: py={py_len}, cpp={cpp_len}")
+    def test_backward_included(self):
+        """Test that backward pass is included."""
+        def func(a, b):
+            return a * b
+        
+        a = jnp.ones((32,), dtype=jnp.float32)
+        b = jnp.ones((32,), dtype=jnp.float32)
+        
+        ir = extract_ir(func, (a, b), enable_backward=True)
+        
+        assert "BACKWARD" in ir.jaxpr or "GRADIENT" in ir.jaxpr
+        assert "BACKWARD" in ir.hlo or "GRADIENT" in ir.hlo
     
-    return success_count == len(results)
+    def test_no_backward(self):
+        """Test extraction without backward pass."""
+        def func(x):
+            return x * 2
+        
+        x = jnp.ones((16,), dtype=jnp.float32)
+        ir = extract_ir(func, (x,), enable_backward=False)
+        
+        assert "BACKWARD" not in ir.jaxpr
+        assert len(ir.hlo) > 0
+
+
+class TestExtractIRPair:
+    """Tests for extract_ir_pair function."""
+    
+    def test_jaxpr_pair(self):
+        """Test jaxpr pair extraction."""
+        def func(x):
+            return x + 1
+        
+        x = jnp.ones((32,))
+        python_src, jaxpr = extract_ir_pair(func, (x,), ir_type="jaxpr")
+        
+        assert "def func" in python_src
+        assert "add" in jaxpr.lower() or "+" in jaxpr
+    
+    def test_hlo_pair(self):
+        """Test HLO pair extraction."""
+        def func(x):
+            return jnp.abs(x)
+        
+        x = jnp.ones((32,))
+        python_src, hlo = extract_ir_pair(func, (x,), ir_type="hlo")
+        
+        assert "jnp.abs" in python_src
+        assert len(hlo) > 100  # HLO should be substantial
+
+
+class TestVmapExtraction:
+    """Tests for vmap IR extraction."""
+    
+    def test_vmap_extraction(self):
+        """Test vmapped function IR extraction."""
+        def element_func(x):
+            return jnp.sin(x) + jnp.cos(x)
+        
+        x = jnp.array(1.0)
+        ir = extract_vmap_ir(element_func, x, batch_size=32)
+        
+        assert isinstance(ir, ExtractedIR)
+        assert len(ir.jaxpr) > 0
+        assert len(ir.hlo) > 0
+
+
+class TestComplexFunctions:
+    """Tests for more complex functions."""
+    
+    def test_matmul(self):
+        """Test matrix multiplication."""
+        def matmul(a, b):
+            return jnp.matmul(a, b)
+        
+        a = jnp.ones((32, 64), dtype=jnp.float32)
+        b = jnp.ones((64, 16), dtype=jnp.float32)
+        
+        ir = extract_ir(matmul, (a, b))
+        
+        assert "dot" in ir.jaxpr.lower() or "matmul" in ir.jaxpr.lower()
+    
+    def test_conditional(self):
+        """Test conditional function."""
+        def cond_func(x):
+            return jnp.where(x > 0, x * 2, x * 0.5)
+        
+        x = jnp.linspace(-1, 1, 64)
+        ir = extract_ir(cond_func, (x,))
+        
+        assert "select" in ir.jaxpr.lower() or "where" in ir.jaxpr.lower()
+    
+    def test_multi_output(self):
+        """Test function with multiple operations."""
+        def multi_func(a, b):
+            c = a + b
+            d = jnp.sin(c)
+            e = d * a
+            return e
+        
+        a = jnp.ones((32,))
+        b = jnp.ones((32,))
+        
+        ir = extract_ir(multi_func, (a, b))
+        
+        # Should contain multiple operations
+        assert "add" in ir.jaxpr.lower()
+        assert "sin" in ir.jaxpr.lower()
+        assert "mul" in ir.jaxpr.lower()
 
 
 if __name__ == "__main__":
-    success = run_tests()
-    sys.exit(0 if success else 1)
+    # Run basic tests
+    print("=== Running IR Extractor Tests ===\n")
+    
+    test_cases = [
+        TestExtractIR(),
+        TestExtractIRPair(),
+        TestVmapExtraction(),
+        TestComplexFunctions(),
+    ]
+    
+    passed = 0
+    failed = 0
+    
+    for test_class in test_cases:
+        class_name = test_class.__class__.__name__
+        print(f"\n--- {class_name} ---")
+        
+        for method_name in dir(test_class):
+            if method_name.startswith("test_"):
+                try:
+                    getattr(test_class, method_name)()
+                    print(f"  ✓ {method_name}")
+                    passed += 1
+                except Exception as e:
+                    print(f"  ✗ {method_name}: {e}")
+                    failed += 1
+    
+    print(f"\n=== Results: {passed} passed, {failed} failed ===")
