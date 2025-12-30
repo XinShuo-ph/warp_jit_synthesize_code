@@ -1,38 +1,115 @@
-# Warp IR (C++ Code) Format
+# JAX IR (HLO/Jaxpr) Format
 
 ## Structure
 
-Generated C++ consists of:
-1. **Args struct**: `wp_args_{kernel_name}` with typed members for each kernel arg
-2. **Forward function**: `{name}_cpu_kernel_forward()` - computes primal values
-3. **Backward function**: `{name}_cpu_kernel_backward()` - computes gradients
-4. **Entry points**: C-exported wrappers for Python FFI
+JAX provides multiple levels of intermediate representation:
 
-## Forward Function Layout
+1. **Jaxpr**: High-level functional representation
+2. **HLO**: XLA's High Level Optimizer representation
+3. **Optimized HLO**: After XLA compilation optimizations
 
-```cpp
-void kernel_forward(wp::launch_bounds_t dim, size_t task_index, wp_args *args) {
-    // 1. Argument vars - unpack from struct
-    // 2. Primal vars - declare temporaries
-    // 3. Forward pass - SSA form operations with line comments
+## Jaxpr Format
+
+Jaxpr (JAX Program Representation) is a functional IR:
+
+```
+{ lambda ; a:f32[100] b:f32[100]. let
+    c:f32[100] = add a b
+    d:f32[100] = mul c 2.0
+  in (d,) }
+```
+
+Components:
+- `lambda`: Input bindings with types
+- `let`: Body with named intermediate values
+- `in`: Output tuple
+
+## HLO Format
+
+HLO (High Level Optimizer) is XLA's IR:
+
+```
+HloModule jit_func, entry_computation_layout={(f32[100]{0})->f32[100]{0}}
+
+ENTRY main.3 {
+  Arg_0.1 = f32[100]{0} parameter(0)
+  constant.2 = f32[] constant(2)
+  ROOT multiply.3 = f32[100]{0} multiply(Arg_0.1, constant.2)
 }
 ```
 
+Components:
+- `HloModule`: Module declaration with entry layout
+- `ENTRY`: Main computation entry point
+- Instructions with SSA naming (`.N` suffix)
+- Type annotations with layout `{0}` or `{1,0}`
+
 ## Key Patterns
 
-- `wp::tid()` → `builtin_tid1d()` thread index
-- `a[i]` → `wp::address()` + `wp::load()` / `wp::array_store()`
-- `a + b` → `wp::add(a, b)`
-- `a * b` → `wp::mul(a, b)`
-- Branches → standard C++ if/else
-- Loops → standard C++ for loops
+| Python | Jaxpr | HLO |
+|--------|-------|-----|
+| `a + b` | `add a b` | `add(Arg_0.1, Arg_1.2)` |
+| `a * b` | `mul a b` | `multiply(Arg_0.1, Arg_1.2)` |
+| `jnp.sin(a)` | `sin a` | `sine(Arg_0.1)` |
+| `jnp.where(c, a, b)` | `select c a b` | `select(Cond.1, True.2, False.3)` |
+| `jnp.sum(a)` | `reduce_sum a` | `reduce(Arg.1, ...)` |
 
-## Backward (Adjoint) Code
+## Backward (Gradient) Code
 
-- Forward pass re-run to reconstruct primal values
-- Reverse pass applies chain rule: `adj_{op}(primal, adj_in, adj_out)`
-- Gradient arrays: `adj_a`, `adj_b`, etc.
+JAX automatically generates gradient computations:
 
-## Line Mapping
+### In Jaxpr:
+```
+# === BACKWARD (GRADIENT) JAXPR ===
+{ lambda ; a:f32[100]. let
+    # Forward pass
+    b:f32[100] = mul a 2.0
+    # Backward pass (reverse mode AD)
+    grad_b:f32[100] = broadcast_in_dim ...
+    grad_a:f32[100] = mul grad_b 2.0
+  in (grad_a,) }
+```
 
-Comments `<L N>` map to Python source line N for debugging.
+### In HLO:
+```
+// === BACKWARD (GRADIENT) HLO ===
+HloModule jit_grad_func, ...
+
+ENTRY main.6 {
+  Arg_0.1 = f32[100]{0} parameter(0)
+  // ... gradient computation ...
+}
+```
+
+## Optimized HLO
+
+After XLA compilation, includes:
+- Operation fusion (combining multiple ops)
+- Memory layout optimizations
+- Platform-specific optimizations
+- Constant folding
+
+## Getting IR Programmatically
+
+```python
+import jax
+import jax.numpy as jnp
+
+def func(a, b):
+    return a * 2.0 + b
+
+sample_a = jnp.ones((100,))
+sample_b = jnp.ones((100,))
+
+# Jaxpr
+jaxpr = jax.make_jaxpr(func)(sample_a, sample_b)
+print(jaxpr)
+
+# HLO (before optimization)
+lowered = jax.jit(func).lower(sample_a, sample_b)
+print(lowered.as_text())
+
+# Optimized HLO (after XLA compilation)
+compiled = lowered.compile()
+print(compiled.as_text())
+```

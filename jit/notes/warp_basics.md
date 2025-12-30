@@ -1,41 +1,100 @@
-# Warp Kernel Compilation Flow
+# JAX Function Compilation Flow
 
-## Python → C++/CUDA Pipeline
+## Python → HLO/XLA Pipeline
 
-1. **Decoration**: `@wp.kernel` registers the Python function
-2. **AST Parse**: `codegen.Adjoint` parses the source via `ast.parse()`
-3. **Code Generation**: `codegen_kernel()` generates C++/CUDA code
-4. **Compilation**: Native compiler (gcc/nvcc) compiles to `.o`/`.cubin`
-5. **Caching**: Results cached in `~/.cache/warp/<version>/`
+1. **Function Definition**: Regular Python function with JAX numpy
+2. **Tracing**: `jax.jit` traces the function with abstract values
+3. **Jaxpr Generation**: Traces produce Jaxpr (JAX Program Representation)
+4. **HLO Lowering**: Jaxpr is lowered to HLO (XLA's IR)
+5. **XLA Compilation**: HLO is optimized and compiled to machine code
+6. **Caching**: Results cached for reuse with same input shapes/types
 
 ## Key Components
 
-- `codegen.Adjoint`: Stores parsed AST, generates forward/reverse code
-- `codegen_kernel(kernel, device, options)`: Main entry for kernel codegen
-- `codegen_func_forward/reverse()`: Generate forward/backward passes
-- `kernel.get_mangled_name()`: Unique name for compiled function
+- `jax.jit`: JIT compilation decorator
+- `jax.make_jaxpr`: Extract Jaxpr representation
+- `jax.grad`: Automatic differentiation
+- `jax.vmap`: Vectorization transformation
 
-## IR Location
-
-Generated code stored in cache dir: `~/.cache/warp/<version>/wp_<module>_<hash>/`
-- `.cpp` - CPU source code
-- `.cu` - CUDA source code (if GPU)
-- `.o/.cubin` - Compiled objects
-
-## Programmatic IR Access
+## IR Access Methods
 
 ```python
-from warp._src.codegen import codegen_kernel, codegen_module
-options = {"enable_backward": True}
-cpp_code = codegen_kernel(kernel, "cpu", options) + codegen_module(kernel, "cpu", options)
+import jax
+import jax.numpy as jnp
+
+def func(a, b):
+    return a + b
+
+# Sample inputs for tracing
+a = jnp.ones((100,))
+b = jnp.ones((100,))
+
+# 1. Get Jaxpr (high-level IR)
+jaxpr = jax.make_jaxpr(func)(a, b)
+print("Jaxpr:", jaxpr)
+
+# 2. Get lowered HLO (before optimization)
+lowered = jax.jit(func).lower(a, b)
+hlo_text = lowered.as_text()
+print("HLO:", hlo_text)
+
+# 3. Get compiled HLO (after optimization)
+compiled = lowered.compile()
+optimized_hlo = compiled.as_text()
+print("Optimized HLO:", optimized_hlo)
 ```
 
 ## Forward/Backward Code
 
-Warp auto-generates backward (adjoint) code for autodiff:
-- Forward: Computes primal values
-- Backward: Computes gradients via adj_ prefixed functions
+JAX generates backward (gradient) code via automatic differentiation:
 
-## Cache Key
+```python
+# Forward function
+def func(a):
+    return jnp.sum(a ** 2)
 
-Hash includes: source code, types, device, options. Same kernel+inputs = same hash.
+# Backward (gradient) function
+grad_func = jax.grad(func)
+
+# Get gradient Jaxpr
+grad_jaxpr = jax.make_jaxpr(grad_func)(a)
+```
+
+## Transformations
+
+JAX supports composable function transformations:
+
+| Transform | Purpose |
+|-----------|---------|
+| `jax.jit` | JIT compile to XLA |
+| `jax.grad` | Automatic differentiation |
+| `jax.vmap` | Automatic vectorization |
+| `jax.pmap` | Parallel mapping across devices |
+| `jax.value_and_grad` | Get value and gradient together |
+
+## Device Placement
+
+```python
+# CPU execution
+with jax.default_device(jax.devices('cpu')[0]):
+    result = jax.jit(func)(a, b)
+
+# GPU execution (if available)
+with jax.default_device(jax.devices('gpu')[0]):
+    result = jax.jit(func)(a, b)
+```
+
+## Cache Location
+
+JAX caches compiled code in memory by default. Persistent caching can be enabled:
+
+```python
+jax.config.update("jax_compilation_cache_dir", "/path/to/cache")
+```
+
+## Tracing Rules
+
+JAX tracing is based on input shapes and dtypes:
+- Same shapes/dtypes → reuse cached compilation
+- Different shapes → recompile
+- Dynamic shapes → use `jax.pure_callback` or shape polymorphism

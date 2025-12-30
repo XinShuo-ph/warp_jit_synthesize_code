@@ -1,24 +1,48 @@
-"""SAXPY (Single-precision A*X Plus Y) kernel test."""
-import warp as wp
+"""JAX SAXPY (scalar * x + y) example with IR extraction."""
+import jax
+import jax.numpy as jnp
+import sys
+sys.path.insert(0, '/workspace/jit/code/extraction')
 
-wp.init()
+from ir_extractor import extract_ir
 
-@wp.kernel
-def saxpy(a: float, x: wp.array(dtype=float), y: wp.array(dtype=float), out: wp.array(dtype=float)):
-    tid = wp.tid()
-    out[tid] = a * x[tid] + y[tid]
+
+def saxpy(alpha, x, y):
+    """Compute alpha * x + y (SAXPY operation)."""
+    return alpha * x + y
+
 
 if __name__ == "__main__":
-    n = 8
-    a = 2.0
-    x = wp.array([float(i) for i in range(n)], dtype=float)
-    y = wp.array([float(i * 10) for i in range(n)], dtype=float)
-    out = wp.zeros(n, dtype=float)
+    # Create sample inputs
+    key = jax.random.PRNGKey(42)
+    alpha = 2.5
+    x = jax.random.normal(key, (1000,))
+    y = jax.random.normal(jax.random.PRNGKey(43), (1000,))
     
-    wp.launch(saxpy, dim=n, inputs=[a, x, y, out])
+    # Test the function
+    result = saxpy(alpha, x, y)
+    print(f"Result shape: {result.shape}")
+    print(f"Result (first 5): {result[:5]}")
     
-    result = out.numpy()
-    expected = [a * i + i * 10 for i in range(n)]
-    print(f"SAXPY result: {list(result)}")
-    print(f"Expected: {expected}")
-    print(f"Match: {all(abs(r - e) < 1e-6 for r, e in zip(result, expected))}")
+    # Verify manually
+    expected = alpha * x + y
+    print(f"Match: {jnp.allclose(result, expected)}")
+    
+    # Extract IR
+    ir = extract_ir(saxpy, (alpha, x, y))
+    
+    print("\n=== Jaxpr ===")
+    print(ir.jaxpr_text)
+    
+    print("\n=== HLO (first 1500 chars) ===")
+    print(ir.hlo_text[:1500])
+    
+    # Test gradient w.r.t. first array argument
+    def loss_fn(x):
+        return jnp.sum(saxpy(alpha, x, y))
+    
+    grad_fn = jax.grad(loss_fn)
+    grad_x = grad_fn(x)
+    print(f"\nGradient w.r.t. x (first 5): {grad_x[:5]}")
+    print(f"Expected (alpha): {alpha}")
+    print(f"All gradients equal alpha: {jnp.allclose(grad_x, alpha)}")

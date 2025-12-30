@@ -1,23 +1,44 @@
-"""Dot product kernel test using atomic operations."""
-import warp as wp
+"""JAX dot product example with IR extraction."""
+import jax
+import jax.numpy as jnp
+import sys
+sys.path.insert(0, '/workspace/jit/code/extraction')
 
-wp.init()
+from ir_extractor import extract_ir
 
-@wp.kernel
-def dot_product(a: wp.array(dtype=float), b: wp.array(dtype=float), result: wp.array(dtype=float)):
-    tid = wp.tid()
-    wp.atomic_add(result, 0, a[tid] * b[tid])
+
+def dot_product(a, b):
+    """Compute dot product of two vectors."""
+    return jnp.sum(a * b)
+
 
 if __name__ == "__main__":
-    n = 10
-    a = wp.array([float(i) for i in range(n)], dtype=float)  # 0, 1, 2, ..., 9
-    b = wp.array([float(i) for i in range(n)], dtype=float)  # 0, 1, 2, ..., 9
-    result = wp.zeros(1, dtype=float)
+    # Create sample inputs
+    key = jax.random.PRNGKey(42)
+    a = jax.random.normal(key, (1000,))
+    b = jax.random.normal(jax.random.PRNGKey(43), (1000,))
     
-    wp.launch(dot_product, dim=n, inputs=[a, b, result])
+    # Test the function
+    result = dot_product(a, b)
+    print(f"Dot product result: {result}")
     
-    computed = result.numpy()[0]
-    expected = sum(i*i for i in range(n))  # 0 + 1 + 4 + 9 + ... = 285
-    print(f"Dot product result: {computed}")
-    print(f"Expected: {expected}")
-    print(f"Match: {abs(computed - expected) < 1e-6}")
+    # Verify against jnp.dot
+    expected = jnp.dot(a, b)
+    print(f"Expected (jnp.dot): {expected}")
+    print(f"Match: {jnp.allclose(result, expected)}")
+    
+    # Extract IR
+    ir = extract_ir(dot_product, (a, b))
+    
+    print("\n=== Jaxpr ===")
+    print(ir.jaxpr_text)
+    
+    print("\n=== HLO (first 1500 chars) ===")
+    print(ir.hlo_text[:1500])
+    
+    # Test gradient
+    grad_fn = jax.grad(dot_product)
+    grad_a = grad_fn(a, b)
+    print(f"\nGradient w.r.t. a (first 5): {grad_a[:5]}")
+    print(f"Expected (b): {b[:5]}")
+    print(f"Gradient match: {jnp.allclose(grad_a, b)}")

@@ -1,97 +1,135 @@
-"""Batch Generator - Efficient large-scale kernel pair generation."""
+"""Batch Generator - Efficient large-scale function pair generation for JAX."""
 import json
 import os
 import sys
 import time
-import tempfile
-import importlib.util
+import re
 from pathlib import Path
 from multiprocessing import Pool, cpu_count
 from typing import Optional
 import argparse
 
+import jax
+import jax.numpy as jnp
+
 # Add extraction module to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "extraction"))
 
-import warp as wp
-
 
 def init_worker():
-    """Initialize warp in each worker process."""
-    wp.init()
+    """Initialize JAX in each worker process."""
+    # JAX is initialized automatically, but we ensure consistent config
+    pass
+
+
+def create_sample_args(sample_args_code: str, arg_names: list):
+    """Create sample arguments from code string."""
+    local_vars = {}
+    exec(sample_args_code, {"jnp": jnp, "jax": jax}, local_vars)
+    return tuple(local_vars[name] for name in arg_names)
 
 
 def generate_single_pair(args):
     """Generate a single training pair. Designed for multiprocessing."""
     seed, output_dir, pair_id = args
     
-    # Import here to avoid pickling issues
     import random
     import re
-    import tempfile
-    import importlib.util
     
     from generator import GENERATORS
-    from ir_extractor import extract_ir
     
     try:
         # Generate kernel
         random.seed(seed)
         generator = random.choice(GENERATORS)
-        kernel_source = generator(seed)
+        kernel_source, metadata = generator(seed)
         
         # Extract kernel name
         match = re.search(r'def (\w+)\(', kernel_source)
         kernel_name = match.group(1) if match else f"kernel_{pair_id}"
         
-        # Create temp module
-        module_name = f"batch_module_{pair_id}"
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
-            f.write("import warp as wp\n\n")
-            f.write(kernel_source)
-            temp_path = f.name
+        # Create the function from source
+        local_vars = {"jnp": jnp, "jax": jax}
+        exec(kernel_source, local_vars)
         
+        # Find the function
+        func = None
+        for name, obj in local_vars.items():
+            if callable(obj) and not name.startswith('_') and name not in ['jnp', 'jax']:
+                func = obj
+                break
+        
+        if func is None:
+            raise ValueError("No function found")
+        
+        # Create sample arguments
+        sample_args = create_sample_args(metadata["sample_args_code"], metadata["arg_names"])
+        
+        # Get Jaxpr
         try:
-            # Load and compile
-            spec = importlib.util.spec_from_file_location(module_name, temp_path)
-            module = importlib.util.module_from_spec(spec)
-            sys.modules[module_name] = module
-            spec.loader.exec_module(module)
-            
-            # Find kernel
-            kernel = None
-            for name in dir(module):
-                obj = getattr(module, name)
-                if isinstance(obj, wp.Kernel):
-                    kernel = obj
-                    break
-            
-            if kernel is None:
-                raise ValueError("No kernel found")
-            
-            # Extract IR
-            ir = extract_ir(kernel)
-            
-            result = {
-                "id": pair_id,
-                "kernel_name": kernel_name,
-                "python": kernel_source.strip(),
-                "cpp": ir.cpp_code,
-                "type": generator.__name__
-            }
-            
-            # Cleanup
-            os.unlink(temp_path)
-            if module_name in sys.modules:
-                del sys.modules[module_name]
-            
-            return result
-            
+            jaxpr = jax.make_jaxpr(func)(*sample_args)
+            jaxpr_text = str(jaxpr)
         except Exception as e:
-            os.unlink(temp_path)
-            if module_name in sys.modules:
-                del sys.modules[module_name]
-            raise e
+            jaxpr_text = f"# Jaxpr extraction failed: {e}"
+        
+        # Get HLO text
+        try:
+            lowered = jax.jit(func).lower(*sample_args)
+            hlo_text = lowered.as_text()
+        except Exception as e:
+            hlo_text = f"# HLO extraction failed: {e}"
+        
+        # Get optimized HLO
+        optimized_hlo = None
+        try:
+            lowered = jax.jit(func).lower(*sample_args)
+            compiled = lowered.compile()
+            optimized_hlo = compiled.as_text()
+        except Exception:
+            pass
+        
+        # Add backward pass
+        try:
+            def scalar_loss(*args):
+                result = func(*args)
+                if isinstance(result, jnp.ndarray):
+                    return jnp.sum(result)
+                return result
+            
+            grad_fn = jax.grad(scalar_loss)
+            grad_jaxpr = jax.make_jaxpr(grad_fn)(*sample_args)
+            jaxpr_text += "\n\n# === BACKWARD (GRADIENT) JAXPR ===\n"
+            jaxpr_text += str(grad_jaxpr)
+            
+            grad_lowered = jax.jit(grad_fn).lower(*sample_args)
+            grad_hlo = grad_lowered.as_text()
+            hlo_text += "\n\n// === BACKWARD (GRADIENT) HLO ===\n"
+            hlo_text += grad_hlo
+            
+            if optimized_hlo is not None:
+                try:
+                    grad_compiled = grad_lowered.compile()
+                    grad_opt_hlo = grad_compiled.as_text()
+                    optimized_hlo += "\n\n// === BACKWARD (GRADIENT) OPTIMIZED HLO ===\n"
+                    optimized_hlo += grad_opt_hlo
+                except Exception:
+                    pass
+        except Exception as e:
+            jaxpr_text += f"\n\n# Backward extraction failed: {e}"
+        
+        result = {
+            "id": pair_id,
+            "kernel_name": kernel_name,
+            "python": kernel_source.strip(),
+            "hlo": hlo_text,
+            "jaxpr": jaxpr_text,
+            "type": generator.__name__
+        }
+        
+        if optimized_hlo:
+            result["optimized_hlo"] = optimized_hlo
+        
+        return result
             
     except Exception as e:
         return {"id": pair_id, "error": str(e)}
@@ -104,8 +142,6 @@ def batch_generate_sequential(
     checkpoint_every: int = 100
 ):
     """Generate pairs sequentially with checkpointing."""
-    wp.init()
-    
     output_path = Path(output_path)
     checkpoint_path = output_path.with_suffix('.checkpoint')
     
