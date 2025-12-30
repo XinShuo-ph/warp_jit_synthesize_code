@@ -1,4 +1,4 @@
-"""Batch Generator - Efficient large-scale kernel pair generation."""
+"""Batch Generator - Efficient large-scale kernel pair generation (JAX IR)."""
 import json
 import os
 import sys
@@ -13,12 +13,12 @@ import argparse
 # Add extraction module to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "extraction"))
 
-import warp as wp
+import jax.numpy as jnp
 
 
 def init_worker():
-    """Initialize warp in each worker process."""
-    wp.init()
+    """Worker init hook (kept for parity)."""
+    return None
 
 
 def generate_single_pair(args):
@@ -33,6 +33,7 @@ def generate_single_pair(args):
     
     from generator import GENERATORS
     from ir_extractor import extract_ir
+    from pipeline import _example_args_for_generator
     
     try:
         # Generate kernel
@@ -47,7 +48,9 @@ def generate_single_pair(args):
         # Create temp module
         module_name = f"batch_module_{pair_id}"
         with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
-            f.write("import warp as wp\n\n")
+            f.write("import jax\n")
+            f.write("import jax.numpy as jnp\n")
+            f.write("from jax import lax\n\n")
             f.write(kernel_source)
             temp_path = f.name
         
@@ -58,19 +61,13 @@ def generate_single_pair(args):
             sys.modules[module_name] = module
             spec.loader.exec_module(module)
             
-            # Find kernel
-            kernel = None
-            for name in dir(module):
-                obj = getattr(module, name)
-                if isinstance(obj, wp.Kernel):
-                    kernel = obj
-                    break
-            
-            if kernel is None:
-                raise ValueError("No kernel found")
+            kernel_fn = getattr(module, kernel_name, None)
+            if kernel_fn is None:
+                raise ValueError("No kernel function found")
             
             # Extract IR
-            ir = extract_ir(kernel)
+            example_args = _example_args_for_generator(generator.__name__)
+            ir = extract_ir(kernel_fn, example_args=example_args)
             
             result = {
                 "id": pair_id,
@@ -104,8 +101,6 @@ def batch_generate_sequential(
     checkpoint_every: int = 100
 ):
     """Generate pairs sequentially with checkpointing."""
-    wp.init()
-    
     output_path = Path(output_path)
     checkpoint_path = output_path.with_suffix('.checkpoint')
     

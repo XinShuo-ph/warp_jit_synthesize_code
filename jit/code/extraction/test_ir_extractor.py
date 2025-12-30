@@ -1,80 +1,75 @@
-"""Test IR extraction with various kernel types."""
+"""Test IR extraction with various JAX kernel types."""
+
 import sys
-sys.path.insert(0, '/workspace/jit/code/extraction')
+from pathlib import Path
 
-import warp as wp
-from ir_extractor import extract_ir, extract_ir_pair
+sys.path.insert(0, str(Path(__file__).parent))
 
-wp.init()
+import jax.numpy as jnp
+from jax import lax
+
+from ir_extractor import extract_ir
+
 
 # Test 1: Simple array addition
-@wp.kernel
-def add_kernel(a: wp.array(dtype=float), b: wp.array(dtype=float), c: wp.array(dtype=float)):
-    tid = wp.tid()
-    c[tid] = a[tid] + b[tid]
+def add_kernel(a, b):
+    return a + b
 
-# Test 2: Atomic operations (dot product)
-@wp.kernel
-def dot_product(a: wp.array(dtype=float), b: wp.array(dtype=float), result: wp.array(dtype=float)):
-    tid = wp.tid()
-    wp.atomic_add(result, 0, a[tid] * b[tid])
+
+# Test 2: Reduction (dot product)
+def dot_product(a, b):
+    return jnp.sum(a * b)
+
 
 # Test 3: Scalar + array operations (SAXPY)
-@wp.kernel
-def saxpy(alpha: float, x: wp.array(dtype=float), y: wp.array(dtype=float), out: wp.array(dtype=float)):
-    tid = wp.tid()
-    out[tid] = alpha * x[tid] + y[tid]
+def saxpy(alpha, x, y):
+    return alpha * x + y
 
-# Test 4: Branching kernel
-@wp.kernel
-def branch_kernel(a: wp.array(dtype=float), b: wp.array(dtype=float)):
-    tid = wp.tid()
-    val = a[tid]
-    if val > 0.0:
-        b[tid] = val * 2.0
-    else:
-        b[tid] = val * -1.0
 
-# Test 5: Loop kernel
-@wp.kernel
-def loop_kernel(a: wp.array(dtype=float), b: wp.array(dtype=float), n: int):
-    tid = wp.tid()
-    total = float(0.0)
-    for i in range(n):
-        total = total + a[tid]
-    b[tid] = total
+# Test 4: Branching (vectorized)
+def branch_kernel(a):
+    return jnp.where(a > 0.0, a * 2.0, a * -1.0)
 
-# Test 6: Vector operations
-@wp.kernel
-def vec_kernel(a: wp.array(dtype=wp.vec3), b: wp.array(dtype=wp.vec3), c: wp.array(dtype=float)):
-    tid = wp.tid()
-    c[tid] = wp.dot(a[tid], b[tid])
+
+# Test 5: Loop kernel (we just test compilation/extraction here)
+def loop_kernel(a, n):
+    def body(i, acc):
+        return acc + a
+
+    init = jnp.zeros_like(a)
+    return lax.fori_loop(0, n, body, init)
+
+
+# Test 6: Vector operations (N, 3) -> (N,)
+def vec_kernel(a, b):
+    return jnp.sum(a * b, axis=-1)
 
 
 def run_tests():
+    n = 8
     kernels = [
-        ("add_kernel", add_kernel),
-        ("dot_product", dot_product),
-        ("saxpy", saxpy),
-        ("branch_kernel", branch_kernel),
-        ("loop_kernel", loop_kernel),
-        ("vec_kernel", vec_kernel),
+        ("add_kernel", add_kernel, (jnp.arange(n, dtype=jnp.float32), jnp.arange(n, dtype=jnp.float32))),
+        ("dot_product", dot_product, (jnp.arange(n, dtype=jnp.float32), jnp.arange(n, dtype=jnp.float32))),
+        ("saxpy", saxpy, (2.0, jnp.arange(n, dtype=jnp.float32), jnp.arange(n, dtype=jnp.float32))),
+        ("branch_kernel", branch_kernel, (jnp.linspace(-1.0, 1.0, n, dtype=jnp.float32),)),
+        ("loop_kernel", loop_kernel, (jnp.arange(n, dtype=jnp.float32), 3)),
+        ("vec_kernel", vec_kernel, (jnp.ones((n, 3), dtype=jnp.float32), jnp.ones((n, 3), dtype=jnp.float32))),
     ]
     
     results = []
-    for name, kernel in kernels:
+    for name, kernel, example_args in kernels:
         print(f"\n{'='*60}")
         print(f"Testing: {name}")
         print('='*60)
         
         try:
-            ir = extract_ir(kernel)
+            ir = extract_ir(kernel, example_args=example_args)
             py_src, cpp_code = ir.python_source, ir.cpp_code
             
             print(f"Python source length: {len(py_src)} chars")
             print(f"C++ code length: {len(cpp_code)} chars")
-            print(f"Has forward pass: {'_forward' in cpp_code}")
-            print(f"Has backward pass: {'_backward' in cpp_code}")
+            print(f"Has forward section: {'### FORWARD' in cpp_code}")
+            print(f"Has backward section: {'### BACKWARD' in cpp_code}")
             
             results.append((name, True, len(py_src), len(cpp_code)))
             

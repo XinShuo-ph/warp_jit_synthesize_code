@@ -1,4 +1,4 @@
-"""Kernel Generator - Generates varied Warp kernels programmatically."""
+"""Kernel Generator - Generates varied JAX kernels programmatically."""
 import random
 import string
 from dataclasses import dataclass
@@ -14,30 +14,11 @@ class KernelSpec:
     imports: List[str] = None
 
 
-# Type definitions for kernel arguments
-ARRAY_TYPES = [
-    "wp.array(dtype=float)",
-    "wp.array(dtype=int)",
-    "wp.array(dtype=wp.vec3)",
-    "wp.array(dtype=wp.vec2)",
-]
+# Binary operations (symbol only; we generate expression strings)
+BINARY_OPS = ["+", "-", "*"]
 
-SCALAR_TYPES = ["float", "int"]
-
-# Binary operations
-BINARY_OPS = [
-    ("+", "wp.add"),
-    ("-", "wp.sub"),
-    ("*", "wp.mul"),
-]
-
-# Unary operations
-UNARY_OPS = [
-    ("wp.sqrt", "sqrt"),
-    ("wp.abs", "abs"),
-    ("wp.sin", "sin"),
-    ("wp.cos", "cos"),
-]
+# Unary operations (JAX-friendly)
+UNARY_OPS = ["jnp.sqrt", "jnp.abs", "jnp.sin", "jnp.cos"]
 
 
 def random_name(prefix: str = "kernel") -> str:
@@ -52,12 +33,10 @@ def generate_simple_elementwise(seed: int = None) -> str:
         random.seed(seed)
     
     name = random_name("elementwise")
-    op_sym, _ = random.choice(BINARY_OPS)
+    op_sym = random.choice(BINARY_OPS)
     
-    return f'''@wp.kernel
-def {name}(a: wp.array(dtype=float), b: wp.array(dtype=float), c: wp.array(dtype=float)):
-    tid = wp.tid()
-    c[tid] = a[tid] {op_sym} b[tid]
+    return f'''def {name}(a, b):
+    return a {op_sym} b
 '''
 
 
@@ -67,13 +46,11 @@ def generate_scalar_array_op(seed: int = None) -> str:
         random.seed(seed)
     
     name = random_name("scalar_arr")
-    op1_sym, _ = random.choice(BINARY_OPS)
-    op2_sym, _ = random.choice(BINARY_OPS)
+    op1_sym = random.choice(BINARY_OPS)
+    op2_sym = random.choice(BINARY_OPS)
     
-    return f'''@wp.kernel
-def {name}(alpha: float, x: wp.array(dtype=float), y: wp.array(dtype=float), out: wp.array(dtype=float)):
-    tid = wp.tid()
-    out[tid] = alpha {op1_sym} x[tid] {op2_sym} y[tid]
+    return f'''def {name}(alpha, x, y):
+    return (alpha {op1_sym} x) {op2_sym} y
 '''
 
 
@@ -83,12 +60,10 @@ def generate_unary_kernel(seed: int = None) -> str:
         random.seed(seed)
     
     name = random_name("unary")
-    op_func, _ = random.choice(UNARY_OPS)
+    op_func = random.choice(UNARY_OPS)
     
-    return f'''@wp.kernel
-def {name}(a: wp.array(dtype=float), b: wp.array(dtype=float)):
-    tid = wp.tid()
-    b[tid] = {op_func}(a[tid])
+    return f'''def {name}(a):
+    return {op_func}(a)
 '''
 
 
@@ -99,74 +74,61 @@ def generate_branch_kernel(seed: int = None) -> str:
     
     name = random_name("branch")
     threshold = round(random.uniform(-1.0, 1.0), 2)
-    op1_sym, _ = random.choice(BINARY_OPS)
-    op2_sym, _ = random.choice(BINARY_OPS)
+    op1_sym = random.choice(BINARY_OPS)
+    op2_sym = random.choice(BINARY_OPS)
     const1 = round(random.uniform(0.5, 3.0), 1)
     const2 = round(random.uniform(0.5, 3.0), 1)
     
-    return f'''@wp.kernel
-def {name}(a: wp.array(dtype=float), b: wp.array(dtype=float)):
-    tid = wp.tid()
-    val = a[tid]
-    if val > {threshold}:
-        b[tid] = val {op1_sym} {const1}
-    else:
-        b[tid] = val {op2_sym} {const2}
+    return f'''def {name}(a):
+    return jnp.where(a > {threshold}, a {op1_sym} {const1}, a {op2_sym} {const2})
 '''
 
 
 def generate_loop_kernel(seed: int = None) -> str:
-    """Generate a kernel with a loop."""
+    """Generate a kernel with a loop (uses lax.fori_loop)."""
     if seed is not None:
         random.seed(seed)
     
     name = random_name("loop")
-    op_sym, _ = random.choice(BINARY_OPS)
+    op_sym = random.choice(BINARY_OPS)
     
-    return f'''@wp.kernel
-def {name}(a: wp.array(dtype=float), b: wp.array(dtype=float), n: int):
-    tid = wp.tid()
-    total = float(0.0)
-    for i in range(n):
-        total = total {op_sym} a[tid]
-    b[tid] = total
+    # Loop accumulates an array accumulator (same shape as a)
+    return f'''def {name}(a, n):
+    def body(i, acc):
+        return acc {op_sym} a
+    init = jnp.zeros_like(a)
+    return lax.fori_loop(0, n, body, init)
 '''
 
 
 def generate_reduction_kernel(seed: int = None) -> str:
-    """Generate an atomic reduction kernel."""
+    """Generate a reduction kernel."""
     if seed is not None:
         random.seed(seed)
     
     name = random_name("reduce")
     
-    return f'''@wp.kernel
-def {name}(a: wp.array(dtype=float), result: wp.array(dtype=float)):
-    tid = wp.tid()
-    wp.atomic_add(result, 0, a[tid])
+    return f'''def {name}(a):
+    return jnp.sum(a)
 '''
 
 
 def generate_vector_kernel(seed: int = None) -> str:
-    """Generate a kernel with vector operations."""
+    """Generate a kernel with vector operations on (N, 3) arrays."""
     if seed is not None:
         random.seed(seed)
     
     name = random_name("vec")
-    ops = ["wp.dot", "wp.length", "wp.cross"]
-    op = random.choice(ops[:2])  # dot or length
+    ops = ["dot", "length"]
+    op = random.choice(ops)
     
-    if op == "wp.dot":
-        return f'''@wp.kernel
-def {name}(a: wp.array(dtype=wp.vec3), b: wp.array(dtype=wp.vec3), c: wp.array(dtype=float)):
-    tid = wp.tid()
-    c[tid] = wp.dot(a[tid], b[tid])
+    if op == "dot":
+        return f'''def {name}(a, b):
+    return jnp.sum(a * b, axis=-1)
 '''
     else:
-        return f'''@wp.kernel
-def {name}(a: wp.array(dtype=wp.vec3), b: wp.array(dtype=float)):
-    tid = wp.tid()
-    b[tid] = wp.length(a[tid])
+        return f'''def {name}(a):
+    return jnp.sqrt(jnp.sum(a * a, axis=-1))
 '''
 
 
@@ -176,16 +138,14 @@ def generate_multi_statement_kernel(seed: int = None) -> str:
         random.seed(seed)
     
     name = random_name("multi")
-    op1_sym, _ = random.choice(BINARY_OPS)
-    op2_sym, _ = random.choice(BINARY_OPS)
-    unary_op, _ = random.choice(UNARY_OPS)
+    op1_sym = random.choice(BINARY_OPS)
+    op2_sym = random.choice(BINARY_OPS)
+    unary_op = random.choice(UNARY_OPS)
     
-    return f'''@wp.kernel
-def {name}(a: wp.array(dtype=float), b: wp.array(dtype=float), c: wp.array(dtype=float)):
-    tid = wp.tid()
-    temp1 = a[tid] {op1_sym} b[tid]
+    return f'''def {name}(a, b):
+    temp1 = a {op1_sym} b
     temp2 = {unary_op}(temp1)
-    c[tid] = temp2 {op2_sym} a[tid]
+    return temp2 {op2_sym} a
 '''
 
 
@@ -198,17 +158,9 @@ def generate_nested_branch_kernel(seed: int = None) -> str:
     t1 = round(random.uniform(-0.5, 0.5), 2)
     t2 = round(random.uniform(0.5, 1.5), 2)
     
-    return f'''@wp.kernel
-def {name}(a: wp.array(dtype=float), b: wp.array(dtype=float)):
-    tid = wp.tid()
-    val = a[tid]
-    if val > {t1}:
-        if val > {t2}:
-            b[tid] = val * 3.0
-        else:
-            b[tid] = val * 2.0
-    else:
-        b[tid] = val * 0.5
+    return f'''def {name}(a):
+    inner = jnp.where(a > {t2}, a * 3.0, a * 2.0)
+    return jnp.where(a > {t1}, inner, a * 0.5)
 '''
 
 
@@ -219,14 +171,10 @@ def generate_compound_kernel(seed: int = None) -> str:
     
     name = random_name("compound")
     
-    return f'''@wp.kernel
-def {name}(a: wp.array(dtype=float), b: wp.array(dtype=float), c: wp.array(dtype=float), scale: float):
-    tid = wp.tid()
-    x = a[tid]
-    y = b[tid]
-    result = (x + y) * scale
-    result = result - wp.floor(result)
-    c[tid] = wp.abs(result)
+    return f'''def {name}(a, b, scale):
+    result = (a + b) * scale
+    result = result - jnp.floor(result)
+    return jnp.abs(result)
 '''
 
 

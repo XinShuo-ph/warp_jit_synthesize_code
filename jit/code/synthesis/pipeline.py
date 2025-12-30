@@ -1,4 +1,4 @@
-"""Synthesis Pipeline - Generates Python→C++ pairs for LLM training."""
+"""Synthesis Pipeline - Generates Python→(CPU/GPU HLO) pairs for LLM training."""
 import json
 import os
 import sys
@@ -11,13 +11,14 @@ from dataclasses import dataclass, asdict
 # Add extraction module to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "extraction"))
 
-import warp as wp
-from generator import generate_kernel_batch, GENERATORS
+import jax.numpy as jnp
+
+from generator import GENERATORS
 
 
 @dataclass
 class TrainingPair:
-    """A Python→C++ training pair."""
+    """A Python→IR training pair (CPU HLO + optional GPU HLO)."""
     id: int
     kernel_name: str
     python_source: str
@@ -30,7 +31,9 @@ def create_module_from_source(source: str, module_name: str):
     """Create a Python module from source code string."""
     # Create a temp file to store the kernel
     with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
-        f.write("import warp as wp\n\n")
+        f.write("import jax\n")
+        f.write("import jax.numpy as jnp\n")
+        f.write("from jax import lax\n\n")
         f.write(source)
         temp_path = f.name
     
@@ -46,8 +49,37 @@ def create_module_from_source(source: str, module_name: str):
         raise e
 
 
-def extract_ir_from_source(kernel_source: str, kernel_name: str, module_id: int):
-    """Extract C++ and CUDA IR from kernel source code."""
+def _example_args_for_generator(generator_type: str, n: int = 8):
+    """Create deterministic example inputs for a generated kernel."""
+    if generator_type == "generate_simple_elementwise":
+        return (jnp.arange(n, dtype=jnp.float32), jnp.arange(n, dtype=jnp.float32))
+    if generator_type == "generate_scalar_array_op":
+        return (2.0, jnp.arange(n, dtype=jnp.float32), jnp.arange(n, dtype=jnp.float32))
+    if generator_type == "generate_unary_kernel":
+        return (jnp.linspace(-1.0, 1.0, n, dtype=jnp.float32),)
+    if generator_type == "generate_branch_kernel":
+        return (jnp.linspace(-1.0, 1.0, n, dtype=jnp.float32),)
+    if generator_type == "generate_loop_kernel":
+        return (jnp.arange(n, dtype=jnp.float32), 3)
+    if generator_type == "generate_reduction_kernel":
+        return (jnp.arange(n, dtype=jnp.float32),)
+    if generator_type == "generate_vector_kernel":
+        return (
+            jnp.ones((n, 3), dtype=jnp.float32),
+            jnp.ones((n, 3), dtype=jnp.float32),
+        )
+    if generator_type == "generate_multi_statement_kernel":
+        return (jnp.arange(n, dtype=jnp.float32), jnp.arange(n, dtype=jnp.float32))
+    if generator_type == "generate_nested_branch_kernel":
+        return (jnp.linspace(-1.0, 1.0, n, dtype=jnp.float32),)
+    if generator_type == "generate_compound_kernel":
+        return (jnp.arange(n, dtype=jnp.float32), jnp.arange(n, dtype=jnp.float32), 1.25)
+    # Fallback: two vectors
+    return (jnp.arange(n, dtype=jnp.float32), jnp.arange(n, dtype=jnp.float32))
+
+
+def extract_ir_from_source(kernel_source: str, kernel_name: str, module_id: int, generator_type: str):
+    """Extract CPU/GPU HLO IR from kernel source code."""
     from ir_extractor import extract_ir
     
     module_name = f"synth_module_{module_id}"
@@ -55,19 +87,14 @@ def extract_ir_from_source(kernel_source: str, kernel_name: str, module_id: int)
     try:
         module, temp_path = create_module_from_source(kernel_source, module_name)
         
-        # Find the kernel in the module
-        kernel = None
-        for name in dir(module):
-            obj = getattr(module, name)
-            if isinstance(obj, wp.Kernel):
-                kernel = obj
-                break
+        kernel_fn = getattr(module, kernel_name, None)
+        if kernel_fn is None:
+            raise ValueError("No kernel function found in generated source")
         
-        if kernel is None:
-            raise ValueError(f"No kernel found in generated source")
-        
+        example_args = _example_args_for_generator(generator_type)
+
         # Extract IR
-        ir = extract_ir(kernel)
+        ir = extract_ir(kernel_fn, example_args=example_args)
         
         # Cleanup
         os.unlink(temp_path)
@@ -93,8 +120,7 @@ def generate_training_pairs(
     base_seed: int = 42,
     output_dir: Optional[str] = None
 ) -> List[TrainingPair]:
-    """Generate training pairs with both CPU and CUDA code."""
-    wp.init()
+    """Generate training pairs with CPU HLO and (if available) GPU HLO."""
     
     pairs = []
     failed = 0
@@ -114,7 +140,7 @@ def generate_training_pairs(
         kernel_name = match.group(1) if match else f"kernel_{i}"
         
         try:
-            cpp_code, cuda_code = extract_ir_from_source(kernel_source, kernel_name, i)
+            cpp_code, cuda_code = extract_ir_from_source(kernel_source, kernel_name, i, generator.__name__)
             
             pair = TrainingPair(
                 id=i,
@@ -163,8 +189,6 @@ def generate_batch_to_jsonl(
         base_seed: Random seed base
         device: "cpu", "cuda", or "both"
     """
-    wp.init()
-    
     with open(output_path, 'w') as f:
         generated = 0
         failed = 0
@@ -182,7 +206,7 @@ def generate_batch_to_jsonl(
             kernel_name = match.group(1) if match else f"kernel_{i}"
             
             try:
-                cpp_code, cuda_code = extract_ir_from_source(kernel_source, kernel_name, i)
+                cpp_code, cuda_code = extract_ir_from_source(kernel_source, kernel_name, i, generator.__name__)
                 
                 pair = {
                     "id": i,
@@ -220,7 +244,7 @@ def generate_batch_to_jsonl(
 if __name__ == "__main__":
     import argparse
     
-    parser = argparse.ArgumentParser(description="Generate Python→C++/CUDA training pairs")
+    parser = argparse.ArgumentParser(description="Generate Python→(CPU/GPU HLO) training pairs")
     parser.add_argument("--count", type=int, default=10, help="Number of pairs to generate")
     parser.add_argument("--output", type=str, default=None, help="Output directory or file")
     parser.add_argument("--seed", type=int, default=42, help="Base random seed")

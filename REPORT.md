@@ -1,4 +1,4 @@
-# Technical Report: JIT Code Synthesis Dataset
+# Technical Report: JIT Code Synthesis Dataset (JAX)
 
 **Date:** December 2025  
 **Purpose:** Python→C++/CUDA training data for LLM code generation
@@ -7,7 +7,7 @@
 
 ## Executive Summary
 
-Successfully generated **1,500 Python→C++/CUDA training pairs** (18MB) using NVIDIA Warp's JIT compilation infrastructure. Each sample contains Python kernel source paired with compiler-generated code for **both CPU and CUDA backends**, each including **forward and backward (gradient) functions**.
+This repository now generates Python→compiler-IR training pairs using **JAX**. Each sample contains Python function source paired with compiler-generated **CPU HLO** (and **GPU HLO** if available), each including **forward and backward (gradient) functions**.
 
 ---
 
@@ -29,16 +29,16 @@ Each sample contains:
 {
   "id": 0,
   "kernel_name": "kernel_xyz",
-  "python": "@wp.kernel\ndef kernel_xyz(...):\n    ...",
-  "cpp": "void kernel_cpu_kernel_forward(...) {...}\nvoid kernel_cpu_kernel_backward(...) {...}",
-  "cuda": "void kernel_cuda_kernel_forward(...) {...}\nvoid kernel_cuda_kernel_backward(...) {...}",
+  "python": "def kernel_xyz(...):\n    ...",
+  "cpp": "### FORWARD (CPU HLO)\n...\n### BACKWARD (CPU HLO)\n...",
+  "cuda": "### FORWARD (GPU HLO)\n...\n### BACKWARD (GPU HLO)\n...",
   "type": "generate_..."
 }
 ```
 
 ---
 
-## Why Both CPU and CUDA?
+## Why Both CPU and GPU?
 
 Training data with both backends enables:
 
@@ -48,12 +48,10 @@ Training data with both backends enables:
 
 ### Key Differences
 
-| Aspect | CPU | CUDA |
+| Aspect | CPU | GPU |
 |--------|-----|------|
-| Execution | Sequential loop | Parallel threads |
-| Thread ID | `task_index` | `blockIdx * blockDim + threadIdx` |
-| Args | Struct pointer | Direct parameters |
-| Memory | Stack-based | Shared memory support |
+| IR | HLO lowered for CPU | HLO lowered for GPU (if available) |
+| Execution | Host CPU backend | Accelerator backend |
 
 ---
 
@@ -113,20 +111,13 @@ Each of 10 kernel types is approximately equally represented (~10% each):
 
 ### JIT-Based Extraction
 
-Rather than hand-writing training pairs, we leverage Warp's compiler:
+Rather than hand-writing training pairs, we leverage JAX's compiler pipeline:
 
 ```python
-import warp._src.context as ctx
+import jax
 
-# Create code builder
-hasher = ctx.ModuleHasher(module)
-builder = ctx.ModuleBuilder(module, options, hasher)
-
-# Generate CPU code (forward + backward)
-cpp_code = builder.codegen("cpu")
-
-# Generate CUDA code (forward + backward)
-cuda_code = builder.codegen("cuda")
+lowered = jax.jit(fn).lower(*example_args)
+hlo_text = lowered.compiler_ir(dialect="hlo").as_hlo_text()
 ```
 
 Benefits:
@@ -159,7 +150,7 @@ Investigated 15+ `dataset-and-report-generation` branches:
 ```bash
 cd jit
 
-# Generate 5000 pairs with both CPU and CUDA
+# Generate 5000 pairs with CPU IR and (if available) GPU IR
 python3 code/synthesis/pipeline.py \
     --count 5000 \
     --output data/large.jsonl \
@@ -174,7 +165,7 @@ python3 code/synthesis/pipeline.py \
 # CPU only
 python3 code/synthesis/pipeline.py --count 1000 --output cpu.jsonl --jsonl --device cpu
 
-# CUDA only
+# GPU only
 python3 code/synthesis/pipeline.py --count 1000 --output cuda.jsonl --jsonl --device cuda
 ```
 
