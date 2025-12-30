@@ -1,0 +1,23 @@
+# Function: dot_product
+# Cost Analysis: {'flops': 6.0, 'bytes accessed': 28.0, 'utilization0{}': 1.0, 'utilization1{}': 1.0, 'bytes accessed0{}': 12.0, 'bytes accessed1{}': 12.0, 'bytes accessedout{}': 4.0}
+
+================================================================================
+# PYTHON SOURCE
+================================================================================
+
+def dot_product(x, y):
+    """Compute dot product."""
+    return jnp.dot(x, y)
+
+
+================================================================================
+# STABLEHLO IR
+================================================================================
+
+module @jit_dot_product attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {
+  func.func public @main(%arg0: tensor<3xf32>, %arg1: tensor<3xf32>) -> (tensor<f32> {jax.result_info = "result"}) {
+    %0 = stablehlo.dot_general %arg0, %arg1, contracting_dims = [0] x [0], precision = [DEFAULT, DEFAULT] : (tensor<3xf32>, tensor<3xf32>) -> tensor<f32>
+    return %0 : tensor<f32>
+  }
+}
+

@@ -1,0 +1,22 @@
+{
+  "function_name": "reduce_jditfv",
+  "category": "mixed",
+  "python_source": "def reduce_jditfv(x):\n    \"\"\"Apply jnp.prod to x - 1.0\"\"\"\n    return jnp.prod(x - 1.0) * 3.15",
+  "stablehlo_ir": "module @jit_reduce_jditfv attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<8xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %0 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<8xf32>\n    %1 = stablehlo.subtract %arg0, %0 : tensor<8xf32>\n    %cst_0 = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %2 = stablehlo.reduce(%1 init: %cst_0) applies stablehlo.multiply across dimensions = [0] : (tensor<8xf32>, tensor<f32>) -> tensor<f32>\n    %cst_1 = stablehlo.constant dense<3.150000e+00> : tensor<f32>\n    %3 = stablehlo.multiply %2, %cst_1 : tensor<f32>\n    return %3 : tensor<f32>\n  }\n}\n",
+  "cost_analysis": {
+    "flops": 16.0,
+    "bytes accessed": 184.0,
+    "utilization0{}": 4.0,
+    "utilization1{}": 3.0,
+    "bytes accessed0{}": 72.0,
+    "bytes accessed1{}": 40.0,
+    "bytes accessedout{}": 72.0
+  },
+  "params": [
+    [
+      "x",
+      "array"
+    ]
+  ],
+  "docstring": "Apply jnp.prod to x - 1.0"
+}

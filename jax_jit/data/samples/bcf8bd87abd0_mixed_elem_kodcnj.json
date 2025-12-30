@@ -1,0 +1,23 @@
+{
+  "function_name": "elem_kodcnj",
+  "category": "mixed",
+  "python_source": "def elem_kodcnj(x):\n    \"\"\"Element-wise jnp.sqrt\"\"\"\n    return jnp.sqrt(x * 0.75) * 0.56",
+  "stablehlo_ir": "module @jit_elem_kodcnj attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<16xf32>) -> (tensor<16xf32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<7.500000e-01> : tensor<f32>\n    %0 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<16xf32>\n    %1 = stablehlo.multiply %arg0, %0 : tensor<16xf32>\n    %2 = stablehlo.sqrt %1 : tensor<16xf32>\n    %cst_0 = stablehlo.constant dense<5.600000e-01> : tensor<f32>\n    %3 = stablehlo.broadcast_in_dim %cst_0, dims = [] : (tensor<f32>) -> tensor<16xf32>\n    %4 = stablehlo.multiply %2, %3 : tensor<16xf32>\n    return %4 : tensor<16xf32>\n  }\n}\n",
+  "cost_analysis": {
+    "flops": 32.0,
+    "transcendentals": 16.0,
+    "bytes accessed": 648.0,
+    "utilization0{}": 5.0,
+    "utilization1{}": 2.0,
+    "bytes accessed0{}": 200.0,
+    "bytes accessed1{}": 128.0,
+    "bytes accessedout{}": 320.0
+  },
+  "params": [
+    [
+      "x",
+      "array"
+    ]
+  ],
+  "docstring": "Element-wise jnp.sqrt"
+}

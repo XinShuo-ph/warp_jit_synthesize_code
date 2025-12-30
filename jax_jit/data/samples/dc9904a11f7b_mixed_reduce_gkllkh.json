@@ -1,0 +1,22 @@
+{
+  "function_name": "reduce_gkllkh",
+  "category": "mixed",
+  "python_source": "def reduce_gkllkh(x):\n    \"\"\"Apply jnp.max to jnp.abs(x)\"\"\"\n    return jnp.max(jnp.abs(x)) * 2.48",
+  "stablehlo_ir": "module @jit_reduce_gkllkh attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<16xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.abs %arg0 : tensor<16xf32>\n    %cst = stablehlo.constant dense<0xFF800000> : tensor<f32>\n    %1 = stablehlo.reduce(%0 init: %cst) applies stablehlo.maximum across dimensions = [0] : (tensor<16xf32>, tensor<f32>) -> tensor<f32>\n    %cst_0 = stablehlo.constant dense<2.480000e+00> : tensor<f32>\n    %2 = stablehlo.multiply %1, %cst_0 : tensor<f32>\n    return %2 : tensor<f32>\n  }\n}\n",
+  "cost_analysis": {
+    "flops": 32.0,
+    "bytes accessed": 212.0,
+    "utilization0{}": 3.0,
+    "utilization1{}": 2.0,
+    "bytes accessed0{}": 132.0,
+    "bytes accessed1{}": 8.0,
+    "bytes accessedout{}": 72.0
+  },
+  "params": [
+    [
+      "x",
+      "array"
+    ]
+  ],
+  "docstring": "Apply jnp.max to jnp.abs(x)"
+}

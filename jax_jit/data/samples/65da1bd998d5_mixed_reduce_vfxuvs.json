@@ -1,0 +1,22 @@
+{
+  "function_name": "reduce_vfxuvs",
+  "category": "mixed",
+  "python_source": "def reduce_vfxuvs(x):\n    \"\"\"Apply jnp.prod to x * x\"\"\"\n    return jnp.prod(x * x) * 4.8",
+  "stablehlo_ir": "module @jit_reduce_vfxuvs attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<32xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.multiply %arg0, %arg0 : tensor<32xf32>\n    %cst = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %1 = stablehlo.reduce(%0 init: %cst) applies stablehlo.multiply across dimensions = [0] : (tensor<32xf32>, tensor<f32>) -> tensor<f32>\n    %cst_0 = stablehlo.constant dense<4.800000e+00> : tensor<f32>\n    %2 = stablehlo.multiply %1, %cst_0 : tensor<f32>\n    return %2 : tensor<f32>\n  }\n}\n",
+  "cost_analysis": {
+    "flops": 64.0,
+    "bytes accessed": 532.0,
+    "utilization0{}": 3.0,
+    "utilization1{}": 3.0,
+    "bytes accessed0{}": 260.0,
+    "bytes accessed1{}": 136.0,
+    "bytes accessedout{}": 136.0
+  },
+  "params": [
+    [
+      "x",
+      "array"
+    ]
+  ],
+  "docstring": "Apply jnp.prod to x * x"
+}

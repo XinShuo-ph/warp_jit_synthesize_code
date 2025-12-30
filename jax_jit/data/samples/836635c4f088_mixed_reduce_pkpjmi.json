@@ -1,0 +1,22 @@
+{
+  "function_name": "reduce_pkpjmi",
+  "category": "mixed",
+  "python_source": "def reduce_pkpjmi(x):\n    \"\"\"Apply jnp.mean to x * 2.0\"\"\"\n    return jnp.mean(x * 2.0) * 3.28",
+  "stablehlo_ir": "module @jit_reduce_pkpjmi attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<32xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<2.000000e+00> : tensor<f32>\n    %0 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<32xf32>\n    %1 = stablehlo.multiply %arg0, %0 : tensor<32xf32>\n    %cst_0 = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %2 = stablehlo.reduce(%1 init: %cst_0) applies stablehlo.add across dimensions = [0] : (tensor<32xf32>, tensor<f32>) -> tensor<f32>\n    %cst_1 = stablehlo.constant dense<3.200000e+01> : tensor<f32>\n    %3 = stablehlo.divide %2, %cst_1 : tensor<f32>\n    %cst_2 = stablehlo.constant dense<3.280000e+00> : tensor<f32>\n    %4 = stablehlo.multiply %3, %cst_2 : tensor<f32>\n    return %4 : tensor<f32>\n  }\n}\n",
+  "cost_analysis": {
+    "flops": 65.0,
+    "bytes accessed": 676.0,
+    "utilization0{}": 5.0,
+    "utilization1{}": 4.0,
+    "bytes accessed0{}": 268.0,
+    "bytes accessed1{}": 140.0,
+    "bytes accessedout{}": 268.0
+  },
+  "params": [
+    [
+      "x",
+      "array"
+    ]
+  ],
+  "docstring": "Apply jnp.mean to x * 2.0"
+}

@@ -1,0 +1,22 @@
+{
+  "function_name": "reduce_rwajct",
+  "category": "mixed",
+  "python_source": "def reduce_rwajct(x):\n    \"\"\"Apply jnp.mean to x - 1.0\"\"\"\n    return jnp.mean(x - 1.0) * 2.07",
+  "stablehlo_ir": "module @jit_reduce_rwajct attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<8xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %0 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<8xf32>\n    %1 = stablehlo.subtract %arg0, %0 : tensor<8xf32>\n    %cst_0 = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %2 = stablehlo.reduce(%1 init: %cst_0) applies stablehlo.add across dimensions = [0] : (tensor<8xf32>, tensor<f32>) -> tensor<f32>\n    %cst_1 = stablehlo.constant dense<8.000000e+00> : tensor<f32>\n    %3 = stablehlo.divide %2, %cst_1 : tensor<f32>\n    %cst_2 = stablehlo.constant dense<2.070000e+00> : tensor<f32>\n    %4 = stablehlo.multiply %3, %cst_2 : tensor<f32>\n    return %4 : tensor<f32>\n  }\n}\n",
+  "cost_analysis": {
+    "flops": 17.0,
+    "bytes accessed": 196.0,
+    "utilization0{}": 5.0,
+    "utilization1{}": 4.0,
+    "bytes accessed0{}": 76.0,
+    "bytes accessed1{}": 44.0,
+    "bytes accessedout{}": 76.0
+  },
+  "params": [
+    [
+      "x",
+      "array"
+    ]
+  ],
+  "docstring": "Apply jnp.mean to x - 1.0"
+}

@@ -1,0 +1,26 @@
+{
+  "function_name": "arith_qaxpvx",
+  "category": "mixed",
+  "python_source": "def arith_qaxpvx(x, y):\n    \"\"\"Compute (x / y) - 5.4\"\"\"\n    return (x / y) - 5.4",
+  "stablehlo_ir": "module @jit_arith_qaxpvx attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<32xf32>, %arg1: tensor<32xf32>) -> (tensor<32xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.divide %arg0, %arg1 : tensor<32xf32>\n    %cst = stablehlo.constant dense<5.400000e+00> : tensor<f32>\n    %1 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<32xf32>\n    %2 = stablehlo.subtract %0, %1 : tensor<32xf32>\n    return %2 : tensor<32xf32>\n  }\n}\n",
+  "cost_analysis": {
+    "flops": 64.0,
+    "bytes accessed": 900.0,
+    "utilization0{}": 3.0,
+    "utilization1{}": 2.0,
+    "bytes accessed0{}": 260.0,
+    "bytes accessed1{}": 256.0,
+    "bytes accessedout{}": 384.0
+  },
+  "params": [
+    [
+      "x",
+      "array_same"
+    ],
+    [
+      "y",
+      "array_same"
+    ]
+  ],
+  "docstring": "Compute (x / y) - 5.4"
+}

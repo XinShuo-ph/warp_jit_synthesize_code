@@ -1,0 +1,26 @@
+{
+  "function_name": "matrix_zbuurt",
+  "category": "mixed",
+  "python_source": "def matrix_zbuurt(A, B):\n    \"\"\"Matrix multiplication\"\"\"\n    return jnp.matmul(A, B)",
+  "stablehlo_ir": "module @jit_matrix_zbuurt attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<3x3xf32>, %arg1: tensor<3x3xf32>) -> (tensor<3x3xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.dot_general %arg0, %arg1, contracting_dims = [1] x [0], precision = [DEFAULT, DEFAULT] : (tensor<3x3xf32>, tensor<3x3xf32>) -> tensor<3x3xf32>\n    return %0 : tensor<3x3xf32>\n  }\n}\n",
+  "cost_analysis": {
+    "flops": 54.0,
+    "bytes accessed": 108.0,
+    "utilization0{}": 1.0,
+    "utilization1{}": 1.0,
+    "bytes accessed0{}": 36.0,
+    "bytes accessed1{}": 36.0,
+    "bytes accessedout{}": 36.0
+  },
+  "params": [
+    [
+      "A",
+      "matrix_compatible"
+    ],
+    [
+      "B",
+      "matrix_compatible"
+    ]
+  ],
+  "docstring": "Matrix multiplication"
+}

@@ -1,0 +1,23 @@
+{
+  "function_name": "elem_irhdgg",
+  "category": "mixed",
+  "python_source": "def elem_irhdgg(x):\n    \"\"\"Element-wise jnp.tanh\"\"\"\n    return jnp.tanh(x * 0.79) * 1.99",
+  "stablehlo_ir": "module @jit_elem_irhdgg attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>) -> (tensor<4xf32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<7.900000e-01> : tensor<f32>\n    %0 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %1 = stablehlo.multiply %arg0, %0 : tensor<4xf32>\n    %2 = stablehlo.tanh %1 : tensor<4xf32>\n    %cst_0 = stablehlo.constant dense<1.990000e+00> : tensor<f32>\n    %3 = stablehlo.broadcast_in_dim %cst_0, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %4 = stablehlo.multiply %2, %3 : tensor<4xf32>\n    return %4 : tensor<4xf32>\n  }\n}\n",
+  "cost_analysis": {
+    "flops": 8.0,
+    "transcendentals": 4.0,
+    "bytes accessed": 168.0,
+    "utilization0{}": 5.0,
+    "utilization1{}": 2.0,
+    "bytes accessed0{}": 56.0,
+    "bytes accessed1{}": 32.0,
+    "bytes accessedout{}": 80.0
+  },
+  "params": [
+    [
+      "x",
+      "array"
+    ]
+  ],
+  "docstring": "Element-wise jnp.tanh"
+}

@@ -1,0 +1,27 @@
+{
+  "function_name": "composite_kfhcej",
+  "category": "mixed",
+  "python_source": "def composite_kfhcej(x, y):\n    \"\"\"Composite operation\"\"\"\n    temp1 = jnp.log(x) - 8.94\n    temp2 = jnp.abs(y) - 7.6\n    return temp1 * temp2",
+  "stablehlo_ir": "module @jit_composite_kfhcej attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<8xf32>, %arg1: tensor<8xf32>) -> (tensor<8xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.log %arg0 : tensor<8xf32>\n    %cst = stablehlo.constant dense<8.93999958> : tensor<f32>\n    %1 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<8xf32>\n    %2 = stablehlo.subtract %0, %1 : tensor<8xf32>\n    %3 = stablehlo.abs %arg1 : tensor<8xf32>\n    %cst_0 = stablehlo.constant dense<7.600000e+00> : tensor<f32>\n    %4 = stablehlo.broadcast_in_dim %cst_0, dims = [] : (tensor<f32>) -> tensor<8xf32>\n    %5 = stablehlo.subtract %3, %4 : tensor<8xf32>\n    %6 = stablehlo.multiply %2, %5 : tensor<8xf32>\n    return %6 : tensor<8xf32>\n  }\n}\n",
+  "cost_analysis": {
+    "flops": 32.0,
+    "transcendentals": 8.0,
+    "bytes accessed": 488.0,
+    "utilization0{}": 7.0,
+    "utilization1{}": 3.0,
+    "bytes accessed0{}": 168.0,
+    "bytes accessed1{}": 96.0,
+    "bytes accessedout{}": 224.0
+  },
+  "params": [
+    [
+      "x",
+      "array_same"
+    ],
+    [
+      "y",
+      "array_same"
+    ]
+  ],
+  "docstring": "Composite operation"
+}

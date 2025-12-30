@@ -1,0 +1,26 @@
+{
+  "function_name": "matrix_khnscv",
+  "category": "mixed",
+  "python_source": "def matrix_khnscv(x, y):\n    \"\"\"Outer product\"\"\"\n    return jnp.outer(x, y)",
+  "stablehlo_ir": "module @jit_matrix_khnscv attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<16xf32>, %arg1: tensor<4xf32>) -> (tensor<16x4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.broadcast_in_dim %arg0, dims = [0] : (tensor<16xf32>) -> tensor<16x1xf32>\n    %1 = stablehlo.broadcast_in_dim %arg1, dims = [1] : (tensor<4xf32>) -> tensor<1x4xf32>\n    %2 = stablehlo.broadcast_in_dim %0, dims = [0, 1] : (tensor<16x1xf32>) -> tensor<16x4xf32>\n    %3 = stablehlo.broadcast_in_dim %1, dims = [0, 1] : (tensor<1x4xf32>) -> tensor<16x4xf32>\n    %4 = stablehlo.multiply %2, %3 : tensor<16x4xf32>\n    return %4 : tensor<16x4xf32>\n  }\n}\n",
+  "cost_analysis": {
+    "flops": 64.0,
+    "bytes accessed": 1840.0,
+    "utilization0{}": 9.0,
+    "utilization1{}": 1.0,
+    "bytes accessed0{}": 576.0,
+    "bytes accessed1{}": 256.0,
+    "bytes accessedout{}": 1008.0
+  },
+  "params": [
+    [
+      "x",
+      "vector"
+    ],
+    [
+      "y",
+      "vector"
+    ]
+  ],
+  "docstring": "Outer product"
+}

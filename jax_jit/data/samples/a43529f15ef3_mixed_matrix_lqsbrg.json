@@ -1,0 +1,26 @@
+{
+  "function_name": "matrix_lqsbrg",
+  "category": "mixed",
+  "python_source": "def matrix_lqsbrg(A, B):\n    \"\"\"Matrix multiplication\"\"\"\n    return jnp.matmul(A, B)",
+  "stablehlo_ir": "module @jit_matrix_lqsbrg attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4x4xf32>, %arg1: tensor<4x4xf32>) -> (tensor<4x4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.dot_general %arg0, %arg1, contracting_dims = [1] x [0], precision = [DEFAULT, DEFAULT] : (tensor<4x4xf32>, tensor<4x4xf32>) -> tensor<4x4xf32>\n    return %0 : tensor<4x4xf32>\n  }\n}\n",
+  "cost_analysis": {
+    "flops": 128.0,
+    "bytes accessed": 192.0,
+    "utilization0{}": 1.0,
+    "utilization1{}": 1.0,
+    "bytes accessed0{}": 64.0,
+    "bytes accessed1{}": 64.0,
+    "bytes accessedout{}": 64.0
+  },
+  "params": [
+    [
+      "A",
+      "matrix_compatible"
+    ],
+    [
+      "B",
+      "matrix_compatible"
+    ]
+  ],
+  "docstring": "Matrix multiplication"
+}

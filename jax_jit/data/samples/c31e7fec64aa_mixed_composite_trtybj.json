@@ -1,0 +1,27 @@
+{
+  "function_name": "composite_trtybj",
+  "category": "mixed",
+  "python_source": "def composite_trtybj(x, y):\n    \"\"\"Composite operation\"\"\"\n    temp1 = jnp.log(x) - 4.26\n    temp2 = jnp.cos(y) / 5.09\n    return temp1 * temp2",
+  "stablehlo_ir": "module @jit_composite_trtybj attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<16xf32>, %arg1: tensor<16xf32>) -> (tensor<16xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.log %arg0 : tensor<16xf32>\n    %cst = stablehlo.constant dense<4.260000e+00> : tensor<f32>\n    %1 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<16xf32>\n    %2 = stablehlo.subtract %0, %1 : tensor<16xf32>\n    %3 = stablehlo.cosine %arg1 : tensor<16xf32>\n    %cst_0 = stablehlo.constant dense<5.090000e+00> : tensor<f32>\n    %4 = stablehlo.broadcast_in_dim %cst_0, dims = [] : (tensor<f32>) -> tensor<16xf32>\n    %5 = stablehlo.divide %3, %4 : tensor<16xf32>\n    %6 = stablehlo.multiply %2, %5 : tensor<16xf32>\n    return %6 : tensor<16xf32>\n  }\n}\n",
+  "cost_analysis": {
+    "flops": 48.0,
+    "transcendentals": 32.0,
+    "bytes accessed": 968.0,
+    "utilization0{}": 7.0,
+    "utilization1{}": 3.0,
+    "bytes accessed0{}": 328.0,
+    "bytes accessed1{}": 192.0,
+    "bytes accessedout{}": 448.0
+  },
+  "params": [
+    [
+      "x",
+      "array_same"
+    ],
+    [
+      "y",
+      "array_same"
+    ]
+  ],
+  "docstring": "Composite operation"
+}

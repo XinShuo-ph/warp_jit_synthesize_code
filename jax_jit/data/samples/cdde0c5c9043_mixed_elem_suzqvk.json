@@ -1,0 +1,23 @@
+{
+  "function_name": "elem_suzqvk",
+  "category": "mixed",
+  "python_source": "def elem_suzqvk(x):\n    \"\"\"Element-wise jnp.sqrt\"\"\"\n    return jnp.sqrt(x * 0.61) * 0.3",
+  "stablehlo_ir": "module @jit_elem_suzqvk attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<32xf32>) -> (tensor<32xf32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<6.100000e-01> : tensor<f32>\n    %0 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<32xf32>\n    %1 = stablehlo.multiply %arg0, %0 : tensor<32xf32>\n    %2 = stablehlo.sqrt %1 : tensor<32xf32>\n    %cst_0 = stablehlo.constant dense<3.000000e-01> : tensor<f32>\n    %3 = stablehlo.broadcast_in_dim %cst_0, dims = [] : (tensor<f32>) -> tensor<32xf32>\n    %4 = stablehlo.multiply %2, %3 : tensor<32xf32>\n    return %4 : tensor<32xf32>\n  }\n}\n",
+  "cost_analysis": {
+    "flops": 64.0,
+    "transcendentals": 32.0,
+    "bytes accessed": 1288.0,
+    "utilization0{}": 5.0,
+    "utilization1{}": 2.0,
+    "bytes accessed0{}": 392.0,
+    "bytes accessed1{}": 256.0,
+    "bytes accessedout{}": 640.0
+  },
+  "params": [
+    [
+      "x",
+      "array"
+    ]
+  ],
+  "docstring": "Element-wise jnp.sqrt"
+}

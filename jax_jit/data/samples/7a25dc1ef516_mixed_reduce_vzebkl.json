@@ -1,0 +1,22 @@
+{
+  "function_name": "reduce_vzebkl",
+  "category": "mixed",
+  "python_source": "def reduce_vzebkl(x):\n    \"\"\"Apply jnp.min to x\"\"\"\n    return jnp.min(x) * 2.6",
+  "stablehlo_ir": "module @jit_reduce_vzebkl attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<16xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<0x7F800000> : tensor<f32>\n    %0 = stablehlo.reduce(%arg0 init: %cst) applies stablehlo.minimum across dimensions = [0] : (tensor<16xf32>, tensor<f32>) -> tensor<f32>\n    %cst_0 = stablehlo.constant dense<2.600000e+00> : tensor<f32>\n    %1 = stablehlo.multiply %0, %cst_0 : tensor<f32>\n    return %1 : tensor<f32>\n  }\n}\n",
+  "cost_analysis": {
+    "flops": 16.0,
+    "bytes accessed": 84.0,
+    "utilization0{}": 2.0,
+    "utilization1{}": 2.0,
+    "bytes accessed0{}": 68.0,
+    "bytes accessed1{}": 8.0,
+    "bytes accessedout{}": 8.0
+  },
+  "params": [
+    [
+      "x",
+      "array"
+    ]
+  ],
+  "docstring": "Apply jnp.min to x"
+}

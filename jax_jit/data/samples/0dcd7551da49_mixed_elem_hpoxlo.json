@@ -1,0 +1,22 @@
+{
+  "function_name": "elem_hpoxlo",
+  "category": "mixed",
+  "python_source": "def elem_hpoxlo(x):\n    \"\"\"Element-wise jnp.abs\"\"\"\n    return jnp.abs(x * 1.52) * 1.0",
+  "stablehlo_ir": "module @jit_elem_hpoxlo attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>) -> (tensor<4xf32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<1.520000e+00> : tensor<f32>\n    %0 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %1 = stablehlo.multiply %arg0, %0 : tensor<4xf32>\n    %2 = stablehlo.abs %1 : tensor<4xf32>\n    %cst_0 = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %3 = stablehlo.broadcast_in_dim %cst_0, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %4 = stablehlo.multiply %2, %3 : tensor<4xf32>\n    return %4 : tensor<4xf32>\n  }\n}\n",
+  "cost_analysis": {
+    "flops": 8.0,
+    "bytes accessed": 100.0,
+    "utilization0{}": 3.0,
+    "utilization1{}": 1.0,
+    "bytes accessed0{}": 36.0,
+    "bytes accessed1{}": 16.0,
+    "bytes accessedout{}": 48.0
+  },
+  "params": [
+    [
+      "x",
+      "array"
+    ]
+  ],
+  "docstring": "Element-wise jnp.abs"
+}

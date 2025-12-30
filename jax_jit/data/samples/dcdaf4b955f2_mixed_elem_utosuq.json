@@ -1,0 +1,22 @@
+{
+  "function_name": "elem_utosuq",
+  "category": "mixed",
+  "python_source": "def elem_utosuq(x):\n    \"\"\"Element-wise jnp.abs\"\"\"\n    return jnp.abs(x * 1.39) * 0.92",
+  "stablehlo_ir": "module @jit_elem_utosuq attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<8xf32>) -> (tensor<8xf32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<1.390000e+00> : tensor<f32>\n    %0 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<8xf32>\n    %1 = stablehlo.multiply %arg0, %0 : tensor<8xf32>\n    %2 = stablehlo.abs %1 : tensor<8xf32>\n    %cst_0 = stablehlo.constant dense<9.200000e-01> : tensor<f32>\n    %3 = stablehlo.broadcast_in_dim %cst_0, dims = [] : (tensor<f32>) -> tensor<8xf32>\n    %4 = stablehlo.multiply %2, %3 : tensor<8xf32>\n    return %4 : tensor<8xf32>\n  }\n}\n",
+  "cost_analysis": {
+    "flops": 24.0,
+    "bytes accessed": 328.0,
+    "utilization0{}": 5.0,
+    "utilization1{}": 2.0,
+    "bytes accessed0{}": 104.0,
+    "bytes accessed1{}": 64.0,
+    "bytes accessedout{}": 160.0
+  },
+  "params": [
+    [
+      "x",
+      "array"
+    ]
+  ],
+  "docstring": "Element-wise jnp.abs"
+}

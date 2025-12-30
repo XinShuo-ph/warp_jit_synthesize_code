@@ -1,0 +1,12 @@
+{
+  "total_pairs": 500,
+  "categories": {
+    "mixed": 500
+  },
+  "avg_python_lines": 3.32,
+  "avg_ir_lines": 11.842,
+  "total_flops": 21733.0,
+  "avg_flops": 43.466,
+  "total_time": 3.6718039512634277,
+  "rate": 136.17284763473154
+}

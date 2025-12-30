@@ -1,0 +1,22 @@
+{
+  "function_name": "reduce_axdafn",
+  "category": "mixed",
+  "python_source": "def reduce_axdafn(x):\n    \"\"\"Apply jnp.sum to jnp.abs(x)\"\"\"\n    return jnp.sum(jnp.abs(x)) * 0.1",
+  "stablehlo_ir": "module @jit_reduce_axdafn attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<8xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.abs %arg0 : tensor<8xf32>\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %1 = stablehlo.reduce(%0 init: %cst) applies stablehlo.add across dimensions = [0] : (tensor<8xf32>, tensor<f32>) -> tensor<f32>\n    %cst_0 = stablehlo.constant dense<1.000000e-01> : tensor<f32>\n    %2 = stablehlo.multiply %1, %cst_0 : tensor<f32>\n    return %2 : tensor<f32>\n  }\n}\n",
+  "cost_analysis": {
+    "flops": 16.0,
+    "bytes accessed": 116.0,
+    "utilization0{}": 3.0,
+    "utilization1{}": 2.0,
+    "bytes accessed0{}": 68.0,
+    "bytes accessed1{}": 8.0,
+    "bytes accessedout{}": 40.0
+  },
+  "params": [
+    [
+      "x",
+      "array"
+    ]
+  ],
+  "docstring": "Apply jnp.sum to jnp.abs(x)"
+}

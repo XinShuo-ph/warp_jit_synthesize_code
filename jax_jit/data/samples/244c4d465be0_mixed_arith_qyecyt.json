@@ -1,0 +1,26 @@
+{
+  "function_name": "arith_qyecyt",
+  "category": "mixed",
+  "python_source": "def arith_qyecyt(x, y):\n    \"\"\"Compute (x * y) / -5.9\"\"\"\n    return (x * y) / -5.9",
+  "stablehlo_ir": "module @jit_arith_qyecyt attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>, %arg1: tensor<4xf32>) -> (tensor<4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.multiply %arg0, %arg1 : tensor<4xf32>\n    %cst = stablehlo.constant dense<-5.900000e+00> : tensor<f32>\n    %1 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %2 = stablehlo.divide %0, %1 : tensor<4xf32>\n    return %2 : tensor<4xf32>\n  }\n}\n",
+  "cost_analysis": {
+    "flops": 8.0,
+    "bytes accessed": 116.0,
+    "utilization0{}": 3.0,
+    "utilization1{}": 2.0,
+    "bytes accessed0{}": 36.0,
+    "bytes accessed1{}": 32.0,
+    "bytes accessedout{}": 48.0
+  },
+  "params": [
+    [
+      "x",
+      "array_same"
+    ],
+    [
+      "y",
+      "array_same"
+    ]
+  ],
+  "docstring": "Compute (x * y) / -5.9"
+}
