@@ -13,7 +13,7 @@
 2. Start analyzing branch 12c4:
    ```bash
    git show origin/cursor/following-instructions-md-12c4:jit/notes/data_stats.md
-   git ls-tree --name-only -r origin/cursor/following-instructions-md-12c4 | grep -E '\.(py|md)$' | head -30
+   git ls-tree --name-only -r origin/cursor/following-instructions-md-12c4 | rg '\.(py|md)$' | head -30
    ```
 3. Test pipeline from 12c4
 4. Document findings in `merge_notes/12c4_notes.md`

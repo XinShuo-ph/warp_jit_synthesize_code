@@ -71,7 +71,7 @@ jit/
 
 ## Branch Processing Order
 
-Process in this order (from `branch_progresses.md` ranking):
+Process in this order (from `branch_progresses.md` ranking). If the ranking is stale, update it first so it reflects the current JAX-focused branches.
 
 ### Tier 1 - Production Ready (MUST process)
 1. **12c4** - 10,727 pairs, full pipeline
@@ -259,11 +259,11 @@ Based on `branch_progresses.md`:
 ### Kernel Types to Include
 From generator.py across branches:
 - arithmetic (basic ops)
-- math (unary functions)
-- loop (for loops)
-- conditional (if/else)
-- vector (wp.vec3 ops)
-- matrix (wp.mat33 ops)
+- math (unary functions, transcendental)
+- loop (for loops where supported, `lax.fori_loop`/`lax.scan`)
+- conditional (`lax.cond` / `jnp.where`)
+- vector (broadcasting / small-vector ops)
+- matrix (matmul / linear algebra)
 - combined (multi-pattern)
 
 ---

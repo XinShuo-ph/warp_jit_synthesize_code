@@ -1,7 +1,7 @@
 # JIT Code Synthesis - Branch Wrapup
 
 ## Objective
-Wrap up YOUR branch's work on CPU code generation. Validate, reproduce, and document what was built.
+Wrap up YOUR branch's work on JAX JIT IR extraction and synthesis. Validate, reproduce, and document what was built.
 
 ---
 
@@ -54,7 +54,7 @@ jit/
 
 **Tasks**:
 1. Check what milestone your branch reached (read STATE.md, git log, file structure)
-2. Install dependencies: `pip install warp-lang` (and any in requirements.txt)
+2. Install dependencies: `pip install -U "jax[cpu]"` (and any in requirements.txt)
 3. Run the main pipeline/scripts to verify they work:
    - If you have `code/synthesis/pipeline.py`: `python code/synthesis/pipeline.py --count 5`
    - If you have `code/extraction/ir_extractor.py`: run its `__main__` block
@@ -69,7 +69,7 @@ jit/
 
 **README.md must include**:
 ```markdown
-# Warp JIT Code Synthesis - [Branch Name]
+# JAX JIT Code Synthesis - [Branch Name]
 
 ## Progress Summary
 - Milestone reached: M1/M2/M3/M4/M5
@@ -81,7 +81,7 @@ jit/
 
 ## Requirements
 ```bash
-pip install warp-lang
+pip install -U "jax[cpu]"
 ```
 
 ## Quick Start
@@ -106,7 +106,7 @@ jit/
   "kernel_name": "...",
   "python_source": "...",
   "ir_code": "...",
-  "device": "cpu"
+  "backend": "cpu"
 }
 ```
 
@@ -118,13 +118,13 @@ jit/
 **Done when**: README.md accurately describes your branch's state
 
 ### P3: GPU Analysis
-**Goal**: Analyze what's needed to adapt your code for CUDA output
+**Goal**: Analyze what's needed to adapt your code for GPU backends (CUDA/ROCm) and how IR differs
 
 **Tasks**:
 1. Check if your `ir_extractor.py` has a `device` parameter
-2. If GPU available: try running with `device="cuda"` and note results
-3. If no GPU: read warp source code to understand CUDA code generation
-4. Study differences between `.cpp` (CPU) and `.cu` (CUDA) output
+2. If GPU available: try running with a GPU backend and note results (e.g., `jax.devices()` shows GPU)
+3. If no GPU: review how lowering/compilation changes by platform and what metadata differs
+4. Study differences in emitted IR (e.g., StableHLO/MLIR) between CPU vs GPU compilation
 5. Document findings in `notes/gpu_analysis.md`
 
 **notes/gpu_analysis.md template**:
@@ -132,11 +132,11 @@ jit/
 # GPU Analysis
 
 ## Current CUDA Support
-- ir_extractor.py has device param: [Yes/No]
-- Tested with device="cuda": [pass/fail/no GPU]
+- ir_extractor.py has backend/device selection: [Yes/No]
+- Tested on GPU backend: [pass/fail/no GPU]
 
 ## CPU vs GPU IR Differences
-| Aspect | CPU (.cpp) | GPU (.cu) |
+| Aspect | CPU (StableHLO/MLIR) | GPU (StableHLO/MLIR) |
 |--------|------------|-----------|
 | [aspect] | [cpu behavior] | [gpu behavior] |
 
@@ -160,8 +160,8 @@ jit/
 git status
 git log --oneline -5
 
-# Install warp
-pip install warp-lang
+# Install JAX (CPU)
+pip install -U "jax[cpu]"
 
 # Common test commands
 python code/extraction/ir_extractor.py
