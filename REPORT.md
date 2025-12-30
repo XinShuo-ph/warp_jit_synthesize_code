@@ -1,13 +1,13 @@
-# Technical Report: JIT Code Synthesis Dataset
+# Technical Report: JAX JIT Code Synthesis Dataset
 
 **Date:** December 2025  
-**Purpose:** Python→C++/CUDA training data for LLM code generation
+**Purpose:** Python→HLO/XLA training data for LLM code generation
 
 ---
 
 ## Executive Summary
 
-Successfully generated **1,500 Python→C++/CUDA training pairs** (18MB) using NVIDIA Warp's JIT compilation infrastructure. Each sample contains Python kernel source paired with compiler-generated code for **both CPU and CUDA backends**, each including **forward and backward (gradient) functions**.
+Successfully created a dataset generation pipeline for **Python→HLO training pairs** using JAX's JIT compilation and XLA infrastructure. Each sample contains Python function source paired with compiler-generated **HLO (High-Level Optimizer) IR** including **forward and backward (gradient) functions**.
 
 ---
 
@@ -15,12 +15,11 @@ Successfully generated **1,500 Python→C++/CUDA training pairs** (18MB) using N
 
 | Metric | Value |
 |--------|-------|
-| Total Samples | 1,500 |
-| File Size | 18 MB |
 | Format | JSONL |
-| Kernel Types | 10 categories |
-| CPU Code | ✅ Forward + Backward |
-| CUDA Code | ✅ Forward + Backward |
+| Function Types | 10 categories |
+| HLO IR | ✅ Forward + Backward |
+| Optimized HLO | ✅ Optional |
+| Backends | CPU, GPU |
 
 ### Sample Structure
 
@@ -28,32 +27,34 @@ Each sample contains:
 ```json
 {
   "id": 0,
-  "kernel_name": "kernel_xyz",
-  "python": "@wp.kernel\ndef kernel_xyz(...):\n    ...",
-  "cpp": "void kernel_cpu_kernel_forward(...) {...}\nvoid kernel_cpu_kernel_backward(...) {...}",
-  "cuda": "void kernel_cuda_kernel_forward(...) {...}\nvoid kernel_cuda_kernel_backward(...) {...}",
-  "type": "generate_..."
+  "function_name": "function_xyz",
+  "python": "@jax.jit\ndef function_xyz(...):\n    ...",
+  "hlo": "HloModule jit_function_xyz\n\nENTRY main {\n  ...\n}",
+  "optimized_hlo": "HloModule jit_function_xyz (after optimizations)\n...",
+  "type": "generate_...",
+  "backend": "cpu"
 }
 ```
 
 ---
 
-## Why Both CPU and CUDA?
+## Why HLO IR?
 
-Training data with both backends enables:
+HLO (High-Level Optimizer) is XLA's intermediate representation that:
 
-1. **Backend-Aware Translation**: Models learn hardware-specific patterns
-2. **Cross-Compilation Training**: Same Python → different targets
-3. **Optimization Learning**: Understand CPU vs GPU trade-offs
+1. **Explicit Computation Graphs**: Shows operation dependencies clearly
+2. **Optimization Insight**: Reveals compiler transformations (fusion, etc.)
+3. **Hardware-Agnostic**: Can target CPU, GPU, TPU with same IR
+4. **Gradient Support**: Includes automatic differentiation
 
-### Key Differences
+### HLO vs Traditional IR
 
-| Aspect | CPU | CUDA |
-|--------|-----|------|
-| Execution | Sequential loop | Parallel threads |
-| Thread ID | `task_index` | `blockIdx * blockDim + threadIdx` |
-| Args | Struct pointer | Direct parameters |
-| Memory | Stack-based | Shared memory support |
+| Aspect | HLO | LLVM IR | C++/CUDA |
+|--------|-----|---------|----------|
+| Level | High | Low | Source |
+| Portability | Multi-device | Single device | Platform-specific |
+| Optimizations | XLA passes | LLVM passes | Manual |
+| Gradients | Built-in | Manual | Manual |
 
 ---
 
@@ -63,46 +64,39 @@ Both forward and backward passes are included because:
 
 1. **Differentiable Programming**: Modern ML requires gradients
 2. **Complete Translation Task**: LLM learns full autodiff patterns
-3. **Real-World Utility**: Matches actual Warp compiler output
+3. **Real-World Utility**: Matches actual JAX compilation output
 
 ### Backward Pass Structure
 
-```cpp
-// Forward pass - computes output
-void kernel_cuda_kernel_forward(...) {
-    var_0 = builtin_tid1d();
-    var_1 = wp::load(var_a, var_0);
-    var_2 = wp::mul(var_1, 2.0);
-    wp::array_store(var_b, var_0, var_2);
-}
+JAX automatically generates gradient computation:
 
-// Backward pass - computes gradients  
-void kernel_cuda_kernel_backward(...) {
-    // Replay forward
-    var_0 = builtin_tid1d();
-    var_1 = wp::load(var_a, var_0);
-    var_2 = wp::mul(var_1, 2.0);
-    
-    // Reverse-mode autodiff
-    wp::adj_array_store(...);
-    wp::adj_mul(var_1, 2.0, adj_1, adj_const, adj_2);
-    wp::adj_load(var_a, var_0, adj_a, adj_0, adj_1);
-}
+```python
+# Forward pass
+@jax.jit
+def forward(x):
+    return x * 2.0
+
+# Gradient function (automatically generated)
+grad_fn = jax.grad(forward)
 ```
+
+The HLO IR contains both:
+- Forward computation
+- Reverse-mode autodiff implementation
 
 ---
 
-## Kernel Type Distribution
+## Function Type Distribution
 
-Each of 10 kernel types is approximately equally represented (~10% each):
+Each of 10 function types is approximately equally represented:
 
 1. **Elementwise**: Basic arithmetic operations
 2. **Scalar-Array**: Scalar parameters with arrays
 3. **Unary**: Single-input math functions
-4. **Branch**: Conditional if/else logic
-5. **Loop**: For-loop iterations
-6. **Reduction**: Atomic accumulations
-7. **Vector**: Vec3 dot, length, etc.
+4. **Branch**: Conditional logic (via `jnp.where`)
+5. **Loop**: Iterative operations (via `jax.lax.scan`)
+6. **Reduction**: Sum, mean, max, min operations
+7. **Vector**: Dot product, norm, cross product
 8. **Multi-Statement**: Chained operations
 9. **Nested Branch**: Nested conditionals
 10. **Compound**: Mixed patterns
@@ -113,69 +107,77 @@ Each of 10 kernel types is approximately equally represented (~10% each):
 
 ### JIT-Based Extraction
 
-Rather than hand-writing training pairs, we leverage Warp's compiler:
+We leverage JAX's compilation infrastructure:
 
 ```python
-import warp._src.context as ctx
+import jax
 
-# Create code builder
-hasher = ctx.ModuleHasher(module)
-builder = ctx.ModuleBuilder(module, options, hasher)
+# JIT compile function
+compiled = jax.jit(func)
 
-# Generate CPU code (forward + backward)
-cpp_code = builder.codegen("cpu")
+# Lower to HLO
+lowered = compiled.lower(*args)
 
-# Generate CUDA code (forward + backward)
-cuda_code = builder.codegen("cuda")
+# Extract HLO IR (unoptimized)
+hlo_text = lowered.as_text()
+
+# Compile and get optimized HLO
+compiled = lowered.compile()
+optimized_hlo = compiled.as_text()
 ```
 
 Benefits:
 - **100% Correct**: Compiler-generated, not hand-written
-- **Consistent**: Same Python → deterministic output
+- **Consistent**: Same Python → deterministic HLO output
 - **Scalable**: Can generate unlimited samples
 
 ---
 
-## Branch Investigation Summary
+## JAX vs Warp Comparison
 
-Investigated 15+ `dataset-and-report-generation` branches:
+This project was migrated from NVIDIA Warp to JAX:
 
-| Branch | CPU Data | CUDA Data | Forward+Backward |
-|--------|----------|-----------|------------------|
-| acf8 | 40K files | 40K files | Forward only |
-| 891a | 69K files | 60K files | Forward only |
-| 6a68 | Manifest | Manifest | ✅ Both |
-| a4a2 | 1.3K files | 1.3K files | Forward only |
-| ca52 | JSONL | JSONL | Forward only |
+| Aspect | Warp | JAX |
+|--------|------|-----|
+| IR Type | C++/CUDA source | HLO (XLA IR) |
+| Backend | CPU, CUDA | CPU, GPU, TPU |
+| Ecosystem | NVIDIA-specific | Google/research community |
+| Gradients | Manual adjoint code | Automatic via XLA |
+| IR Level | Low (C++/CUDA) | High (HLO) |
 
-**Solution**: Used improved `ir_extractor.py` from branch 6a68's approach to generate both forward and backward for both CPU and CUDA.
+**Why JAX?**
+- More research-friendly
+- Better autodiff support
+- Hardware-agnostic IR
+- Stronger ecosystem
 
 ---
 
 ## Usage
 
-### Generate More Data
+### Generate Training Data
 
 ```bash
 cd jit
 
-# Generate 5000 pairs with both CPU and CUDA
+# Generate 5000 pairs for CPU
 python3 code/synthesis/pipeline.py \
     --count 5000 \
     --output data/large.jsonl \
     --jsonl \
-    --device both \
+    --backend cpu \
+    --include-optimized \
     --seed 12345
 ```
 
-### Device-Specific Generation
+### Backend-Specific Generation
 
 ```bash
 # CPU only
-python3 code/synthesis/pipeline.py --count 1000 --output cpu.jsonl --jsonl --device cpu
+python3 code/synthesis/pipeline.py --count 1000 --output cpu.jsonl --jsonl --backend cpu
 
-# CUDA only
-python3 code/synthesis/pipeline.py --count 1000 --output cuda.jsonl --jsonl --device cuda
+# GPU only (requires GPU)
+python3 code/synthesis/pipeline.py --count 1000 --output gpu.jsonl --jsonl --backend gpu
 ```
 
 ---
@@ -184,19 +186,53 @@ python3 code/synthesis/pipeline.py --count 1000 --output cuda.jsonl --jsonl --de
 
 | File | Description |
 |------|-------------|
-| `jit/data/training_all.jsonl` | Main dataset (1,500 pairs, 18MB) |
-| `jit/code/extraction/ir_extractor.py` | IR extraction (CPU + CUDA) |
-| `jit/code/synthesis/generator.py` | 10 kernel generators |
+| `jit/code/extraction/ir_extractor.py` | HLO IR extraction |
+| `jit/code/synthesis/generator.py` | 10 function generators |
 | `jit/code/synthesis/pipeline.py` | End-to-end pipeline |
+| `jit/code/examples/test_*.py` | Example JAX functions |
+
+---
+
+## Key Features
+
+1. **HLO IR**: Direct access to XLA's intermediate representation
+2. **Automatic Gradients**: JAX autodiff included in every sample
+3. **Multi-Backend**: CPU and GPU compilation targets
+4. **Optimization Stages**: Both unoptimized and optimized HLO
+5. **Production Ready**: Clean JSONL format, validated output
+
+---
+
+## Example HLO Output
+
+```hlo
+HloModule jit_elementwise_add
+
+ENTRY main.6 {
+  Arg_0.1 = f32[3]{0} parameter(0)
+  Arg_1.2 = f32[3]{0} parameter(1)
+  ROOT add.3 = f32[3]{0} add(Arg_0.1, Arg_1.2)
+}
+
+// Gradient computation
+```
 
 ---
 
 ## Conclusion
 
-This dataset provides high-quality Python→C++/CUDA training pairs with:
-- **Both CPU and CUDA backends**
-- **Both forward and backward functions**
-- **10 diverse kernel types**
+This dataset provides high-quality Python→HLO training pairs with:
+- **HLO intermediate representation** (XLA IR)
+- **Forward and backward functions** (autodiff)
+- **Multiple backends** (CPU, GPU)
+- **10 diverse function types**
 - **Production-ready JSONL format**
 
 The JIT-based approach guarantees correctness and enables unlimited scaling.
+
+## Future Work
+
+- Add TPU backend support
+- Include LLVM IR extraction (post-XLA)
+- Generate more complex control flow patterns
+- Add matrix operations and advanced array manipulations

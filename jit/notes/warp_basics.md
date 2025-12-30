@@ -1,41 +1,183 @@
-# Warp Kernel Compilation Flow
+# JAX Basics
 
-## Python → C++/CUDA Pipeline
+## Overview
 
-1. **Decoration**: `@wp.kernel` registers the Python function
-2. **AST Parse**: `codegen.Adjoint` parses the source via `ast.parse()`
-3. **Code Generation**: `codegen_kernel()` generates C++/CUDA code
-4. **Compilation**: Native compiler (gcc/nvcc) compiles to `.o`/`.cubin`
-5. **Caching**: Results cached in `~/.cache/warp/<version>/`
+JAX is a library for high-performance numerical computing with automatic differentiation and JIT compilation via XLA.
 
-## Key Components
+## Key Concepts
 
-- `codegen.Adjoint`: Stores parsed AST, generates forward/reverse code
-- `codegen_kernel(kernel, device, options)`: Main entry for kernel codegen
-- `codegen_func_forward/reverse()`: Generate forward/backward passes
-- `kernel.get_mangled_name()`: Unique name for compiled function
+### 1. JIT Compilation
 
-## IR Location
-
-Generated code stored in cache dir: `~/.cache/warp/<version>/wp_<module>_<hash>/`
-- `.cpp` - CPU source code
-- `.cu` - CUDA source code (if GPU)
-- `.o/.cubin` - Compiled objects
-
-## Programmatic IR Access
+JAX can compile functions to optimized machine code:
 
 ```python
-from warp._src.codegen import codegen_kernel, codegen_module
-options = {"enable_backward": True}
-cpp_code = codegen_kernel(kernel, "cpu", options) + codegen_module(kernel, "cpu", options)
+import jax
+import jax.numpy as jnp
+
+@jax.jit
+def my_function(x, y):
+    return x * y + jnp.sin(x)
+
+# First call compiles
+result = my_function(jnp.array([1.0, 2.0]), jnp.array([3.0, 4.0]))
+# Subsequent calls use cached compiled version
 ```
 
-## Forward/Backward Code
+### 2. Automatic Differentiation
 
-Warp auto-generates backward (adjoint) code for autodiff:
-- Forward: Computes primal values
-- Backward: Computes gradients via adj_ prefixed functions
+JAX provides automatic gradient computation:
 
-## Cache Key
+```python
+# Define a function
+def loss_fn(x):
+    return jnp.sum(x ** 2)
 
-Hash includes: source code, types, device, options. Same kernel+inputs = same hash.
+# Get gradient function
+grad_fn = jax.grad(loss_fn)
+
+# Compute gradient
+x = jnp.array([1.0, 2.0, 3.0])
+gradient = grad_fn(x)  # [2.0, 4.0, 6.0]
+```
+
+### 3. Vectorization
+
+JAX can automatically vectorize functions:
+
+```python
+# Apply function to batch of inputs
+batched_fn = jax.vmap(my_function)
+results = batched_fn(batch_of_x, batch_of_y)
+```
+
+## Compilation Flow
+
+1. **Python Function** - Written using JAX/NumPy API
+2. **Tracing** - JAX traces the function with abstract values
+3. **Jaxpr** - Creates JAX's internal intermediate representation
+4. **HLO** - Converts to XLA's HLO (High-Level Optimizer) IR
+5. **XLA Optimization** - Applies optimization passes
+6. **Target Code** - Generates CPU/GPU/TPU code
+
+## XLA Backend
+
+JAX uses XLA (Accelerated Linear Algebra) for compilation:
+
+- **CPU**: Generates optimized CPU code (LLVM)
+- **GPU**: Generates CUDA kernels (NVIDIA) or ROCm (AMD)
+- **TPU**: Generates TPU-specific code (Google Cloud)
+
+## Core Transformations
+
+### grad - Differentiation
+```python
+grad_fn = jax.grad(func)  # Derivative with respect to first argument
+grad_fn = jax.grad(func, argnums=(0, 1))  # Multiple arguments
+```
+
+### jit - Just-In-Time Compilation
+```python
+fast_fn = jax.jit(func)
+```
+
+### vmap - Vectorization
+```python
+batched_fn = jax.vmap(func)
+```
+
+### pmap - Parallelization
+```python
+parallel_fn = jax.pmap(func)  # Parallel across devices
+```
+
+## JAX Array Operations
+
+JAX provides a NumPy-compatible API via `jax.numpy`:
+
+```python
+import jax.numpy as jnp
+
+# Create arrays
+a = jnp.array([1.0, 2.0, 3.0])
+b = jnp.zeros((3, 3))
+
+# Operations
+c = jnp.dot(a, a)
+d = jnp.sum(a)
+e = jnp.sin(a)
+```
+
+## Control Flow
+
+JAX provides functional control flow primitives:
+
+```python
+# Conditional
+result = jax.lax.cond(predicate, true_fn, false_fn, operand)
+
+# While loop
+result = jax.lax.while_loop(cond_fn, body_fn, init_val)
+
+# For loop
+result = jax.lax.fori_loop(0, n, body_fn, init_val)
+
+# Scan (for sequences)
+final, outputs = jax.lax.scan(body_fn, init, xs)
+```
+
+## Key Differences from NumPy
+
+1. **Immutability**: JAX arrays are immutable
+   ```python
+   # This won't work:
+   a[0] = 5  # Error!
+   
+   # Instead:
+   a = a.at[0].set(5)
+   ```
+
+2. **Pure Functions**: Functions should be side-effect free for JIT
+
+3. **Static Arguments**: Some values must be known at compile time
+   ```python
+   @jax.jit
+   def loop(x, n):
+       return jax.lax.fori_loop(0, n, lambda i, x: x + 1, x)
+   
+   # n must be a concrete integer, not a traced value
+   ```
+
+## Random Numbers
+
+JAX uses explicit random state:
+
+```python
+key = jax.random.PRNGKey(0)
+key, subkey = jax.random.split(key)
+random_values = jax.random.normal(subkey, shape=(10,))
+```
+
+## Debugging
+
+```python
+# Print during tracing
+jax.debug.print("Value: {}", x)
+
+# Prevent compilation for debugging
+with jax.disable_jit():
+    result = my_function(x)
+```
+
+## Performance Tips
+
+1. Use `@jax.jit` on performance-critical functions
+2. Avoid Python loops - use `jax.lax.scan` or `jax.lax.fori_loop`
+3. Use `vmap` for batching instead of manual loops
+4. Keep functions pure (no side effects)
+5. Use static arguments when possible
+
+## Resources
+
+- [JAX Documentation](https://jax.readthedocs.io/)
+- [JAX GitHub](https://github.com/google/jax)
+- [XLA Documentation](https://www.tensorflow.org/xla)

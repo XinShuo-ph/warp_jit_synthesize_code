@@ -1,38 +1,122 @@
-# Warp IR (C++ Code) Format
+# JAX HLO IR Format
 
-## Structure
+## Overview
 
-Generated C++ consists of:
-1. **Args struct**: `wp_args_{kernel_name}` with typed members for each kernel arg
-2. **Forward function**: `{name}_cpu_kernel_forward()` - computes primal values
-3. **Backward function**: `{name}_cpu_kernel_backward()` - computes gradients
-4. **Entry points**: C-exported wrappers for Python FFI
+JAX uses XLA's HLO (High-Level Optimizer) intermediate representation. This document describes the HLO format generated from JAX-JIT compiled functions.
 
-## Forward Function Layout
+## HLO Module Structure
 
-```cpp
-void kernel_forward(wp::launch_bounds_t dim, size_t task_index, wp_args *args) {
-    // 1. Argument vars - unpack from struct
-    // 2. Primal vars - declare temporaries
-    // 3. Forward pass - SSA form operations with line comments
+Generated HLO consists of:
+1. **Module declaration**: `HloModule jit_{function_name}`
+2. **Main entry point**: `func.func public @main` with input/output signature
+3. **Function implementations**: Private functions for the actual computation
+4. **Backward pass**: Gradient computation functions (when autodiff is enabled)
+
+## Example HLO IR
+
+```hlo
+module @jit_elementwise_add attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {
+  func.func public @main(%arg0: tensor<3xf32>, %arg1: tensor<3xf32>) -> (tensor<3xf32>) {
+    %0 = call @elementwise_add(%arg0, %arg1) : (tensor<3xf32>, tensor<3xf32>) -> tensor<3xf32>
+    return %0 : tensor<3xf32>
+  }
+  func.func private @elementwise_add(%arg0: tensor<3xf32>, %arg1: tensor<3xf32>) -> tensor<3xf32> {
+    %0 = stablehlo.add %arg0, %arg1 : tensor<3xf32>
+    return %0 : tensor<3xf32>
+  }
 }
 ```
 
-## Key Patterns
+## Key HLO Operations
 
-- `wp::tid()` → `builtin_tid1d()` thread index
-- `a[i]` → `wp::address()` + `wp::load()` / `wp::array_store()`
-- `a + b` → `wp::add(a, b)`
-- `a * b` → `wp::mul(a, b)`
-- Branches → standard C++ if/else
-- Loops → standard C++ for loops
+### Basic Arithmetic
+- Addition: `stablehlo.add`
+- Multiplication: `stablehlo.mul`
+- Division: `stablehlo.div`
+- Subtraction: `stablehlo.sub`
 
-## Backward (Adjoint) Code
+### Element-wise Operations
+- `stablehlo.sqrt` - Square root
+- `stablehlo.abs` - Absolute value
+- `stablehlo.sin`, `stablehlo.cos` - Trigonometric functions
+- `stablehlo.exp`, `stablehlo.log` - Exponential and logarithm
 
-- Forward pass re-run to reconstruct primal values
-- Reverse pass applies chain rule: `adj_{op}(primal, adj_in, adj_out)`
-- Gradient arrays: `adj_a`, `adj_b`, etc.
+### Array Operations
+- `stablehlo.broadcast_in_dim` - Broadcasting
+- `stablehlo.reduce` - Reduction operations
+- `stablehlo.dot_general` - Matrix/vector products
+- `stablehlo.reshape` - Reshaping arrays
 
-## Line Mapping
+### Control Flow
+- `stablehlo.select` / `jnp.where` - Conditional selection
+- `stablehlo.while` - While loops
+- Custom operations via `call` to other functions
 
-Comments `<L N>` map to Python source line N for debugging.
+## Optimized HLO
+
+After XLA optimization passes, you get optimized HLO with:
+- **Fusion**: Multiple operations combined into single kernels
+- **Memory optimization**: In-place operations where possible
+- **Scheduling**: Explicit computation order
+- **Metadata**: Source location information preserved
+
+Example optimized HLO:
+```hlo
+HloModule jit_elementwise_add, is_scheduled=true, entry_computation_layout={(f32[3]{0}, f32[3]{0})->f32[3]{0}}
+
+%fused_computation (param_0: f32[3], param_1: f32[3]) -> f32[3] {
+  %param_0 = f32[3]{0} parameter(0)
+  %param_1 = f32[3]{0} parameter(1)
+  ROOT %add = f32[3]{0} add(%param_0, %param_1)
+}
+
+ENTRY %main (a: f32[3], b: f32[3]) -> f32[3] {
+  %a = f32[3]{0} parameter(0)
+  %b = f32[3]{0} parameter(1)
+  ROOT %fusion = f32[3]{0} fusion(%a, %b), kind=kLoop, calls=%fused_computation
+}
+```
+
+## Backward Pass (Gradient Computation)
+
+JAX automatically generates gradient computation via autodiff. The backward pass:
+- Computes partial derivatives for all operations
+- Uses reverse-mode autodiff (backpropagation)
+- Appears as additional functions in the HLO module
+
+Example with gradients:
+```hlo
+# ===== BACKWARD PASS (GRADIENT) =====
+
+module @jit_func_with_grad {
+  func.func public @main(%arg0: tensor<3xf32>) -> (tensor<3xf32>, tensor<3xf32>) {
+    %0 = call @forward_function(%arg0)
+    %1 = call @gradient_function(%arg0)
+    return %0, %1
+  }
+  // ... gradient computation functions
+}
+```
+
+## Type System
+
+- `tensor<3xf32>` - Float32 tensor of shape [3]
+- `tensor<f32>` - Scalar float32
+- `tensor<3x4xf32>` - 2D tensor (matrix)
+- `{0}` - Layout annotation (memory order)
+
+## Metadata
+
+HLO preserves source information:
+- `FileNames` - Source file paths
+- `FunctionNames` - Function names
+- `FileLocations` - Line/column information
+- `stack_frame_id` - Call stack for debugging
+
+## Benefits of HLO IR
+
+1. **Hardware-Agnostic**: Can target CPU, GPU, TPU
+2. **Optimizable**: XLA applies sophisticated optimizations
+3. **Differentiable**: Automatic gradient computation
+4. **Explicit**: Shows computation graph clearly
+5. **Well-Documented**: Part of TensorFlow/JAX ecosystem

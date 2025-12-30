@@ -1,2 +1,2 @@
-warp-lang>=1.10.0
+jax[cuda12]>=0.4.20
 numpy

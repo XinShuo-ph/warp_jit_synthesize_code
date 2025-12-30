@@ -1,20 +1,23 @@
-"""Simple warp kernel test."""
-import warp as wp
+"""Simple JAX kernel test."""
+import jax
+import jax.numpy as jnp
 
-wp.init()
+# Enable JIT compilation
+jax.config.update('jax_enable_x64', True)
 
-@wp.kernel
-def add_kernel(a: wp.array(dtype=float), b: wp.array(dtype=float), c: wp.array(dtype=float)):
-    tid = wp.tid()
-    c[tid] = a[tid] + b[tid]
+@jax.jit
+def add_kernel(a, b):
+    """Elementwise addition kernel."""
+    return a + b
 
 if __name__ == "__main__":
     n = 10
-    a = wp.array([float(i) for i in range(n)], dtype=float)
-    b = wp.array([float(i) for i in range(n)], dtype=float)
-    c = wp.zeros(n, dtype=float)
-
-    wp.launch(add_kernel, dim=n, inputs=[a, b, c])
-    print("Result:", c.numpy())
+    a = jnp.array([float(i) for i in range(n)], dtype=jnp.float64)
+    b = jnp.array([float(i) for i in range(n)], dtype=jnp.float64)
+    
+    c = add_kernel(a, b)
+    
+    print("Result:", c)
     print("Expected:", [float(i*2) for i in range(n)])
+    print("Match:", jnp.allclose(c, jnp.array([float(i*2) for i in range(n)])))
     print("Kernel compiled and executed successfully!")

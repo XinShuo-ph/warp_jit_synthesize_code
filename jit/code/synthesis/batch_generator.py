@@ -1,4 +1,4 @@
-"""Batch Generator - Efficient large-scale kernel pair generation."""
+"""Batch Generator - Efficient large-scale function pair generation."""
 import json
 import os
 import sys
@@ -13,12 +13,48 @@ import argparse
 # Add extraction module to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "extraction"))
 
-import warp as wp
+import jax
+import jax.numpy as jnp
 
 
 def init_worker():
-    """Initialize warp in each worker process."""
-    wp.init()
+    """Initialize JAX in each worker process."""
+    # JAX initialization is automatic
+    pass
+
+
+def create_sample_inputs(func_source: str) -> tuple:
+    """Create sample inputs based on function signature analysis."""
+    import re
+    
+    match = re.search(r'def \w+\((.*?)\):', func_source)
+    if not match:
+        return (jnp.array([1.0, 2.0, 3.0]),)
+    
+    params_str = match.group(1)
+    params = [p.strip().split(':')[0].strip() for p in params_str.split(',') if p.strip()]
+    
+    n_params = len(params)
+    
+    if n_params == 0:
+        return ()
+    elif n_params == 1:
+        return (jnp.array([1.0, 2.0, 3.0, 4.0]),)
+    elif n_params == 2:
+        if 'alpha' in params[0] or 'scale' in params[0]:
+            return (2.5, jnp.array([1.0, 2.0, 3.0]))
+        else:
+            return (jnp.array([1.0, 2.0, 3.0]), jnp.array([4.0, 5.0, 6.0]))
+    elif n_params == 3:
+        if 'alpha' in params[0] or 'scale' in params[0]:
+            return (2.5, jnp.array([1.0, 2.0, 3.0]), jnp.array([4.0, 5.0, 6.0]))
+        else:
+            return (jnp.array([1.0, 2.0, 3.0]), 
+                    jnp.array([4.0, 5.0, 6.0]),
+                    jnp.array([7.0, 8.0, 9.0]))
+    else:
+        return tuple(jnp.array([float(i), float(i+1), float(i+2)]) 
+                    for i in range(n_params))
 
 
 def generate_single_pair(args):
@@ -35,20 +71,22 @@ def generate_single_pair(args):
     from ir_extractor import extract_ir
     
     try:
-        # Generate kernel
+        # Generate function
         random.seed(seed)
         generator = random.choice(GENERATORS)
-        kernel_source = generator(seed)
+        func_source = generator(seed)
         
-        # Extract kernel name
-        match = re.search(r'def (\w+)\(', kernel_source)
-        kernel_name = match.group(1) if match else f"kernel_{pair_id}"
+        # Extract function name
+        match = re.search(r'def (\w+)\(', func_source)
+        func_name = match.group(1) if match else f"function_{pair_id}"
         
         # Create temp module
         module_name = f"batch_module_{pair_id}"
         with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
-            f.write("import warp as wp\n\n")
-            f.write(kernel_source)
+            f.write("import jax\n")
+            f.write("import jax.numpy as jnp\n")
+            f.write("import jax.lax\n\n")
+            f.write(func_source)
             temp_path = f.name
         
         try:
@@ -58,27 +96,33 @@ def generate_single_pair(args):
             sys.modules[module_name] = module
             spec.loader.exec_module(module)
             
-            # Find kernel
-            kernel = None
+            # Find function
+            func = None
             for name in dir(module):
                 obj = getattr(module, name)
-                if isinstance(obj, wp.Kernel):
-                    kernel = obj
+                if callable(obj) and not name.startswith('_') and name != 'jax' and name != 'jnp':
+                    func = obj
                     break
             
-            if kernel is None:
-                raise ValueError("No kernel found")
+            if func is None:
+                raise ValueError("No function found")
+            
+            # Create sample inputs
+            sample_inputs = create_sample_inputs(func_source)
             
             # Extract IR
-            ir = extract_ir(kernel)
+            ir = extract_ir(func, *sample_inputs, enable_backward=True)
             
             result = {
                 "id": pair_id,
-                "kernel_name": kernel_name,
-                "python": kernel_source.strip(),
-                "cpp": ir.cpp_code,
+                "function_name": func_name,
+                "python": func_source.strip(),
+                "hlo": ir.hlo_text,
                 "type": generator.__name__
             }
+            
+            if ir.optimized_hlo:
+                result["optimized_hlo"] = ir.optimized_hlo
             
             # Cleanup
             os.unlink(temp_path)
@@ -104,8 +148,6 @@ def batch_generate_sequential(
     checkpoint_every: int = 100
 ):
     """Generate pairs sequentially with checkpointing."""
-    wp.init()
-    
     output_path = Path(output_path)
     checkpoint_path = output_path.with_suffix('.checkpoint')
     
