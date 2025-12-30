@@ -1,0 +1,5 @@
+{
+  "code": "import jax\nimport jax.numpy as jnp\n\ndef generated_fn(x0, x1):\n    v0 = jnp.tanh(x1)\n    v1 = jnp.minimum(v0, v0)\n    v2 = jnp.minimum(x0, v1)\n    v3 = jnp.exp(v1)\n    v4 = jnp.minimum(v3, v0)\n    v5 = jnp.subtract(v1, v4)\n    return v5",
+  "jaxpr": "{ lambda ; a:f32[10,10] b:f32[10,10]. let\n    c:f32[10,10] = tanh b\n    d:f32[10,10] = min c c\n    _:f32[10,10] = min a d\n    e:f32[10,10] = exp d\n    f:f32[10,10] = min e c\n    g:f32[10,10] = sub d f\n  in (g,) }",
+  "hlo": "module @jit_generated_fn attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<10x10xf32>) -> (tensor<10x10xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.tanh %arg0 : tensor<10x10xf32>\n    %1 = stablehlo.minimum %0, %0 : tensor<10x10xf32>\n    %2 = stablehlo.exponential %1 : tensor<10x10xf32>\n    %3 = stablehlo.minimum %2, %0 : tensor<10x10xf32>\n    %4 = stablehlo.subtract %1, %3 : tensor<10x10xf32>\n    return %4 : tensor<10x10xf32>\n  }\n}\n"
+}

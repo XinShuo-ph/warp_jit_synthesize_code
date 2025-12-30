@@ -1,0 +1,5 @@
+{
+  "code": "import jax\nimport jax.numpy as jnp\n\ndef generated_fn(x0):\n    v0 = jnp.exp(x0)\n    v1 = jnp.cos(x0)\n    v2 = jnp.add(v1, x0)\n    v3 = jnp.maximum(v1, x0)\n    return v3",
+  "jaxpr": "{ lambda ; a:f32[10,10]. let\n    _:f32[10,10] = exp a\n    b:f32[10,10] = cos a\n    _:f32[10,10] = add b a\n    c:f32[10,10] = max b a\n  in (c,) }",
+  "hlo": "module @jit_generated_fn attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<10x10xf32>) -> (tensor<10x10xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.cosine %arg0 : tensor<10x10xf32>\n    %1 = stablehlo.maximum %0, %arg0 : tensor<10x10xf32>\n    return %1 : tensor<10x10xf32>\n  }\n}\n"
+}

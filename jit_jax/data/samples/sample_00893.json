@@ -1,0 +1,5 @@
+{
+  "code": "import jax\nimport jax.numpy as jnp\n\ndef generated_fn(x0, x1, x2):\n    v0 = jnp.exp(x1)\n    v1 = jnp.add(v0, x1)\n    v2 = jnp.exp(v1)\n    v3 = jnp.cos(v1)\n    v4 = jnp.maximum(x2, x2)\n    v5 = jnp.abs(v1)\n    v6 = jnp.add(v0, v4)\n    return v6",
+  "jaxpr": "{ lambda ; a:f32[10,10] b:f32[10,10] c:f32[10,10]. let\n    d:f32[10,10] = exp b\n    e:f32[10,10] = add d b\n    _:f32[10,10] = exp e\n    _:f32[10,10] = cos e\n    f:f32[10,10] = max c c\n    _:f32[10,10] = abs e\n    g:f32[10,10] = add d f\n  in (g,) }",
+  "hlo": "module @jit_generated_fn attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<10x10xf32>, %arg1: tensor<10x10xf32>) -> (tensor<10x10xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.exponential %arg0 : tensor<10x10xf32>\n    %1 = stablehlo.maximum %arg1, %arg1 : tensor<10x10xf32>\n    %2 = stablehlo.add %0, %1 : tensor<10x10xf32>\n    return %2 : tensor<10x10xf32>\n  }\n}\n"
+}

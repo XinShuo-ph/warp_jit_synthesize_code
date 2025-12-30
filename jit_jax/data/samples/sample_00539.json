@@ -1,0 +1,5 @@
+{
+  "code": "import jax\nimport jax.numpy as jnp\n\ndef generated_fn(x0, x1):\n    v0 = jnp.add(x0, x1)\n    v1 = jnp.sin(x0)\n    v2 = jnp.tanh(x0)\n    v3 = jnp.add(x0, v1)\n    v4 = jnp.sin(x1)\n    v5 = jnp.add(v1, v3)\n    return v5",
+  "jaxpr": "{ lambda ; a:f32[10,10] b:f32[10,10]. let\n    _:f32[10,10] = add a b\n    c:f32[10,10] = sin a\n    _:f32[10,10] = tanh a\n    d:f32[10,10] = add a c\n    _:f32[10,10] = sin b\n    e:f32[10,10] = add c d\n  in (e,) }",
+  "hlo": "module @jit_generated_fn attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<10x10xf32>) -> (tensor<10x10xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.sine %arg0 : tensor<10x10xf32>\n    %1 = stablehlo.add %arg0, %0 : tensor<10x10xf32>\n    %2 = stablehlo.add %0, %1 : tensor<10x10xf32>\n    return %2 : tensor<10x10xf32>\n  }\n}\n"
+}

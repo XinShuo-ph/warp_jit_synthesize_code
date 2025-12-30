@@ -1,0 +1,5 @@
+{
+  "code": "import jax\nimport jax.numpy as jnp\n\ndef generated_fn(x0, x1, x2):\n    v0 = jnp.subtract(x1, x0)\n    v1 = jnp.minimum(v0, x0)\n    v2 = jnp.add(v1, x2)\n    v3 = jnp.exp(x0)\n    v4 = jnp.maximum(v0, x0)\n    v5 = jnp.tanh(v2)\n    v6 = jnp.multiply(v0, v3)\n    v7 = jnp.subtract(v6, v0)\n    v8 = jnp.multiply(v5, v6)\n    v9 = jnp.tanh(x1)\n    return v9",
+  "jaxpr": "{ lambda ; a:f32[10,10] b:f32[10,10] c:f32[10,10]. let\n    d:f32[10,10] = sub b a\n    e:f32[10,10] = min d a\n    f:f32[10,10] = add e c\n    g:f32[10,10] = exp a\n    _:f32[10,10] = max d a\n    h:f32[10,10] = tanh f\n    i:f32[10,10] = mul d g\n    _:f32[10,10] = sub i d\n    _:f32[10,10] = mul h i\n    j:f32[10,10] = tanh b\n  in (j,) }",
+  "hlo": "module @jit_generated_fn attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<10x10xf32>) -> (tensor<10x10xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.tanh %arg0 : tensor<10x10xf32>\n    return %0 : tensor<10x10xf32>\n  }\n}\n"
+}

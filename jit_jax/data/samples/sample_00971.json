@@ -1,0 +1,5 @@
+{
+  "code": "import jax\nimport jax.numpy as jnp\n\ndef generated_fn(x0, x1):\n    v0 = jnp.multiply(x0, x0)\n    v1 = jnp.cos(v0)\n    v2 = jnp.cos(v0)\n    v3 = jnp.add(x1, x0)\n    v4 = jnp.exp(v1)\n    v5 = jnp.minimum(v2, v1)\n    return v5",
+  "jaxpr": "{ lambda ; a:f32[10,10] b:f32[10,10]. let\n    c:f32[10,10] = mul a a\n    d:f32[10,10] = cos c\n    e:f32[10,10] = cos c\n    _:f32[10,10] = add b a\n    _:f32[10,10] = exp d\n    f:f32[10,10] = min e d\n  in (f,) }",
+  "hlo": "module @jit_generated_fn attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<10x10xf32>) -> (tensor<10x10xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.multiply %arg0, %arg0 : tensor<10x10xf32>\n    %1 = stablehlo.cosine %0 : tensor<10x10xf32>\n    %2 = stablehlo.cosine %0 : tensor<10x10xf32>\n    %3 = stablehlo.minimum %2, %1 : tensor<10x10xf32>\n    return %3 : tensor<10x10xf32>\n  }\n}\n"
+}

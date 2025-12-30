@@ -1,0 +1,5 @@
+{
+  "code": "import jax\nimport jax.numpy as jnp\n\ndef generated_fn(x0):\n    v0 = jnp.abs(x0)\n    v1 = jnp.subtract(v0, x0)\n    v2 = jnp.maximum(x0, v0)\n    v3 = jnp.maximum(v2, v0)\n    v4 = jnp.multiply(v0, v2)\n    v5 = jnp.abs(v2)\n    return v5",
+  "jaxpr": "{ lambda ; a:f32[10,10]. let\n    b:f32[10,10] = abs a\n    _:f32[10,10] = sub b a\n    c:f32[10,10] = max a b\n    _:f32[10,10] = max c b\n    _:f32[10,10] = mul b c\n    d:f32[10,10] = abs c\n  in (d,) }",
+  "hlo": "module @jit_generated_fn attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<10x10xf32>) -> (tensor<10x10xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.abs %arg0 : tensor<10x10xf32>\n    %1 = stablehlo.maximum %arg0, %0 : tensor<10x10xf32>\n    %2 = stablehlo.abs %1 : tensor<10x10xf32>\n    return %2 : tensor<10x10xf32>\n  }\n}\n"
+}

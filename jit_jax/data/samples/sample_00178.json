@@ -1,0 +1,5 @@
+{
+  "code": "import jax\nimport jax.numpy as jnp\n\ndef generated_fn(x0):\n    v0 = jnp.cos(x0)\n    v1 = jnp.maximum(v0, x0)\n    v2 = jnp.abs(x0)\n    v3 = jnp.multiply(v2, v0)\n    v4 = jnp.subtract(v3, v3)\n    v5 = jnp.maximum(x0, x0)\n    v6 = jnp.add(v1, v1)\n    v7 = jnp.add(x0, v5)\n    v8 = jnp.multiply(v4, v0)\n    v9 = jnp.cos(v2)\n    return v9",
+  "jaxpr": "{ lambda ; a:f32[10,10]. let\n    b:f32[10,10] = cos a\n    c:f32[10,10] = max b a\n    d:f32[10,10] = abs a\n    e:f32[10,10] = mul d b\n    f:f32[10,10] = sub e e\n    g:f32[10,10] = max a a\n    _:f32[10,10] = add c c\n    _:f32[10,10] = add a g\n    _:f32[10,10] = mul f b\n    h:f32[10,10] = cos d\n  in (h,) }",
+  "hlo": "module @jit_generated_fn attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<10x10xf32>) -> (tensor<10x10xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.abs %arg0 : tensor<10x10xf32>\n    %1 = stablehlo.cosine %0 : tensor<10x10xf32>\n    return %1 : tensor<10x10xf32>\n  }\n}\n"
+}

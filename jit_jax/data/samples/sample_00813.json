@@ -1,0 +1,5 @@
+{
+  "code": "import jax\nimport jax.numpy as jnp\n\ndef generated_fn(x0):\n    v0 = jnp.tanh(x0)\n    v1 = jnp.cos(x0)\n    v2 = jnp.multiply(x0, v0)\n    return v2",
+  "jaxpr": "{ lambda ; a:f32[10,10]. let\n    b:f32[10,10] = tanh a\n    _:f32[10,10] = cos a\n    c:f32[10,10] = mul a b\n  in (c,) }",
+  "hlo": "module @jit_generated_fn attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<10x10xf32>) -> (tensor<10x10xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.tanh %arg0 : tensor<10x10xf32>\n    %1 = stablehlo.multiply %arg0, %0 : tensor<10x10xf32>\n    return %1 : tensor<10x10xf32>\n  }\n}\n"
+}

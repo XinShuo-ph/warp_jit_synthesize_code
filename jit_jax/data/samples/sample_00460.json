@@ -1,0 +1,5 @@
+{
+  "code": "import jax\nimport jax.numpy as jnp\n\ndef generated_fn(x0, x1):\n    v0 = jnp.maximum(x1, x0)\n    v1 = jnp.maximum(v0, v0)\n    v2 = jnp.maximum(v1, v0)\n    v3 = jnp.add(x1, x0)\n    v4 = jnp.subtract(v2, v3)\n    v5 = jnp.minimum(x1, x0)\n    v6 = jnp.multiply(x0, v3)\n    v7 = jnp.subtract(v4, v0)\n    v8 = jnp.exp(v3)\n    v9 = jnp.cos(v8)\n    return v9",
+  "jaxpr": "{ lambda ; a:f32[10,10] b:f32[10,10]. let\n    c:f32[10,10] = max b a\n    d:f32[10,10] = max c c\n    e:f32[10,10] = max d c\n    f:f32[10,10] = add b a\n    g:f32[10,10] = sub e f\n    _:f32[10,10] = min b a\n    _:f32[10,10] = mul a f\n    _:f32[10,10] = sub g c\n    h:f32[10,10] = exp f\n    i:f32[10,10] = cos h\n  in (i,) }",
+  "hlo": "module @jit_generated_fn attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<10x10xf32>, %arg1: tensor<10x10xf32>) -> (tensor<10x10xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.add %arg1, %arg0 : tensor<10x10xf32>\n    %1 = stablehlo.exponential %0 : tensor<10x10xf32>\n    %2 = stablehlo.cosine %1 : tensor<10x10xf32>\n    return %2 : tensor<10x10xf32>\n  }\n}\n"
+}
