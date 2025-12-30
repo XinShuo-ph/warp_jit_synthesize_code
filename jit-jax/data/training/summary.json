@@ -1,0 +1,17 @@
+{
+  "total_attempted": 10000,
+  "total_generated": 10000,
+  "by_type": {
+    "matrix": 2011,
+    "reduction": 2023,
+    "arithmetic": 2028,
+    "compound": 1992,
+    "unary": 1946
+  },
+  "failures": 0,
+  "output_dir": "/workspace/jit-jax/data/training",
+  "start_time": "2025-12-30T23:52:46.094576",
+  "total_time_seconds": 47.89796185493469,
+  "pairs_per_second": 208.7771506914286,
+  "end_time": "2025-12-30T23:53:33.992561"
+}

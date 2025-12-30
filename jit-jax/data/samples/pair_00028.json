@@ -1,0 +1,20 @@
+{
+  "python": "def compound_29(x, y):\n    return ((jnp.sin(x))**2) + (jnp.cos(jnp.exp(-jnp.abs(y))))",
+  "ir": "module @jit_compound_29 attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<6xf32>, %arg1: tensor<6xf32>) -> (tensor<6xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.sine %arg0 : tensor<6xf32>\n    %1 = stablehlo.multiply %0, %0 : tensor<6xf32>\n    %2 = stablehlo.abs %arg1 : tensor<6xf32>\n    %3 = stablehlo.negate %2 : tensor<6xf32>\n    %4 = stablehlo.exponential %3 : tensor<6xf32>\n    %5 = stablehlo.cosine %4 : tensor<6xf32>\n    %6 = stablehlo.add %1, %5 : tensor<6xf32>\n    return %6 : tensor<6xf32>\n  }\n}\n",
+  "ir_format": "stablehlo",
+  "function_type": "compound",
+  "arg_shapes": [
+    {
+      "shape": [
+        6
+      ],
+      "dtype": "float32"
+    },
+    {
+      "shape": [
+        6
+      ],
+      "dtype": "float32"
+    }
+  ]
+}
