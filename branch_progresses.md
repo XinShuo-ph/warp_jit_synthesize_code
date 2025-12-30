@@ -1,12 +1,12 @@
 # JIT Branch Progress Summary
 
 ## Overview
-16 branches working on Python→IR code synthesis for LLM training data using NVIDIA Warp.
+Branches working on Python→IR code synthesis for LLM training data. **This repo’s instructions target a JAX-based pipeline** (JAXPR / StableHLO / MLIR / HLO).
 
 ## Milestone Reference
-- **M1**: Environment setup, run warp examples
-- **M2**: IR extraction mechanism
-- **M3**: FEM deep dive, Poisson solver
+- **M1**: Environment setup, run JAX examples
+- **M2**: IR extraction mechanism (jaxpr + lowered compiler IR)
+- **M3**: PDE deep dive, Poisson solver
 - **M4**: Synthesis pipeline
 - **M5**: Scale up (batch generation)
 

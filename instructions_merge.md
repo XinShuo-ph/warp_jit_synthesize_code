@@ -1,7 +1,7 @@
 # JIT Branch Merge
 
 ## Objective
-Merge the best work from all 16 branches into a single production-ready branch. You are working on your current branch (check with `git branch --show-current`).
+Merge the best work from all branches into a single production-ready branch for a **JAX-based** Python→IR synthesis pipeline. You are working on your current branch (check with `git branch --show-current`).
 
 ---
 
@@ -258,12 +258,13 @@ Based on `branch_progresses.md`:
 
 ### Kernel Types to Include
 From generator.py across branches:
-- arithmetic (basic ops)
+- elementwise (basic ops)
 - math (unary functions)
-- loop (for loops)
-- conditional (if/else)
-- vector (wp.vec3 ops)
-- matrix (wp.mat33 ops)
+- reduction (sum/max, etc.)
+- control_flow (if/else, while/for via `lax`)
+- linear_algebra (matmul/solve)
+- vmap (batching transforms)
+- scan (recurrent/loop lowering)
 - combined (multi-pattern)
 
 ---

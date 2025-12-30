@@ -1,4 +1,4 @@
-# JIT Code Synthesis - Branch Wrapup
+# JIT Code Synthesis - Branch Wrapup (JAX)
 
 ## Objective
 Wrap up YOUR branch's work on CPU code generation. Validate, reproduce, and document what was built.
@@ -54,7 +54,7 @@ jit/
 
 **Tasks**:
 1. Check what milestone your branch reached (read STATE.md, git log, file structure)
-2. Install dependencies: `pip install warp-lang` (and any in requirements.txt)
+2. Install dependencies: `pip install -U jax` (and any in requirements.txt)
 3. Run the main pipeline/scripts to verify they work:
    - If you have `code/synthesis/pipeline.py`: `python code/synthesis/pipeline.py --count 5`
    - If you have `code/extraction/ir_extractor.py`: run its `__main__` block
@@ -69,7 +69,7 @@ jit/
 
 **README.md must include**:
 ```markdown
-# Warp JIT Code Synthesis - [Branch Name]
+# JAX JIT Code Synthesis - [Branch Name]
 
 ## Progress Summary
 - Milestone reached: M1/M2/M3/M4/M5
@@ -81,7 +81,7 @@ jit/
 
 ## Requirements
 ```bash
-pip install warp-lang
+pip install -U jax
 ```
 
 ## Quick Start
@@ -118,13 +118,13 @@ jit/
 **Done when**: README.md accurately describes your branch's state
 
 ### P3: GPU Analysis
-**Goal**: Analyze what's needed to adapt your code for CUDA output
+**Goal**: Analyze what's needed to adapt your code for CUDA output (JAX)
 
 **Tasks**:
 1. Check if your `ir_extractor.py` has a `device` parameter
 2. If GPU available: try running with `device="cuda"` and note results
-3. If no GPU: read warp source code to understand CUDA code generation
-4. Study differences between `.cpp` (CPU) and `.cu` (CUDA) output
+3. If no GPU: document how JAX selects backends and how you’ll validate CUDA on another machine
+4. Document any IR differences you observe across CPU vs CUDA (may be none at the textual IR level; note runtime lowering differences if applicable)
 5. Document findings in `notes/gpu_analysis.md`
 
 **notes/gpu_analysis.md template**:
@@ -160,8 +160,11 @@ jit/
 git status
 git log --oneline -5
 
-# Install warp
-pip install warp-lang
+# Install JAX (CPU)
+pip install -U jax
+
+# Install JAX (CUDA 12, run on a GPU machine)
+pip install -U "jax[cuda12]"
 
 # Common test commands
 python code/extraction/ir_extractor.py

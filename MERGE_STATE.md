@@ -18,6 +18,8 @@
 3. Test pipeline from 12c4
 4. Document findings in `merge_notes/12c4_notes.md`
 
+Note: This merge workflow assumes the codebase is **JAX-based** (IR extraction via JAX lowering). If a branch is still Warp-based, capture that in the branch notes and skip merging Warp-specific code.
+
 **First action**: Run `git branch --show-current` and record the branch name above.
 
 ## Branch Queue (from branch_progresses.md)
