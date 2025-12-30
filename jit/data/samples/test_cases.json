@@ -1,0 +1,450 @@
+[
+  {
+    "python_code": "lambda x, y: x a y",
+    "input_info": [
+      {
+        "shape": [
+          2
+        ],
+        "dtype": "float32"
+      },
+      {
+        "shape": [
+          2
+        ],
+        "dtype": "float32"
+      }
+    ],
+    "jaxpr": "{ lambda ; a:f32[2] b:f32[2]. let c:f32[2] = add a b in (c,) }",
+    "stablehlo": "module @jit__lambda attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2xf32>, %arg1: tensor<2xf32>) -> (tensor<2xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.add %arg0, %arg1 : tensor<2xf32>\n    return %0 : tensor<2xf32>\n  }\n}\n",
+    "metadata": {
+      "category": "arithmetic",
+      "operation": "add"
+    }
+  },
+  {
+    "python_code": "lambda x, y: x s y",
+    "input_info": [
+      {
+        "shape": [
+          2
+        ],
+        "dtype": "float32"
+      },
+      {
+        "shape": [
+          2
+        ],
+        "dtype": "float32"
+      }
+    ],
+    "jaxpr": "{ lambda ; a:f32[2] b:f32[2]. let c:f32[2] = sub a b in (c,) }",
+    "stablehlo": "module @jit__lambda attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2xf32>, %arg1: tensor<2xf32>) -> (tensor<2xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.subtract %arg0, %arg1 : tensor<2xf32>\n    return %0 : tensor<2xf32>\n  }\n}\n",
+    "metadata": {
+      "category": "arithmetic",
+      "operation": "subtract"
+    }
+  },
+  {
+    "python_code": "lambda x, y: x m y",
+    "input_info": [
+      {
+        "shape": [
+          2
+        ],
+        "dtype": "float32"
+      },
+      {
+        "shape": [
+          2
+        ],
+        "dtype": "float32"
+      }
+    ],
+    "jaxpr": "{ lambda ; a:f32[2] b:f32[2]. let c:f32[2] = mul a b in (c,) }",
+    "stablehlo": "module @jit__lambda attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2xf32>, %arg1: tensor<2xf32>) -> (tensor<2xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.multiply %arg0, %arg1 : tensor<2xf32>\n    return %0 : tensor<2xf32>\n  }\n}\n",
+    "metadata": {
+      "category": "arithmetic",
+      "operation": "multiply"
+    }
+  },
+  {
+    "python_code": "lambda x, y: x d y",
+    "input_info": [
+      {
+        "shape": [
+          2
+        ],
+        "dtype": "float32"
+      },
+      {
+        "shape": [
+          2
+        ],
+        "dtype": "float32"
+      }
+    ],
+    "jaxpr": "{ lambda ; a:f32[2] b:f32[2]. let c:f32[2] = div a b in (c,) }",
+    "stablehlo": "module @jit__lambda attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2xf32>, %arg1: tensor<2xf32>) -> (tensor<2xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.divide %arg0, %arg1 : tensor<2xf32>\n    return %0 : tensor<2xf32>\n  }\n}\n",
+    "metadata": {
+      "category": "arithmetic",
+      "operation": "divide"
+    }
+  },
+  {
+    "python_code": "# reshape operation",
+    "input_info": [
+      {
+        "shape": [
+          6
+        ],
+        "dtype": "float32"
+      }
+    ],
+    "jaxpr": "{ lambda ; a:f32[6]. let\n    b:f32[2,3] = reshape[dimensions=None new_sizes=(2, 3) sharding=None] a\n  in (b,) }",
+    "stablehlo": "module @jit__lambda attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<6xf32>) -> (tensor<2x3xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.reshape %arg0 : (tensor<6xf32>) -> tensor<2x3xf32>\n    return %0 : tensor<2x3xf32>\n  }\n}\n",
+    "metadata": {
+      "category": "array",
+      "operation": "reshape"
+    }
+  },
+  {
+    "python_code": "# transpose operation",
+    "input_info": [
+      {
+        "shape": [
+          3,
+          4
+        ],
+        "dtype": "float32"
+      }
+    ],
+    "jaxpr": "{ lambda ; a:f32[3,4]. let\n    b:f32[4,3] = transpose[permutation=(1, 0)] a\n  in (b,) }",
+    "stablehlo": "module @jit__lambda attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<3x4xf32>) -> (tensor<4x3xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.transpose %arg0, dims = [1, 0] : (tensor<3x4xf32>) -> tensor<4x3xf32>\n    return %0 : tensor<4x3xf32>\n  }\n}\n",
+    "metadata": {
+      "category": "array",
+      "operation": "transpose"
+    }
+  },
+  {
+    "python_code": "# slice operation",
+    "input_info": [
+      {
+        "shape": [
+          5
+        ],
+        "dtype": "float32"
+      }
+    ],
+    "jaxpr": "{ lambda ; a:f32[5]. let\n    b:f32[2] = slice[limit_indices=(3,) start_indices=(1,) strides=None] a\n  in (b,) }",
+    "stablehlo": "module @jit__lambda attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<5xf32>) -> (tensor<2xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.slice %arg0 [1:3] : (tensor<5xf32>) -> tensor<2xf32>\n    return %0 : tensor<2xf32>\n  }\n}\n",
+    "metadata": {
+      "category": "array",
+      "operation": "slice"
+    }
+  },
+  {
+    "python_code": "# concatenate operation",
+    "input_info": [
+      {
+        "shape": [
+          2
+        ],
+        "dtype": "float32"
+      },
+      {
+        "shape": [
+          2
+        ],
+        "dtype": "float32"
+      }
+    ],
+    "jaxpr": "{ lambda ; a:f32[2] b:f32[2]. let\n    c:f32[4] = concatenate[dimension=0] a b\n  in (c,) }",
+    "stablehlo": "module @jit__lambda attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2xf32>, %arg1: tensor<2xf32>) -> (tensor<4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.concatenate %arg0, %arg1, dim = 0 : (tensor<2xf32>, tensor<2xf32>) -> tensor<4xf32>\n    return %0 : tensor<4xf32>\n  }\n}\n",
+    "metadata": {
+      "category": "array",
+      "operation": "concatenate"
+    }
+  },
+  {
+    "python_code": "lambda x: jnp.sin(x)",
+    "input_info": [
+      {
+        "shape": [
+          3
+        ],
+        "dtype": "float32"
+      }
+    ],
+    "jaxpr": "{ lambda ; a:f32[3]. let b:f32[3] = sin a in (b,) }",
+    "stablehlo": "module @jit__lambda attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<3xf32>) -> (tensor<3xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.sine %arg0 : tensor<3xf32>\n    return %0 : tensor<3xf32>\n  }\n}\n",
+    "metadata": {
+      "category": "math",
+      "function": "sin"
+    }
+  },
+  {
+    "python_code": "lambda x: jnp.cos(x)",
+    "input_info": [
+      {
+        "shape": [
+          3
+        ],
+        "dtype": "float32"
+      }
+    ],
+    "jaxpr": "{ lambda ; a:f32[3]. let b:f32[3] = cos a in (b,) }",
+    "stablehlo": "module @jit__lambda attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<3xf32>) -> (tensor<3xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.cosine %arg0 : tensor<3xf32>\n    return %0 : tensor<3xf32>\n  }\n}\n",
+    "metadata": {
+      "category": "math",
+      "function": "cos"
+    }
+  },
+  {
+    "python_code": "lambda x: jnp.exp(x)",
+    "input_info": [
+      {
+        "shape": [
+          3
+        ],
+        "dtype": "float32"
+      }
+    ],
+    "jaxpr": "{ lambda ; a:f32[3]. let b:f32[3] = exp a in (b,) }",
+    "stablehlo": "module @jit__lambda attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<3xf32>) -> (tensor<3xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.exponential %arg0 : tensor<3xf32>\n    return %0 : tensor<3xf32>\n  }\n}\n",
+    "metadata": {
+      "category": "math",
+      "function": "exp"
+    }
+  },
+  {
+    "python_code": "lambda x: jnp.log(x)",
+    "input_info": [
+      {
+        "shape": [
+          3
+        ],
+        "dtype": "float32"
+      }
+    ],
+    "jaxpr": "{ lambda ; a:f32[3]. let b:f32[3] = add a 1.0:f32[]; c:f32[3] = log b in (c,) }",
+    "stablehlo": "module @jit__lambda attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<3xf32>) -> (tensor<3xf32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %0 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<3xf32>\n    %1 = stablehlo.add %arg0, %0 : tensor<3xf32>\n    %2 = stablehlo.log %1 : tensor<3xf32>\n    return %2 : tensor<3xf32>\n  }\n}\n",
+    "metadata": {
+      "category": "math",
+      "function": "log"
+    }
+  },
+  {
+    "python_code": "lambda x: jnp.sqrt(x)",
+    "input_info": [
+      {
+        "shape": [
+          3
+        ],
+        "dtype": "float32"
+      }
+    ],
+    "jaxpr": "{ lambda ; a:f32[3]. let b:f32[3] = abs a; c:f32[3] = sqrt b in (c,) }",
+    "stablehlo": "module @jit__lambda attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<3xf32>) -> (tensor<3xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.abs %arg0 : tensor<3xf32>\n    %1 = stablehlo.sqrt %0 : tensor<3xf32>\n    return %1 : tensor<3xf32>\n  }\n}\n",
+    "metadata": {
+      "category": "math",
+      "function": "sqrt"
+    }
+  },
+  {
+    "python_code": "lambda x: jnp.tanh(x)",
+    "input_info": [
+      {
+        "shape": [
+          3
+        ],
+        "dtype": "float32"
+      }
+    ],
+    "jaxpr": "{ lambda ; a:f32[3]. let b:f32[3] = tanh a in (b,) }",
+    "stablehlo": "module @jit__lambda attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<3xf32>) -> (tensor<3xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.tanh %arg0 : tensor<3xf32>\n    return %0 : tensor<3xf32>\n  }\n}\n",
+    "metadata": {
+      "category": "math",
+      "function": "tanh"
+    }
+  },
+  {
+    "python_code": "# sum",
+    "input_info": [
+      {
+        "shape": [
+          2,
+          3
+        ],
+        "dtype": "float32"
+      }
+    ],
+    "jaxpr": "{ lambda ; a:f32[2,3]. let\n    b:f32[] = reduce_sum[axes=(0, 1) out_sharding=None] a\n  in (b,) }",
+    "stablehlo": "module @jit__lambda attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2x3xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %0 = stablehlo.reduce(%arg0 init: %cst) applies stablehlo.add across dimensions = [0, 1] : (tensor<2x3xf32>, tensor<f32>) -> tensor<f32>\n    return %0 : tensor<f32>\n  }\n}\n",
+    "metadata": {
+      "category": "reduction",
+      "operation": "sum"
+    }
+  },
+  {
+    "python_code": "# mean",
+    "input_info": [
+      {
+        "shape": [
+          2,
+          3
+        ],
+        "dtype": "float32"
+      }
+    ],
+    "jaxpr": "{ lambda ; a:f32[2,3]. let\n    b:f32[] = reduce_sum[axes=(0, 1) out_sharding=None] a\n    c:f32[] = div b 6.0:f32[]\n  in (c,) }",
+    "stablehlo": "module @jit__lambda attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2x3xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %0 = stablehlo.reduce(%arg0 init: %cst) applies stablehlo.add across dimensions = [0, 1] : (tensor<2x3xf32>, tensor<f32>) -> tensor<f32>\n    %cst_0 = stablehlo.constant dense<6.000000e+00> : tensor<f32>\n    %1 = stablehlo.divide %0, %cst_0 : tensor<f32>\n    return %1 : tensor<f32>\n  }\n}\n",
+    "metadata": {
+      "category": "reduction",
+      "operation": "mean"
+    }
+  },
+  {
+    "python_code": "# max",
+    "input_info": [
+      {
+        "shape": [
+          2,
+          3
+        ],
+        "dtype": "float32"
+      }
+    ],
+    "jaxpr": "{ lambda ; a:f32[2,3]. let b:f32[] = reduce_max[axes=(0, 1)] a in (b,) }",
+    "stablehlo": "module @jit__lambda attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2x3xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<0xFF800000> : tensor<f32>\n    %0 = stablehlo.reduce(%arg0 init: %cst) applies stablehlo.maximum across dimensions = [0, 1] : (tensor<2x3xf32>, tensor<f32>) -> tensor<f32>\n    return %0 : tensor<f32>\n  }\n}\n",
+    "metadata": {
+      "category": "reduction",
+      "operation": "max"
+    }
+  },
+  {
+    "python_code": "# min",
+    "input_info": [
+      {
+        "shape": [
+          2,
+          3
+        ],
+        "dtype": "float32"
+      }
+    ],
+    "jaxpr": "{ lambda ; a:f32[2,3]. let b:f32[] = reduce_min[axes=(0, 1)] a in (b,) }",
+    "stablehlo": "module @jit__lambda attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2x3xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<0x7F800000> : tensor<f32>\n    %0 = stablehlo.reduce(%arg0 init: %cst) applies stablehlo.minimum across dimensions = [0, 1] : (tensor<2x3xf32>, tensor<f32>) -> tensor<f32>\n    return %0 : tensor<f32>\n  }\n}\n",
+    "metadata": {
+      "category": "reduction",
+      "operation": "min"
+    }
+  },
+  {
+    "python_code": "# sum_axis0",
+    "input_info": [
+      {
+        "shape": [
+          2,
+          3
+        ],
+        "dtype": "float32"
+      }
+    ],
+    "jaxpr": "{ lambda ; a:f32[2,3]. let\n    b:f32[3] = reduce_sum[axes=(0,) out_sharding=None] a\n  in (b,) }",
+    "stablehlo": "module @jit__lambda attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2x3xf32>) -> (tensor<3xf32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %0 = stablehlo.reduce(%arg0 init: %cst) applies stablehlo.add across dimensions = [0] : (tensor<2x3xf32>, tensor<f32>) -> tensor<3xf32>\n    return %0 : tensor<3xf32>\n  }\n}\n",
+    "metadata": {
+      "category": "reduction",
+      "operation": "sum_axis0"
+    }
+  },
+  {
+    "python_code": "# mean_axis1",
+    "input_info": [
+      {
+        "shape": [
+          2,
+          3
+        ],
+        "dtype": "float32"
+      }
+    ],
+    "jaxpr": "{ lambda ; a:f32[2,3]. let\n    b:f32[2] = reduce_sum[axes=(1,) out_sharding=None] a\n    c:f32[2] = div b 3.0:f32[]\n  in (c,) }",
+    "stablehlo": "module @jit__lambda attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2x3xf32>) -> (tensor<2xf32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %0 = stablehlo.reduce(%arg0 init: %cst) applies stablehlo.add across dimensions = [1] : (tensor<2x3xf32>, tensor<f32>) -> tensor<2xf32>\n    %cst_0 = stablehlo.constant dense<3.000000e+00> : tensor<f32>\n    %1 = stablehlo.broadcast_in_dim %cst_0, dims = [] : (tensor<f32>) -> tensor<2xf32>\n    %2 = stablehlo.divide %0, %1 : tensor<2xf32>\n    return %2 : tensor<2xf32>\n  }\n}\n",
+    "metadata": {
+      "category": "reduction",
+      "operation": "mean_axis1"
+    }
+  },
+  {
+    "python_code": "# dot",
+    "input_info": [
+      {
+        "shape": [
+          3
+        ],
+        "dtype": "float32"
+      },
+      {
+        "shape": [
+          3
+        ],
+        "dtype": "float32"
+      }
+    ],
+    "jaxpr": "{ lambda ; a:f32[3] b:f32[3]. let\n    c:f32[] = dot_general[\n      dimension_numbers=(([0], [0]), ([], []))\n      preferred_element_type=float32\n    ] a b\n  in (c,) }",
+    "stablehlo": "module @jit__lambda attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<3xf32>, %arg1: tensor<3xf32>) -> (tensor<f32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.dot_general %arg0, %arg1, contracting_dims = [0] x [0], precision = [DEFAULT, DEFAULT] : (tensor<3xf32>, tensor<3xf32>) -> tensor<f32>\n    return %0 : tensor<f32>\n  }\n}\n",
+    "metadata": {
+      "category": "linalg",
+      "operation": "dot"
+    }
+  },
+  {
+    "python_code": "# matmul",
+    "input_info": [
+      {
+        "shape": [
+          2,
+          3
+        ],
+        "dtype": "float32"
+      },
+      {
+        "shape": [
+          3,
+          4
+        ],
+        "dtype": "float32"
+      }
+    ],
+    "jaxpr": "{ lambda ; a:f32[2,3] b:f32[3,4]. let\n    c:f32[2,4] = dot_general[\n      dimension_numbers=(([1], [0]), ([], []))\n      preferred_element_type=float32\n    ] a b\n  in (c,) }",
+    "stablehlo": "module @jit__lambda attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2x3xf32>, %arg1: tensor<3x4xf32>) -> (tensor<2x4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.dot_general %arg0, %arg1, contracting_dims = [1] x [0], precision = [DEFAULT, DEFAULT] : (tensor<2x3xf32>, tensor<3x4xf32>) -> tensor<2x4xf32>\n    return %0 : tensor<2x4xf32>\n  }\n}\n",
+    "metadata": {
+      "category": "linalg",
+      "operation": "matmul"
+    }
+  },
+  {
+    "python_code": "# outer",
+    "input_info": [
+      {
+        "shape": [
+          2
+        ],
+        "dtype": "float32"
+      },
+      {
+        "shape": [
+          3
+        ],
+        "dtype": "float32"
+      }
+    ],
+    "jaxpr": "{ lambda ; a:f32[2] b:f32[3]. let\n    c:f32[2,1] = broadcast_in_dim[\n      broadcast_dimensions=(0,)\n      shape=(2, 1)\n      sharding=None\n    ] a\n    d:f32[1,3] = broadcast_in_dim[\n      broadcast_dimensions=(1,)\n      shape=(1, 3)\n      sharding=None\n    ] b\n    e:f32[2,3] = mul c d\n  in (e,) }",
+    "stablehlo": "module @jit__lambda attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2xf32>, %arg1: tensor<3xf32>) -> (tensor<2x3xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.broadcast_in_dim %arg0, dims = [0] : (tensor<2xf32>) -> tensor<2x1xf32>\n    %1 = stablehlo.broadcast_in_dim %arg1, dims = [1] : (tensor<3xf32>) -> tensor<1x3xf32>\n    %2 = stablehlo.broadcast_in_dim %0, dims = [0, 1] : (tensor<2x1xf32>) -> tensor<2x3xf32>\n    %3 = stablehlo.broadcast_in_dim %1, dims = [0, 1] : (tensor<1x3xf32>) -> tensor<2x3xf32>\n    %4 = stablehlo.multiply %2, %3 : tensor<2x3xf32>\n    return %4 : tensor<2x3xf32>\n  }\n}\n",
+    "metadata": {
+      "category": "linalg",
+      "operation": "outer"
+    }
+  }
+]
