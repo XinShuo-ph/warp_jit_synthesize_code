@@ -1,2 +1,9 @@
+# Warp backend (Python → C++/CUDA)
 warp-lang>=1.10.0
+
+# JAX backend (Python → HLO/XLA)
+jax>=0.4.20
+jaxlib>=0.4.20
+
+# Common
 numpy
