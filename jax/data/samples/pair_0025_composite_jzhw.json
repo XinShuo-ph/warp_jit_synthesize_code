@@ -1,0 +1,17 @@
+{
+  "name": "composite_jzhw",
+  "python_source": "def composite_jzhw(x):\n    \"\"\"Composite function with multiple operations.\"\"\"\n    return jnp.exp(-jnp.abs(x)) + x ** 2",
+  "jaxpr": "{ lambda ; a:f32[3,3]. let\n    b:f32[3,3] = abs a\n    c:f32[3,3] = neg b\n    d:f32[3,3] = exp c\n    e:f32[3,3] = integer_pow[y=2] a\n    f:f32[3,3] = add d e\n  in (f,) }",
+  "stablehlo": "module @jit_composite_jzhw attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<3x3xf32>) -> (tensor<3x3xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.abs %arg0 : tensor<3x3xf32>\n    %1 = stablehlo.negate %0 : tensor<3x3xf32>\n    %2 = stablehlo.exponential %1 : tensor<3x3xf32>\n    %3 = stablehlo.multiply %arg0, %arg0 : tensor<3x3xf32>\n    %4 = stablehlo.add %2, %3 : tensor<3x3xf32>\n    return %4 : tensor<3x3xf32>\n  }\n}\n",
+  "xla_hlo": "HloModule jit_composite_jzhw, entry_computation_layout={(f32[3,3]{1,0})->f32[3,3]{1,0}}\n\nENTRY main.1 {\n  x.1 = f32[3,3]{1,0} parameter(0)\n  abs.1 = f32[3,3]{1,0} abs(x.1)\n  neg.1 = f32[3,3]{1,0} negate(abs.1)\n  exp.1 = f32[3,3]{1,0} exponential(neg.1)\n  integer_pow.1 = f32[3,3]{1,0} multiply(x.1, x.1)\n  ROOT add.1 = f32[3,3]{1,0} add(exp.1, integer_pow.1)\n}\n\n",
+  "input_shapes": [
+    [
+      3,
+      3
+    ]
+  ],
+  "output_shape": [
+    3,
+    3
+  ]
+}

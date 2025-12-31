@@ -1,0 +1,17 @@
+{
+  "name": "composite_xwyf",
+  "python_source": "def composite_xwyf(x):\n    \"\"\"Composite function with multiple operations.\"\"\"\n    return jnp.sin(x) + jnp.tanh(x) + x ** 2",
+  "jaxpr": "{ lambda ; a:f32[16,15]. let\n    b:f32[16,15] = sin a\n    c:f32[16,15] = tanh a\n    d:f32[16,15] = add b c\n    e:f32[16,15] = integer_pow[y=2] a\n    f:f32[16,15] = add d e\n  in (f,) }",
+  "stablehlo": "module @jit_composite_xwyf attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<16x15xf32>) -> (tensor<16x15xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.sine %arg0 : tensor<16x15xf32>\n    %1 = stablehlo.tanh %arg0 : tensor<16x15xf32>\n    %2 = stablehlo.add %0, %1 : tensor<16x15xf32>\n    %3 = stablehlo.multiply %arg0, %arg0 : tensor<16x15xf32>\n    %4 = stablehlo.add %2, %3 : tensor<16x15xf32>\n    return %4 : tensor<16x15xf32>\n  }\n}\n",
+  "xla_hlo": "HloModule jit_composite_xwyf, entry_computation_layout={(f32[16,15]{1,0})->f32[16,15]{1,0}}\n\nENTRY main.1 {\n  x.1 = f32[16,15]{1,0} parameter(0)\n  sin.1 = f32[16,15]{1,0} sine(x.1)\n  tanh.1 = f32[16,15]{1,0} tanh(x.1)\n  add.2 = f32[16,15]{1,0} add(sin.1, tanh.1)\n  integer_pow.1 = f32[16,15]{1,0} multiply(x.1, x.1)\n  ROOT add.3 = f32[16,15]{1,0} add(add.2, integer_pow.1)\n}\n\n",
+  "input_shapes": [
+    [
+      16,
+      15
+    ]
+  ],
+  "output_shape": [
+    16,
+    15
+  ]
+}

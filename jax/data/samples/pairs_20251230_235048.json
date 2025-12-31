@@ -1,0 +1,211 @@
+[
+  {
+    "name": "nn_layer_ctgd",
+    "python_source": "def nn_layer_ctgd(x, w, b):\n    \"\"\"Neural network layer with relu activation.\"\"\"\n    return jax.nn.relu(jnp.dot(x, w) + b)",
+    "jaxpr": "{ lambda ; a:f32[2,25] b:f32[25,27] c:f32[27]. let\n    d:f32[2,27] = dot_general[\n      dimension_numbers=(([1], [0]), ([], []))\n      preferred_element_type=float32\n    ] a b\n    e:f32[1,27] = broadcast_in_dim[\n      broadcast_dimensions=(1,)\n      shape=(1, 27)\n      sharding=None\n    ] c\n    f:f32[2,27] = add d e\n    g:f32[2,27] = custom_jvp_call[\n      name=relu\n      call_jaxpr={ lambda ; h:f32[2,27]. let\n          i:f32[2,27] = jit[\n            name=relu\n            jaxpr={ lambda ; h:f32[2,27]. let\n                i:f32[2,27] = max h 0.0:f32[]\n              in (i,) }\n          ] h\n        in (i,) }\n      jvp=jvp\n      symbolic_zeros=False\n    ] f\n  in (g,) }",
+    "stablehlo": "module @jit_nn_layer_ctgd attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2x25xf32>, %arg1: tensor<25x27xf32>, %arg2: tensor<27xf32>) -> (tensor<2x27xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.dot_general %arg0, %arg1, contracting_dims = [1] x [0], precision = [DEFAULT, DEFAULT] : (tensor<2x25xf32>, tensor<25x27xf32>) -> tensor<2x27xf32>\n    %1 = stablehlo.broadcast_in_dim %arg2, dims = [1] : (tensor<27xf32>) -> tensor<1x27xf32>\n    %2 = stablehlo.broadcast_in_dim %1, dims = [0, 1] : (tensor<1x27xf32>) -> tensor<2x27xf32>\n    %3 = stablehlo.add %0, %2 : tensor<2x27xf32>\n    %4 = call @relu(%3) : (tensor<2x27xf32>) -> tensor<2x27xf32>\n    return %4 : tensor<2x27xf32>\n  }\n  func.func private @relu(%arg0: tensor<2x27xf32>) -> tensor<2x27xf32> {\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %0 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<2x27xf32>\n    %1 = stablehlo.maximum %arg0, %0 : tensor<2x27xf32>\n    return %1 : tensor<2x27xf32>\n  }\n}\n",
+    "xla_hlo": "HloModule jit_nn_layer_ctgd, entry_computation_layout={(f32[2,25]{1,0}, f32[25,27]{1,0}, f32[27]{0})->f32[2,27]{1,0}}\n\nrelu.1 {\n  Arg_0.1 = f32[2,27]{1,0} parameter(0)\n  constant.1 = f32[] constant(0)\n  max.2 = f32[2,27]{1,0} broadcast(constant.1), dimensions={}\n  ROOT max.3 = f32[2,27]{1,0} maximum(Arg_0.1, max.2)\n}\n\nENTRY main.2 {\n  x.1 = f32[2,25]{1,0} parameter(0)\n  w.1 = f32[25,27]{1,0} parameter(1)\n  dot_general.1 = f32[2,27]{1,0} dot(x.1, w.1), lhs_contracting_dims={1}, rhs_contracting_dims={0}\n  b.1 = f32[27]{0} parameter(2)\n  broadcast_in_dim.1 = f32[1,27]{1,0} reshape(b.1)\n  add.4 = f32[1,27]{1,0} broadcast(broadcast_in_dim.1), dimensions={0,1}\n  add.5 = f32[27]{0} reshape(add.4)\n  add.6 = f32[2,27]{1,0} broadcast(add.5), dimensions={1}\n  add.7 = f32[2,27]{1,0} add(dot_general.1, add.6)\n  ROOT jit_relu_.1 = f32[2,27]{1,0} call(add.7), to_apply=relu.1\n}\n\n",
+    "input_shapes": [
+      [
+        2,
+        25
+      ],
+      [
+        25,
+        27
+      ],
+      [
+        27
+      ]
+    ],
+    "output_shape": [
+      2,
+      27
+    ]
+  },
+  {
+    "name": "composite_kafn",
+    "python_source": "def composite_kafn(x):\n    \"\"\"Composite function with multiple operations.\"\"\"\n    return jnp.exp(-jnp.abs(x)) + x ** 2",
+    "jaxpr": "{ lambda ; a:f32[2,10]. let\n    b:f32[2,10] = abs a\n    c:f32[2,10] = neg b\n    d:f32[2,10] = exp c\n    e:f32[2,10] = integer_pow[y=2] a\n    f:f32[2,10] = add d e\n  in (f,) }",
+    "stablehlo": "module @jit_composite_kafn attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2x10xf32>) -> (tensor<2x10xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.abs %arg0 : tensor<2x10xf32>\n    %1 = stablehlo.negate %0 : tensor<2x10xf32>\n    %2 = stablehlo.exponential %1 : tensor<2x10xf32>\n    %3 = stablehlo.multiply %arg0, %arg0 : tensor<2x10xf32>\n    %4 = stablehlo.add %2, %3 : tensor<2x10xf32>\n    return %4 : tensor<2x10xf32>\n  }\n}\n",
+    "xla_hlo": "HloModule jit_composite_kafn, entry_computation_layout={(f32[2,10]{1,0})->f32[2,10]{1,0}}\n\nENTRY main.1 {\n  x.1 = f32[2,10]{1,0} parameter(0)\n  abs.1 = f32[2,10]{1,0} abs(x.1)\n  neg.1 = f32[2,10]{1,0} negate(abs.1)\n  exp.1 = f32[2,10]{1,0} exponential(neg.1)\n  integer_pow.1 = f32[2,10]{1,0} multiply(x.1, x.1)\n  ROOT add.1 = f32[2,10]{1,0} add(exp.1, integer_pow.1)\n}\n\n",
+    "input_shapes": [
+      [
+        2,
+        10
+      ]
+    ],
+    "output_shape": [
+      2,
+      10
+    ]
+  },
+  {
+    "name": "div_pvau",
+    "python_source": "def div_pvau(x, y):\n    \"\"\"Division (safe) operation.\"\"\"\n    return x / (y + 1e-6)",
+    "jaxpr": "{ lambda ; a:f32[8,7,6] b:f32[8,7,6]. let\n    c:f32[8,7,6] = add b 9.999999974752427e-07:f32[]\n    d:f32[8,7,6] = div a c\n  in (d,) }",
+    "stablehlo": "module @jit_div_pvau attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<8x7x6xf32>, %arg1: tensor<8x7x6xf32>) -> (tensor<8x7x6xf32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<9.99999997E-7> : tensor<f32>\n    %0 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<8x7x6xf32>\n    %1 = stablehlo.add %arg1, %0 : tensor<8x7x6xf32>\n    %2 = stablehlo.divide %arg0, %1 : tensor<8x7x6xf32>\n    return %2 : tensor<8x7x6xf32>\n  }\n}\n",
+    "xla_hlo": "HloModule jit_div_pvau, entry_computation_layout={(f32[8,7,6]{2,1,0}, f32[8,7,6]{2,1,0})->f32[8,7,6]{2,1,0}}\n\nENTRY main.1 {\n  x.1 = f32[8,7,6]{2,1,0} parameter(0)\n  y.1 = f32[8,7,6]{2,1,0} parameter(1)\n  constant.1 = f32[] constant(1e-06)\n  add.2 = f32[8,7,6]{2,1,0} broadcast(constant.1), dimensions={}\n  add.3 = f32[8,7,6]{2,1,0} add(y.1, add.2)\n  ROOT div.1 = f32[8,7,6]{2,1,0} divide(x.1, add.3)\n}\n\n",
+    "input_shapes": [
+      [
+        8,
+        7,
+        6
+      ],
+      [
+        8,
+        7,
+        6
+      ]
+    ],
+    "output_shape": [
+      8,
+      7,
+      6
+    ]
+  },
+  {
+    "name": "sub_yicc",
+    "python_source": "def sub_yicc(x, y):\n    \"\"\"Subtraction operation.\"\"\"\n    return x - y",
+    "jaxpr": "{ lambda ; a:f32[11,6] b:f32[11,6]. let c:f32[11,6] = sub a b in (c,) }",
+    "stablehlo": "module @jit_sub_yicc attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<11x6xf32>, %arg1: tensor<11x6xf32>) -> (tensor<11x6xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.subtract %arg0, %arg1 : tensor<11x6xf32>\n    return %0 : tensor<11x6xf32>\n  }\n}\n",
+    "xla_hlo": "HloModule jit_sub_yicc, entry_computation_layout={(f32[11,6]{1,0}, f32[11,6]{1,0})->f32[11,6]{1,0}}\n\nENTRY main.1 {\n  x.1 = f32[11,6]{1,0} parameter(0)\n  y.1 = f32[11,6]{1,0} parameter(1)\n  ROOT sub.1 = f32[11,6]{1,0} subtract(x.1, y.1)\n}\n\n",
+    "input_shapes": [
+      [
+        11,
+        6
+      ],
+      [
+        11,
+        6
+      ]
+    ],
+    "output_shape": [
+      11,
+      6
+    ]
+  },
+  {
+    "name": "vmap_bldx",
+    "python_source": "def vmap_bldx(a_batch, b_batch):\n    \"\"\"Batched operation using vmap.\"\"\"\n    def inner(a, b):\n        return jnp.sum(a * b)\n    return jax.vmap(inner)(a_batch, b_batch)",
+    "jaxpr": "{ lambda ; a:f32[2,12] b:f32[2,12]. let\n    c:f32[2,12] = mul a b\n    d:f32[2] = reduce_sum[axes=(np.int64(1),) out_sharding=None] c\n  in (d,) }",
+    "stablehlo": "module @jit_vmap_bldx attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2x12xf32>, %arg1: tensor<2x12xf32>) -> (tensor<2xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.multiply %arg0, %arg1 : tensor<2x12xf32>\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %1 = stablehlo.reduce(%0 init: %cst) applies stablehlo.add across dimensions = [1] : (tensor<2x12xf32>, tensor<f32>) -> tensor<2xf32>\n    return %1 : tensor<2xf32>\n  }\n}\n",
+    "xla_hlo": "HloModule jit_vmap_bldx, entry_computation_layout={(f32[2,12]{1,0}, f32[2,12]{1,0})->f32[2]{0}}\n\nregion_0.1 {\n  reduce_sum.3 = f32[] parameter(0)\n  reduce_sum.4 = f32[] parameter(1)\n  ROOT reduce_sum.5 = f32[] add(reduce_sum.3, reduce_sum.4)\n}\n\nENTRY main.2 {\n  a_batch.1 = f32[2,12]{1,0} parameter(0)\n  b_batch.1 = f32[2,12]{1,0} parameter(1)\n  mul.1 = f32[2,12]{1,0} multiply(a_batch.1, b_batch.1)\n  constant.1 = f32[] constant(0)\n  ROOT reduce_sum.7 = f32[2]{0} reduce(mul.1, constant.1), dimensions={1}, to_apply=region_0.1\n}\n\n",
+    "input_shapes": [
+      [
+        2,
+        12
+      ],
+      [
+        2,
+        12
+      ]
+    ],
+    "output_shape": [
+      2
+    ]
+  },
+  {
+    "name": "vmap_qxje",
+    "python_source": "def vmap_qxje(a_batch, b_batch):\n    \"\"\"Batched operation using vmap.\"\"\"\n    def inner(a, b):\n        return jnp.maximum(a, b)\n    return jax.vmap(inner)(a_batch, b_batch)",
+    "jaxpr": "{ lambda ; a:f32[2,4] b:f32[2,4]. let c:f32[2,4] = max a b in (c,) }",
+    "stablehlo": "module @jit_vmap_qxje attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2x4xf32>, %arg1: tensor<2x4xf32>) -> (tensor<2x4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.maximum %arg0, %arg1 : tensor<2x4xf32>\n    return %0 : tensor<2x4xf32>\n  }\n}\n",
+    "xla_hlo": "HloModule jit_vmap_qxje, entry_computation_layout={(f32[2,4]{1,0}, f32[2,4]{1,0})->f32[2,4]{1,0}}\n\nENTRY main.1 {\n  a_batch.1 = f32[2,4]{1,0} parameter(0)\n  b_batch.1 = f32[2,4]{1,0} parameter(1)\n  ROOT max.1 = f32[2,4]{1,0} maximum(a_batch.1, b_batch.1)\n}\n\n",
+    "input_shapes": [
+      [
+        2,
+        4
+      ],
+      [
+        2,
+        4
+      ]
+    ],
+    "output_shape": [
+      2,
+      4
+    ]
+  },
+  {
+    "name": "min_hcgc",
+    "python_source": "def min_hcgc(x, y):\n    \"\"\"Element-wise min operation.\"\"\"\n    return jnp.minimum(x, y)",
+    "jaxpr": "{ lambda ; a:f32[9,12] b:f32[9,12]. let c:f32[9,12] = min a b in (c,) }",
+    "stablehlo": "module @jit_min_hcgc attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<9x12xf32>, %arg1: tensor<9x12xf32>) -> (tensor<9x12xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.minimum %arg0, %arg1 : tensor<9x12xf32>\n    return %0 : tensor<9x12xf32>\n  }\n}\n",
+    "xla_hlo": "HloModule jit_min_hcgc, entry_computation_layout={(f32[9,12]{1,0}, f32[9,12]{1,0})->f32[9,12]{1,0}}\n\nENTRY main.1 {\n  x.1 = f32[9,12]{1,0} parameter(0)\n  y.1 = f32[9,12]{1,0} parameter(1)\n  ROOT min.1 = f32[9,12]{1,0} minimum(x.1, y.1)\n}\n\n",
+    "input_shapes": [
+      [
+        9,
+        12
+      ],
+      [
+        9,
+        12
+      ]
+    ],
+    "output_shape": [
+      9,
+      12
+    ]
+  },
+  {
+    "name": "vmap_jjfg",
+    "python_source": "def vmap_jjfg(a_batch, b_batch):\n    \"\"\"Batched operation using vmap.\"\"\"\n    def inner(a, b):\n        return jnp.dot(a, b)\n    return jax.vmap(inner)(a_batch, b_batch)",
+    "jaxpr": "{ lambda ; a:f32[7,14] b:f32[7,14]. let\n    c:f32[7] = dot_general[\n      dimension_numbers=(([1], [1]), ([0], [0]))\n      preferred_element_type=float32\n    ] a b\n  in (c,) }",
+    "stablehlo": "module @jit_vmap_jjfg attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<7x14xf32>, %arg1: tensor<7x14xf32>) -> (tensor<7xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.dot_general %arg0, %arg1, batching_dims = [0] x [0], contracting_dims = [1] x [1], precision = [DEFAULT, DEFAULT] : (tensor<7x14xf32>, tensor<7x14xf32>) -> tensor<7xf32>\n    return %0 : tensor<7xf32>\n  }\n}\n",
+    "xla_hlo": "HloModule jit_vmap_jjfg, entry_computation_layout={(f32[7,14]{1,0}, f32[7,14]{1,0})->f32[7]{0}}\n\nENTRY main.1 {\n  a_batch.1 = f32[7,14]{1,0} parameter(0)\n  b_batch.1 = f32[7,14]{1,0} parameter(1)\n  ROOT dot_general.1 = f32[7]{0} dot(a_batch.1, b_batch.1), lhs_batch_dims={0}, lhs_contracting_dims={1}, rhs_batch_dims={0}, rhs_contracting_dims={1}\n}\n\n",
+    "input_shapes": [
+      [
+        7,
+        14
+      ],
+      [
+        7,
+        14
+      ]
+    ],
+    "output_shape": [
+      7
+    ]
+  },
+  {
+    "name": "composite_qngm",
+    "python_source": "def composite_qngm(x):\n    \"\"\"Composite function with multiple operations.\"\"\"\n    return jnp.sin(x) + jax.nn.relu(x)",
+    "jaxpr": "{ lambda ; a:f32[6,16]. let\n    b:f32[6,16] = sin a\n    c:f32[6,16] = custom_jvp_call[\n      name=relu\n      call_jaxpr={ lambda ; d:f32[6,16]. let\n          e:f32[6,16] = jit[\n            name=relu\n            jaxpr={ lambda ; d:f32[6,16]. let\n                e:f32[6,16] = max d 0.0:f32[]\n              in (e,) }\n          ] d\n        in (e,) }\n      jvp=jvp\n      symbolic_zeros=False\n    ] a\n    f:f32[6,16] = add b c\n  in (f,) }",
+    "stablehlo": "module @jit_composite_qngm attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<6x16xf32>) -> (tensor<6x16xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.sine %arg0 : tensor<6x16xf32>\n    %1 = call @relu(%arg0) : (tensor<6x16xf32>) -> tensor<6x16xf32>\n    %2 = stablehlo.add %0, %1 : tensor<6x16xf32>\n    return %2 : tensor<6x16xf32>\n  }\n  func.func private @relu(%arg0: tensor<6x16xf32>) -> tensor<6x16xf32> {\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %0 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<6x16xf32>\n    %1 = stablehlo.maximum %arg0, %0 : tensor<6x16xf32>\n    return %1 : tensor<6x16xf32>\n  }\n}\n",
+    "xla_hlo": "HloModule jit_composite_qngm, entry_computation_layout={(f32[6,16]{1,0})->f32[6,16]{1,0}}\n\nrelu.1 {\n  Arg_0.1 = f32[6,16]{1,0} parameter(0)\n  constant.1 = f32[] constant(0)\n  max.2 = f32[6,16]{1,0} broadcast(constant.1), dimensions={}\n  ROOT max.3 = f32[6,16]{1,0} maximum(Arg_0.1, max.2)\n}\n\nENTRY main.2 {\n  x.1 = f32[6,16]{1,0} parameter(0)\n  sin.1 = f32[6,16]{1,0} sine(x.1)\n  jit_relu_.1 = f32[6,16]{1,0} call(x.1), to_apply=relu.1\n  ROOT add.1 = f32[6,16]{1,0} add(sin.1, jit_relu_.1)\n}\n\n",
+    "input_shapes": [
+      [
+        6,
+        16
+      ]
+    ],
+    "output_shape": [
+      6,
+      16
+    ]
+  },
+  {
+    "name": "min_aigf",
+    "python_source": "def min_aigf(x, y):\n    \"\"\"Element-wise min operation.\"\"\"\n    return jnp.minimum(x, y)",
+    "jaxpr": "{ lambda ; a:f32[16,13,7] b:f32[16,13,7]. let c:f32[16,13,7] = min a b in (c,) }",
+    "stablehlo": "module @jit_min_aigf attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<16x13x7xf32>, %arg1: tensor<16x13x7xf32>) -> (tensor<16x13x7xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.minimum %arg0, %arg1 : tensor<16x13x7xf32>\n    return %0 : tensor<16x13x7xf32>\n  }\n}\n",
+    "xla_hlo": "HloModule jit_min_aigf, entry_computation_layout={(f32[16,13,7]{2,1,0}, f32[16,13,7]{2,1,0})->f32[16,13,7]{2,1,0}}\n\nENTRY main.1 {\n  x.1 = f32[16,13,7]{2,1,0} parameter(0)\n  y.1 = f32[16,13,7]{2,1,0} parameter(1)\n  ROOT min.1 = f32[16,13,7]{2,1,0} minimum(x.1, y.1)\n}\n\n",
+    "input_shapes": [
+      [
+        16,
+        13,
+        7
+      ],
+      [
+        16,
+        13,
+        7
+      ]
+    ],
+    "output_shape": [
+      16,
+      13,
+      7
+    ]
+  }
+]

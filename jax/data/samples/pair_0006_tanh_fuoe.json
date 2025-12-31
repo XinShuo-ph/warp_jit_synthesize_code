@@ -1,0 +1,19 @@
+{
+  "name": "tanh_fuoe",
+  "python_source": "def tanh_fuoe(x):\n    \"\"\"Hyperbolic tangent operation.\"\"\"\n    return jnp.tanh(x)",
+  "jaxpr": "{ lambda ; a:f32[8,10,16]. let b:f32[8,10,16] = tanh a in (b,) }",
+  "stablehlo": "module @jit_tanh_fuoe attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<8x10x16xf32>) -> (tensor<8x10x16xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.tanh %arg0 : tensor<8x10x16xf32>\n    return %0 : tensor<8x10x16xf32>\n  }\n}\n",
+  "xla_hlo": "HloModule jit_tanh_fuoe, entry_computation_layout={(f32[8,10,16]{2,1,0})->f32[8,10,16]{2,1,0}}\n\nENTRY main.1 {\n  x.1 = f32[8,10,16]{2,1,0} parameter(0)\n  ROOT tanh.1 = f32[8,10,16]{2,1,0} tanh(x.1)\n}\n\n",
+  "input_shapes": [
+    [
+      8,
+      10,
+      16
+    ]
+  ],
+  "output_shape": [
+    8,
+    10,
+    16
+  ]
+}

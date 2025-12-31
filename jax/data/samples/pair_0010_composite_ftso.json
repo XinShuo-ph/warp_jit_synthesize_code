@@ -1,0 +1,17 @@
+{
+  "name": "composite_ftso",
+  "python_source": "def composite_ftso(x):\n    \"\"\"Composite function with multiple operations.\"\"\"\n    return jnp.sin(x) + jnp.tanh(x)",
+  "jaxpr": "{ lambda ; a:f32[3,9]. let\n    b:f32[3,9] = sin a\n    c:f32[3,9] = tanh a\n    d:f32[3,9] = add b c\n  in (d,) }",
+  "stablehlo": "module @jit_composite_ftso attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<3x9xf32>) -> (tensor<3x9xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.sine %arg0 : tensor<3x9xf32>\n    %1 = stablehlo.tanh %arg0 : tensor<3x9xf32>\n    %2 = stablehlo.add %0, %1 : tensor<3x9xf32>\n    return %2 : tensor<3x9xf32>\n  }\n}\n",
+  "xla_hlo": "HloModule jit_composite_ftso, entry_computation_layout={(f32[3,9]{1,0})->f32[3,9]{1,0}}\n\nENTRY main.1 {\n  x.1 = f32[3,9]{1,0} parameter(0)\n  sin.1 = f32[3,9]{1,0} sine(x.1)\n  tanh.1 = f32[3,9]{1,0} tanh(x.1)\n  ROOT add.1 = f32[3,9]{1,0} add(sin.1, tanh.1)\n}\n\n",
+  "input_shapes": [
+    [
+      3,
+      9
+    ]
+  ],
+  "output_shape": [
+    3,
+    9
+  ]
+}

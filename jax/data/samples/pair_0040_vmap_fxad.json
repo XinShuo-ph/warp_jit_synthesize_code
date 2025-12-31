@@ -1,0 +1,20 @@
+{
+  "name": "vmap_fxad",
+  "python_source": "def vmap_fxad(a_batch, b_batch):\n    \"\"\"Batched operation using vmap.\"\"\"\n    def inner(a, b):\n        return jnp.dot(a, b)\n    return jax.vmap(inner)(a_batch, b_batch)",
+  "jaxpr": "{ lambda ; a:f32[6,16] b:f32[6,16]. let\n    c:f32[6] = dot_general[\n      dimension_numbers=(([1], [1]), ([0], [0]))\n      preferred_element_type=float32\n    ] a b\n  in (c,) }",
+  "stablehlo": "module @jit_vmap_fxad attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<6x16xf32>, %arg1: tensor<6x16xf32>) -> (tensor<6xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.dot_general %arg0, %arg1, batching_dims = [0] x [0], contracting_dims = [1] x [1], precision = [DEFAULT, DEFAULT] : (tensor<6x16xf32>, tensor<6x16xf32>) -> tensor<6xf32>\n    return %0 : tensor<6xf32>\n  }\n}\n",
+  "xla_hlo": "HloModule jit_vmap_fxad, entry_computation_layout={(f32[6,16]{1,0}, f32[6,16]{1,0})->f32[6]{0}}\n\nENTRY main.1 {\n  a_batch.1 = f32[6,16]{1,0} parameter(0)\n  b_batch.1 = f32[6,16]{1,0} parameter(1)\n  ROOT dot_general.1 = f32[6]{0} dot(a_batch.1, b_batch.1), lhs_batch_dims={0}, lhs_contracting_dims={1}, rhs_batch_dims={0}, rhs_contracting_dims={1}\n}\n\n",
+  "input_shapes": [
+    [
+      6,
+      16
+    ],
+    [
+      6,
+      16
+    ]
+  ],
+  "output_shape": [
+    6
+  ]
+}

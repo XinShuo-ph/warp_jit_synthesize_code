@@ -1,0 +1,17 @@
+{
+  "name": "composite_kafn",
+  "python_source": "def composite_kafn(x):\n    \"\"\"Composite function with multiple operations.\"\"\"\n    return jnp.exp(-jnp.abs(x)) + x ** 2",
+  "jaxpr": "{ lambda ; a:f32[2,10]. let\n    b:f32[2,10] = abs a\n    c:f32[2,10] = neg b\n    d:f32[2,10] = exp c\n    e:f32[2,10] = integer_pow[y=2] a\n    f:f32[2,10] = add d e\n  in (f,) }",
+  "stablehlo": "module @jit_composite_kafn attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2x10xf32>) -> (tensor<2x10xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.abs %arg0 : tensor<2x10xf32>\n    %1 = stablehlo.negate %0 : tensor<2x10xf32>\n    %2 = stablehlo.exponential %1 : tensor<2x10xf32>\n    %3 = stablehlo.multiply %arg0, %arg0 : tensor<2x10xf32>\n    %4 = stablehlo.add %2, %3 : tensor<2x10xf32>\n    return %4 : tensor<2x10xf32>\n  }\n}\n",
+  "xla_hlo": "HloModule jit_composite_kafn, entry_computation_layout={(f32[2,10]{1,0})->f32[2,10]{1,0}}\n\nENTRY main.1 {\n  x.1 = f32[2,10]{1,0} parameter(0)\n  abs.1 = f32[2,10]{1,0} abs(x.1)\n  neg.1 = f32[2,10]{1,0} negate(abs.1)\n  exp.1 = f32[2,10]{1,0} exponential(neg.1)\n  integer_pow.1 = f32[2,10]{1,0} multiply(x.1, x.1)\n  ROOT add.1 = f32[2,10]{1,0} add(exp.1, integer_pow.1)\n}\n\n",
+  "input_shapes": [
+    [
+      2,
+      10
+    ]
+  ],
+  "output_shape": [
+    2,
+    10
+  ]
+}

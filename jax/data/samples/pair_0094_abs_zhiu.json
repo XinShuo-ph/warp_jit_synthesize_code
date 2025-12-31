@@ -1,0 +1,19 @@
+{
+  "name": "abs_zhiu",
+  "python_source": "def abs_zhiu(x):\n    \"\"\"Absolute value operation.\"\"\"\n    return jnp.abs(x)",
+  "jaxpr": "{ lambda ; a:f32[15,11,14]. let b:f32[15,11,14] = abs a in (b,) }",
+  "stablehlo": "module @jit_abs_zhiu attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<15x11x14xf32>) -> (tensor<15x11x14xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.abs %arg0 : tensor<15x11x14xf32>\n    return %0 : tensor<15x11x14xf32>\n  }\n}\n",
+  "xla_hlo": "HloModule jit_abs_zhiu, entry_computation_layout={(f32[15,11,14]{2,1,0})->f32[15,11,14]{2,1,0}}\n\nENTRY main.1 {\n  x.1 = f32[15,11,14]{2,1,0} parameter(0)\n  ROOT abs.1 = f32[15,11,14]{2,1,0} abs(x.1)\n}\n\n",
+  "input_shapes": [
+    [
+      15,
+      11,
+      14
+    ]
+  ],
+  "output_shape": [
+    15,
+    11,
+    14
+  ]
+}

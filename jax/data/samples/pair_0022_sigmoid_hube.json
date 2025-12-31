@@ -1,0 +1,15 @@
+{
+  "name": "sigmoid_hube",
+  "python_source": "def sigmoid_hube(x):\n    \"\"\"Sigmoid activation operation.\"\"\"\n    return jax.nn.sigmoid(x)",
+  "jaxpr": "{ lambda ; a:f32[4]. let b:f32[4] = logistic a in (b,) }",
+  "stablehlo": "module @jit_sigmoid_hube attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>) -> (tensor<4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.negate %arg0 : tensor<4xf32>\n    %1 = stablehlo.exponential %0 : tensor<4xf32>\n    %cst = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %2 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %3 = stablehlo.add %2, %1 : tensor<4xf32>\n    %cst_0 = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %4 = stablehlo.broadcast_in_dim %cst_0, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %5 = stablehlo.divide %4, %3 : tensor<4xf32>\n    return %5 : tensor<4xf32>\n  }\n}\n",
+  "xla_hlo": "HloModule jit_sigmoid_hube, entry_computation_layout={(f32[4]{0})->f32[4]{0}}\n\nENTRY main.1 {\n  constant.1 = f32[] constant(1)\n  broadcast.1 = f32[4]{0} broadcast(constant.1), dimensions={}\n  x.1 = f32[4]{0} parameter(0)\n  neg.1 = f32[4]{0} negate(x.1)\n  exp.1 = f32[4]{0} exponential(neg.1)\n  add.1 = f32[4]{0} add(exp.1, broadcast.1)\n  ROOT div.1 = f32[4]{0} divide(broadcast.1, add.1)\n}\n\n",
+  "input_shapes": [
+    [
+      4
+    ]
+  ],
+  "output_shape": [
+    4
+  ]
+}

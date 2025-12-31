@@ -1,0 +1,17 @@
+{
+  "name": "tanh_iymv",
+  "python_source": "def tanh_iymv(x):\n    \"\"\"Hyperbolic tangent operation.\"\"\"\n    return jnp.tanh(x)",
+  "jaxpr": "{ lambda ; a:f32[3,11]. let b:f32[3,11] = tanh a in (b,) }",
+  "stablehlo": "module @jit_tanh_iymv attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<3x11xf32>) -> (tensor<3x11xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.tanh %arg0 : tensor<3x11xf32>\n    return %0 : tensor<3x11xf32>\n  }\n}\n",
+  "xla_hlo": "HloModule jit_tanh_iymv, entry_computation_layout={(f32[3,11]{1,0})->f32[3,11]{1,0}}\n\nENTRY main.1 {\n  x.1 = f32[3,11]{1,0} parameter(0)\n  ROOT tanh.1 = f32[3,11]{1,0} tanh(x.1)\n}\n\n",
+  "input_shapes": [
+    [
+      3,
+      11
+    ]
+  ],
+  "output_shape": [
+    3,
+    11
+  ]
+}

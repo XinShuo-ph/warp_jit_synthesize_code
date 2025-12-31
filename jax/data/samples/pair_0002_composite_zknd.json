@@ -1,0 +1,17 @@
+{
+  "name": "composite_zknd",
+  "python_source": "def composite_zknd(x):\n    \"\"\"Composite function with multiple operations.\"\"\"\n    return jnp.sin(x) + jnp.exp(-jnp.abs(x))",
+  "jaxpr": "{ lambda ; a:f32[13,3]. let\n    b:f32[13,3] = sin a\n    c:f32[13,3] = abs a\n    d:f32[13,3] = neg c\n    e:f32[13,3] = exp d\n    f:f32[13,3] = add b e\n  in (f,) }",
+  "stablehlo": "module @jit_composite_zknd attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<13x3xf32>) -> (tensor<13x3xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.sine %arg0 : tensor<13x3xf32>\n    %1 = stablehlo.abs %arg0 : tensor<13x3xf32>\n    %2 = stablehlo.negate %1 : tensor<13x3xf32>\n    %3 = stablehlo.exponential %2 : tensor<13x3xf32>\n    %4 = stablehlo.add %0, %3 : tensor<13x3xf32>\n    return %4 : tensor<13x3xf32>\n  }\n}\n",
+  "xla_hlo": "HloModule jit_composite_zknd, entry_computation_layout={(f32[13,3]{1,0})->f32[13,3]{1,0}}\n\nENTRY main.1 {\n  x.1 = f32[13,3]{1,0} parameter(0)\n  sin.1 = f32[13,3]{1,0} sine(x.1)\n  abs.1 = f32[13,3]{1,0} abs(x.1)\n  neg.1 = f32[13,3]{1,0} negate(abs.1)\n  exp.1 = f32[13,3]{1,0} exponential(neg.1)\n  ROOT add.1 = f32[13,3]{1,0} add(sin.1, exp.1)\n}\n\n",
+  "input_shapes": [
+    [
+      13,
+      3
+    ]
+  ],
+  "output_shape": [
+    13,
+    3
+  ]
+}

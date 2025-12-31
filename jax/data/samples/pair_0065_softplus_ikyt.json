@@ -1,0 +1,17 @@
+{
+  "name": "softplus_ikyt",
+  "python_source": "def softplus_ikyt(x):\n    \"\"\"Softplus operation.\"\"\"\n    return jax.nn.softplus(x)",
+  "jaxpr": "{ lambda ; a:f32[5,7]. let\n    b:f32[5,7] = jit[\n      name=softplus\n      jaxpr={ lambda ; a:f32[5,7]. let\n          b:f32[5,7] = custom_jvp_call[\n            name=logaddexp\n            call_jaxpr={ lambda ; c:f32[5,7] d:f32[]. let\n                e:f32[5,7] = max c d\n                f:f32[5,7] = sub c d\n                g:bool[5,7] = ne f f\n                h:f32[5,7] = add c d\n                i:f32[5,7] = abs f\n                j:f32[5,7] = neg i\n                k:f32[5,7] = exp j\n                l:f32[5,7] = log1p k\n                m:f32[5,7] = add e l\n                n:f32[5,7] = select_n g m h\n              in (n,) }\n            jvp=_logaddexp_jvp\n            symbolic_zeros=False\n          ] a 0.0:f32[]\n        in (b,) }\n    ] a\n  in (b,) }",
+  "stablehlo": "module @jit_softplus_ikyt attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<5x7xf32>) -> (tensor<5x7xf32> {jax.result_info = \"result\"}) {\n    %0 = call @softplus(%arg0) : (tensor<5x7xf32>) -> tensor<5x7xf32>\n    return %0 : tensor<5x7xf32>\n  }\n  func.func private @softplus(%arg0: tensor<5x7xf32>) -> tensor<5x7xf32> {\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %0 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<5x7xf32>\n    %1 = stablehlo.maximum %arg0, %0 : tensor<5x7xf32>\n    %2 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<5x7xf32>\n    %3 = stablehlo.subtract %arg0, %2 : tensor<5x7xf32>\n    %4 = stablehlo.compare  NE, %3, %3,  FLOAT : (tensor<5x7xf32>, tensor<5x7xf32>) -> tensor<5x7xi1>\n    %5 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<5x7xf32>\n    %6 = stablehlo.add %arg0, %5 : tensor<5x7xf32>\n    %7 = stablehlo.abs %3 : tensor<5x7xf32>\n    %8 = stablehlo.negate %7 : tensor<5x7xf32>\n    %9 = stablehlo.exponential %8 : tensor<5x7xf32>\n    %10 = stablehlo.log_plus_one %9 : tensor<5x7xf32>\n    %11 = stablehlo.add %1, %10 : tensor<5x7xf32>\n    %12 = stablehlo.select %4, %6, %11 : tensor<5x7xi1>, tensor<5x7xf32>\n    return %12 : tensor<5x7xf32>\n  }\n}\n",
+  "xla_hlo": "HloModule jit_softplus_ikyt, entry_computation_layout={(f32[5,7]{1,0})->f32[5,7]{1,0}}\n\nsoftplus.1 {\n  Arg_0.1 = f32[5,7]{1,0} parameter(0)\n  ne.1 = pred[5,7]{1,0} compare(Arg_0.1, Arg_0.1), direction=NE\n  constant.1 = f32[] constant(0)\n  max.2 = f32[5,7]{1,0} broadcast(constant.1), dimensions={}\n  max.3 = f32[5,7]{1,0} maximum(Arg_0.1, max.2)\n  abs.1 = f32[5,7]{1,0} abs(Arg_0.1)\n  neg.1 = f32[5,7]{1,0} negate(abs.1)\n  exp.1 = f32[5,7]{1,0} exponential(neg.1)\n  log1p.1 = f32[5,7]{1,0} log-plus-one(exp.1)\n  add.1 = f32[5,7]{1,0} add(max.3, log1p.1)\n  ROOT select_n.1 = f32[5,7]{1,0} select(ne.1, Arg_0.1, add.1)\n}\n\nENTRY main.2 {\n  x.1 = f32[5,7]{1,0} parameter(0)\n  ROOT jit_softplus_.1 = f32[5,7]{1,0} call(x.1), to_apply=softplus.1\n}\n\n",
+  "input_shapes": [
+    [
+      5,
+      7
+    ]
+  ],
+  "output_shape": [
+    5,
+    7
+  ]
+}

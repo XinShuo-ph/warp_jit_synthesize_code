@@ -1,0 +1,24 @@
+{
+  "name": "nn_layer_vxlx",
+  "python_source": "def nn_layer_vxlx(x, w, b):\n    \"\"\"Neural network layer with relu activation.\"\"\"\n    return jax.nn.relu(jnp.dot(x, w) + b)",
+  "jaxpr": "{ lambda ; a:f32[7,31] b:f32[31,9] c:f32[9]. let\n    d:f32[7,9] = dot_general[\n      dimension_numbers=(([1], [0]), ([], []))\n      preferred_element_type=float32\n    ] a b\n    e:f32[1,9] = broadcast_in_dim[\n      broadcast_dimensions=(1,)\n      shape=(1, 9)\n      sharding=None\n    ] c\n    f:f32[7,9] = add d e\n    g:f32[7,9] = custom_jvp_call[\n      name=relu\n      call_jaxpr={ lambda ; h:f32[7,9]. let\n          i:f32[7,9] = jit[\n            name=relu\n            jaxpr={ lambda ; h:f32[7,9]. let\n                i:f32[7,9] = max h 0.0:f32[]\n              in (i,) }\n          ] h\n        in (i,) }\n      jvp=jvp\n      symbolic_zeros=False\n    ] f\n  in (g,) }",
+  "stablehlo": "module @jit_nn_layer_vxlx attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<7x31xf32>, %arg1: tensor<31x9xf32>, %arg2: tensor<9xf32>) -> (tensor<7x9xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.dot_general %arg0, %arg1, contracting_dims = [1] x [0], precision = [DEFAULT, DEFAULT] : (tensor<7x31xf32>, tensor<31x9xf32>) -> tensor<7x9xf32>\n    %1 = stablehlo.broadcast_in_dim %arg2, dims = [1] : (tensor<9xf32>) -> tensor<1x9xf32>\n    %2 = stablehlo.broadcast_in_dim %1, dims = [0, 1] : (tensor<1x9xf32>) -> tensor<7x9xf32>\n    %3 = stablehlo.add %0, %2 : tensor<7x9xf32>\n    %4 = call @relu(%3) : (tensor<7x9xf32>) -> tensor<7x9xf32>\n    return %4 : tensor<7x9xf32>\n  }\n  func.func private @relu(%arg0: tensor<7x9xf32>) -> tensor<7x9xf32> {\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %0 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<7x9xf32>\n    %1 = stablehlo.maximum %arg0, %0 : tensor<7x9xf32>\n    return %1 : tensor<7x9xf32>\n  }\n}\n",
+  "xla_hlo": "HloModule jit_nn_layer_vxlx, entry_computation_layout={(f32[7,31]{1,0}, f32[31,9]{1,0}, f32[9]{0})->f32[7,9]{1,0}}\n\nrelu.1 {\n  Arg_0.1 = f32[7,9]{1,0} parameter(0)\n  constant.1 = f32[] constant(0)\n  max.2 = f32[7,9]{1,0} broadcast(constant.1), dimensions={}\n  ROOT max.3 = f32[7,9]{1,0} maximum(Arg_0.1, max.2)\n}\n\nENTRY main.2 {\n  x.1 = f32[7,31]{1,0} parameter(0)\n  w.1 = f32[31,9]{1,0} parameter(1)\n  dot_general.1 = f32[7,9]{1,0} dot(x.1, w.1), lhs_contracting_dims={1}, rhs_contracting_dims={0}\n  b.1 = f32[9]{0} parameter(2)\n  broadcast_in_dim.1 = f32[1,9]{1,0} reshape(b.1)\n  add.4 = f32[1,9]{1,0} broadcast(broadcast_in_dim.1), dimensions={0,1}\n  add.5 = f32[9]{0} reshape(add.4)\n  add.6 = f32[7,9]{1,0} broadcast(add.5), dimensions={1}\n  add.7 = f32[7,9]{1,0} add(dot_general.1, add.6)\n  ROOT jit_relu_.1 = f32[7,9]{1,0} call(add.7), to_apply=relu.1\n}\n\n",
+  "input_shapes": [
+    [
+      7,
+      31
+    ],
+    [
+      31,
+      9
+    ],
+    [
+      9
+    ]
+  ],
+  "output_shape": [
+    7,
+    9
+  ]
+}

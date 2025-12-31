@@ -1,0 +1,19 @@
+{
+  "name": "exp_jpay",
+  "python_source": "def exp_jpay(x):\n    \"\"\"Exponential operation.\"\"\"\n    return jnp.exp(x)",
+  "jaxpr": "{ lambda ; a:f32[10,10,4]. let b:f32[10,10,4] = exp a in (b,) }",
+  "stablehlo": "module @jit_exp_jpay attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<10x10x4xf32>) -> (tensor<10x10x4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.exponential %arg0 : tensor<10x10x4xf32>\n    return %0 : tensor<10x10x4xf32>\n  }\n}\n",
+  "xla_hlo": "HloModule jit_exp_jpay, entry_computation_layout={(f32[10,10,4]{2,1,0})->f32[10,10,4]{2,1,0}}\n\nENTRY main.1 {\n  x.1 = f32[10,10,4]{2,1,0} parameter(0)\n  ROOT exp.1 = f32[10,10,4]{2,1,0} exponential(x.1)\n}\n\n",
+  "input_shapes": [
+    [
+      10,
+      10,
+      4
+    ]
+  ],
+  "output_shape": [
+    10,
+    10,
+    4
+  ]
+}

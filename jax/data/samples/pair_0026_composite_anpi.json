@@ -1,0 +1,17 @@
+{
+  "name": "composite_anpi",
+  "python_source": "def composite_anpi(x):\n    \"\"\"Composite function with multiple operations.\"\"\"\n    return x ** 2 + jnp.exp(-jnp.abs(x))",
+  "jaxpr": "{ lambda ; a:f32[14,14]. let\n    b:f32[14,14] = integer_pow[y=2] a\n    c:f32[14,14] = abs a\n    d:f32[14,14] = neg c\n    e:f32[14,14] = exp d\n    f:f32[14,14] = add b e\n  in (f,) }",
+  "stablehlo": "module @jit_composite_anpi attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<14x14xf32>) -> (tensor<14x14xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.multiply %arg0, %arg0 : tensor<14x14xf32>\n    %1 = stablehlo.abs %arg0 : tensor<14x14xf32>\n    %2 = stablehlo.negate %1 : tensor<14x14xf32>\n    %3 = stablehlo.exponential %2 : tensor<14x14xf32>\n    %4 = stablehlo.add %0, %3 : tensor<14x14xf32>\n    return %4 : tensor<14x14xf32>\n  }\n}\n",
+  "xla_hlo": "HloModule jit_composite_anpi, entry_computation_layout={(f32[14,14]{1,0})->f32[14,14]{1,0}}\n\nENTRY main.1 {\n  x.1 = f32[14,14]{1,0} parameter(0)\n  integer_pow.1 = f32[14,14]{1,0} multiply(x.1, x.1)\n  abs.1 = f32[14,14]{1,0} abs(x.1)\n  neg.1 = f32[14,14]{1,0} negate(abs.1)\n  exp.1 = f32[14,14]{1,0} exponential(neg.1)\n  ROOT add.1 = f32[14,14]{1,0} add(integer_pow.1, exp.1)\n}\n\n",
+  "input_shapes": [
+    [
+      14,
+      14
+    ]
+  ],
+  "output_shape": [
+    14,
+    14
+  ]
+}

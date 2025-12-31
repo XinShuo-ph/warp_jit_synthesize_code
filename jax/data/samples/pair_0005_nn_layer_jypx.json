@@ -1,0 +1,24 @@
+{
+  "name": "nn_layer_jypx",
+  "python_source": "def nn_layer_jypx(x, w, b):\n    \"\"\"Neural network layer with sigmoid activation.\"\"\"\n    return jax.nn.sigmoid(jnp.dot(x, w) + b)",
+  "jaxpr": "{ lambda ; a:f32[6,29] b:f32[29,5] c:f32[5]. let\n    d:f32[6,5] = dot_general[\n      dimension_numbers=(([1], [0]), ([], []))\n      preferred_element_type=float32\n    ] a b\n    e:f32[1,5] = broadcast_in_dim[\n      broadcast_dimensions=(1,)\n      shape=(1, 5)\n      sharding=None\n    ] c\n    f:f32[6,5] = add d e\n    g:f32[6,5] = logistic f\n  in (g,) }",
+  "stablehlo": "module @jit_nn_layer_jypx attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<6x29xf32>, %arg1: tensor<29x5xf32>, %arg2: tensor<5xf32>) -> (tensor<6x5xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.dot_general %arg0, %arg1, contracting_dims = [1] x [0], precision = [DEFAULT, DEFAULT] : (tensor<6x29xf32>, tensor<29x5xf32>) -> tensor<6x5xf32>\n    %1 = stablehlo.broadcast_in_dim %arg2, dims = [1] : (tensor<5xf32>) -> tensor<1x5xf32>\n    %2 = stablehlo.broadcast_in_dim %1, dims = [0, 1] : (tensor<1x5xf32>) -> tensor<6x5xf32>\n    %3 = stablehlo.add %0, %2 : tensor<6x5xf32>\n    %4 = stablehlo.negate %3 : tensor<6x5xf32>\n    %5 = stablehlo.exponential %4 : tensor<6x5xf32>\n    %cst = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %6 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<6x5xf32>\n    %7 = stablehlo.add %6, %5 : tensor<6x5xf32>\n    %cst_0 = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %8 = stablehlo.broadcast_in_dim %cst_0, dims = [] : (tensor<f32>) -> tensor<6x5xf32>\n    %9 = stablehlo.divide %8, %7 : tensor<6x5xf32>\n    return %9 : tensor<6x5xf32>\n  }\n}\n",
+  "xla_hlo": "HloModule jit_nn_layer_jypx, entry_computation_layout={(f32[6,29]{1,0}, f32[29,5]{1,0}, f32[5]{0})->f32[6,5]{1,0}}\n\nENTRY main.1 {\n  constant.1 = f32[] constant(1)\n  broadcast.1 = f32[6,5]{1,0} broadcast(constant.1), dimensions={}\n  x.1 = f32[6,29]{1,0} parameter(0)\n  w.1 = f32[29,5]{1,0} parameter(1)\n  dot_general.1 = f32[6,5]{1,0} dot(x.1, w.1), lhs_contracting_dims={1}, rhs_contracting_dims={0}\n  b.1 = f32[5]{0} parameter(2)\n  broadcast_in_dim.1 = f32[1,5]{1,0} reshape(b.1)\n  add.5 = f32[1,5]{1,0} broadcast(broadcast_in_dim.1), dimensions={0,1}\n  add.6 = f32[5]{0} reshape(add.5)\n  add.7 = f32[6,5]{1,0} broadcast(add.6), dimensions={1}\n  add.8 = f32[6,5]{1,0} add(dot_general.1, add.7)\n  neg.1 = f32[6,5]{1,0} negate(add.8)\n  exp.1 = f32[6,5]{1,0} exponential(neg.1)\n  add.9 = f32[6,5]{1,0} add(exp.1, broadcast.1)\n  ROOT div.1 = f32[6,5]{1,0} divide(broadcast.1, add.9)\n}\n\n",
+  "input_shapes": [
+    [
+      6,
+      29
+    ],
+    [
+      29,
+      5
+    ],
+    [
+      5
+    ]
+  ],
+  "output_shape": [
+    6,
+    5
+  ]
+}

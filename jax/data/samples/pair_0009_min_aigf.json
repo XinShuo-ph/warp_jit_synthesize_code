@@ -1,0 +1,24 @@
+{
+  "name": "min_aigf",
+  "python_source": "def min_aigf(x, y):\n    \"\"\"Element-wise min operation.\"\"\"\n    return jnp.minimum(x, y)",
+  "jaxpr": "{ lambda ; a:f32[16,13,7] b:f32[16,13,7]. let c:f32[16,13,7] = min a b in (c,) }",
+  "stablehlo": "module @jit_min_aigf attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<16x13x7xf32>, %arg1: tensor<16x13x7xf32>) -> (tensor<16x13x7xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.minimum %arg0, %arg1 : tensor<16x13x7xf32>\n    return %0 : tensor<16x13x7xf32>\n  }\n}\n",
+  "xla_hlo": "HloModule jit_min_aigf, entry_computation_layout={(f32[16,13,7]{2,1,0}, f32[16,13,7]{2,1,0})->f32[16,13,7]{2,1,0}}\n\nENTRY main.1 {\n  x.1 = f32[16,13,7]{2,1,0} parameter(0)\n  y.1 = f32[16,13,7]{2,1,0} parameter(1)\n  ROOT min.1 = f32[16,13,7]{2,1,0} minimum(x.1, y.1)\n}\n\n",
+  "input_shapes": [
+    [
+      16,
+      13,
+      7
+    ],
+    [
+      16,
+      13,
+      7
+    ]
+  ],
+  "output_shape": [
+    16,
+    13,
+    7
+  ]
+}

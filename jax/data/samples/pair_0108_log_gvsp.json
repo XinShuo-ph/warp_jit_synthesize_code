@@ -1,0 +1,15 @@
+{
+  "name": "log_gvsp",
+  "python_source": "def log_gvsp(x):\n    \"\"\"Log (with safety) operation.\"\"\"\n    return jnp.log(jnp.abs(x) + 1e-6)",
+  "jaxpr": "{ lambda ; a:f32[12]. let\n    b:f32[12] = abs a\n    c:f32[12] = add b 9.999999974752427e-07:f32[]\n    d:f32[12] = log c\n  in (d,) }",
+  "stablehlo": "module @jit_log_gvsp attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<12xf32>) -> (tensor<12xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.abs %arg0 : tensor<12xf32>\n    %cst = stablehlo.constant dense<9.99999997E-7> : tensor<f32>\n    %1 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<12xf32>\n    %2 = stablehlo.add %0, %1 : tensor<12xf32>\n    %3 = stablehlo.log %2 : tensor<12xf32>\n    return %3 : tensor<12xf32>\n  }\n}\n",
+  "xla_hlo": "HloModule jit_log_gvsp, entry_computation_layout={(f32[12]{0})->f32[12]{0}}\n\nENTRY main.1 {\n  x.1 = f32[12]{0} parameter(0)\n  abs.1 = f32[12]{0} abs(x.1)\n  constant.1 = f32[] constant(1e-06)\n  broadcast.1 = f32[12]{0} broadcast(constant.1), dimensions={}\n  add.1 = f32[12]{0} add(abs.1, broadcast.1)\n  ROOT log.1 = f32[12]{0} log(add.1)\n}\n\n",
+  "input_shapes": [
+    [
+      12
+    ]
+  ],
+  "output_shape": [
+    12
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "name": "prod_gzfj",
+  "python_source": "def prod_gzfj(x):\n    \"\"\"Product reduction along axis 1.\"\"\"\n    return jnp.prod(x, axis=1)",
+  "jaxpr": "{ lambda ; a:f32[9,12,8,10]. let\n    b:f32[9,8,10] = reduce_prod[axes=(1,)] a\n  in (b,) }",
+  "stablehlo": "module @jit_prod_gzfj attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<9x12x8x10xf32>) -> (tensor<9x8x10xf32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %0 = stablehlo.reduce(%arg0 init: %cst) applies stablehlo.multiply across dimensions = [1] : (tensor<9x12x8x10xf32>, tensor<f32>) -> tensor<9x8x10xf32>\n    return %0 : tensor<9x8x10xf32>\n  }\n}\n",
+  "xla_hlo": "HloModule jit_prod_gzfj, entry_computation_layout={(f32[9,12,8,10]{3,2,1,0})->f32[9,8,10]{2,1,0}}\n\nregion_0.1 {\n  reduce_prod.3 = f32[] parameter(0)\n  reduce_prod.4 = f32[] parameter(1)\n  ROOT reduce_prod.5 = f32[] multiply(reduce_prod.3, reduce_prod.4)\n}\n\nENTRY main.2 {\n  x.1 = f32[9,12,8,10]{3,2,1,0} parameter(0)\n  constant.1 = f32[] constant(1)\n  ROOT reduce_prod.7 = f32[9,8,10]{2,1,0} reduce(x.1, constant.1), dimensions={1}, to_apply=region_0.1\n}\n\n",
+  "input_shapes": [
+    [
+      9,
+      12,
+      8,
+      10
+    ]
+  ],
+  "output_shape": [
+    9,
+    8,
+    10
+  ]
+}

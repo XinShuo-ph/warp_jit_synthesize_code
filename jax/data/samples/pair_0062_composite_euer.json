@@ -1,0 +1,17 @@
+{
+  "name": "composite_euer",
+  "python_source": "def composite_euer(x):\n    \"\"\"Composite function with multiple operations.\"\"\"\n    return x ** 2 + jnp.tanh(x)",
+  "jaxpr": "{ lambda ; a:f32[11,3]. let\n    b:f32[11,3] = integer_pow[y=2] a\n    c:f32[11,3] = tanh a\n    d:f32[11,3] = add b c\n  in (d,) }",
+  "stablehlo": "module @jit_composite_euer attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<11x3xf32>) -> (tensor<11x3xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.multiply %arg0, %arg0 : tensor<11x3xf32>\n    %1 = stablehlo.tanh %arg0 : tensor<11x3xf32>\n    %2 = stablehlo.add %0, %1 : tensor<11x3xf32>\n    return %2 : tensor<11x3xf32>\n  }\n}\n",
+  "xla_hlo": "HloModule jit_composite_euer, entry_computation_layout={(f32[11,3]{1,0})->f32[11,3]{1,0}}\n\nENTRY main.1 {\n  x.1 = f32[11,3]{1,0} parameter(0)\n  integer_pow.1 = f32[11,3]{1,0} multiply(x.1, x.1)\n  tanh.1 = f32[11,3]{1,0} tanh(x.1)\n  ROOT add.1 = f32[11,3]{1,0} add(integer_pow.1, tanh.1)\n}\n\n",
+  "input_shapes": [
+    [
+      11,
+      3
+    ]
+  ],
+  "output_shape": [
+    11,
+    3
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "composite_tbcs",
+  "python_source": "def composite_tbcs(x):\n    \"\"\"Composite function with multiple operations.\"\"\"\n    return jnp.tanh(x) + jnp.sin(x)",
+  "jaxpr": "{ lambda ; a:f32[4,16]. let\n    b:f32[4,16] = tanh a\n    c:f32[4,16] = sin a\n    d:f32[4,16] = add b c\n  in (d,) }",
+  "stablehlo": "module @jit_composite_tbcs attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4x16xf32>) -> (tensor<4x16xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.tanh %arg0 : tensor<4x16xf32>\n    %1 = stablehlo.sine %arg0 : tensor<4x16xf32>\n    %2 = stablehlo.add %0, %1 : tensor<4x16xf32>\n    return %2 : tensor<4x16xf32>\n  }\n}\n",
+  "xla_hlo": "HloModule jit_composite_tbcs, entry_computation_layout={(f32[4,16]{1,0})->f32[4,16]{1,0}}\n\nENTRY main.1 {\n  x.1 = f32[4,16]{1,0} parameter(0)\n  tanh.1 = f32[4,16]{1,0} tanh(x.1)\n  sin.1 = f32[4,16]{1,0} sine(x.1)\n  ROOT add.1 = f32[4,16]{1,0} add(tanh.1, sin.1)\n}\n\n",
+  "input_shapes": [
+    [
+      4,
+      16
+    ]
+  ],
+  "output_shape": [
+    4,
+    16
+  ]
+}

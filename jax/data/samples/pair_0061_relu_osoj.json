@@ -1,0 +1,15 @@
+{
+  "name": "relu_osoj",
+  "python_source": "def relu_osoj(x):\n    \"\"\"ReLU activation operation.\"\"\"\n    return jax.nn.relu(x)",
+  "jaxpr": "{ lambda ; a:f32[12]. let\n    b:f32[12] = custom_jvp_call[\n      name=relu\n      call_jaxpr={ lambda ; c:f32[12]. let\n          d:f32[12] = jit[\n            name=relu\n            jaxpr={ lambda ; c:f32[12]. let\n                d:f32[12] = max c 0.0:f32[]\n              in (d,) }\n          ] c\n        in (d,) }\n      jvp=jvp\n      symbolic_zeros=False\n    ] a\n  in (b,) }",
+  "stablehlo": "module @jit_relu_osoj attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<12xf32>) -> (tensor<12xf32> {jax.result_info = \"result\"}) {\n    %0 = call @relu(%arg0) : (tensor<12xf32>) -> tensor<12xf32>\n    return %0 : tensor<12xf32>\n  }\n  func.func private @relu(%arg0: tensor<12xf32>) -> tensor<12xf32> {\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %0 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<12xf32>\n    %1 = stablehlo.maximum %arg0, %0 : tensor<12xf32>\n    return %1 : tensor<12xf32>\n  }\n}\n",
+  "xla_hlo": "HloModule jit_relu_osoj, entry_computation_layout={(f32[12]{0})->f32[12]{0}}\n\nrelu.1 {\n  Arg_0.1 = f32[12]{0} parameter(0)\n  constant.1 = f32[] constant(0)\n  broadcast.1 = f32[12]{0} broadcast(constant.1), dimensions={}\n  ROOT max.1 = f32[12]{0} maximum(Arg_0.1, broadcast.1)\n}\n\nENTRY main.2 {\n  x.1 = f32[12]{0} parameter(0)\n  ROOT jit_relu_.1 = f32[12]{0} call(x.1), to_apply=relu.1\n}\n\n",
+  "input_shapes": [
+    [
+      12
+    ]
+  ],
+  "output_shape": [
+    12
+  ]
+}

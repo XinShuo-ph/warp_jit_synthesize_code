@@ -1,0 +1,24 @@
+{
+  "name": "nn_layer_mepu",
+  "python_source": "def nn_layer_mepu(x, w, b):\n    \"\"\"Neural network layer with gelu activation.\"\"\"\n    return jax.nn.gelu(jnp.dot(x, w) + b)",
+  "jaxpr": "{ lambda ; a:f32[2,12] b:f32[12,20] c:f32[20]. let\n    d:f32[2,20] = dot_general[\n      dimension_numbers=(([1], [0]), ([], []))\n      preferred_element_type=float32\n    ] a b\n    e:f32[1,20] = broadcast_in_dim[\n      broadcast_dimensions=(1,)\n      shape=(1, 20)\n      sharding=None\n    ] c\n    f:f32[2,20] = add d e\n    g:f32[2,20] = integer_pow[y=3] f\n    h:f32[2,20] = mul 0.044714998453855515:f32[] g\n    i:f32[2,20] = add f h\n    j:f32[2,20] = mul 0.7978845834732056:f32[] i\n    k:f32[2,20] = tanh j\n    l:f32[2,20] = add 1.0:f32[] k\n    m:f32[2,20] = mul 0.5:f32[] l\n    n:f32[2,20] = mul f m\n  in (n,) }",
+  "stablehlo": "module @jit_nn_layer_mepu attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2x12xf32>, %arg1: tensor<12x20xf32>, %arg2: tensor<20xf32>) -> (tensor<2x20xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.dot_general %arg0, %arg1, contracting_dims = [1] x [0], precision = [DEFAULT, DEFAULT] : (tensor<2x12xf32>, tensor<12x20xf32>) -> tensor<2x20xf32>\n    %1 = stablehlo.broadcast_in_dim %arg2, dims = [1] : (tensor<20xf32>) -> tensor<1x20xf32>\n    %2 = stablehlo.broadcast_in_dim %1, dims = [0, 1] : (tensor<1x20xf32>) -> tensor<2x20xf32>\n    %3 = stablehlo.add %0, %2 : tensor<2x20xf32>\n    %4 = stablehlo.multiply %3, %3 : tensor<2x20xf32>\n    %5 = stablehlo.multiply %4, %3 : tensor<2x20xf32>\n    %cst = stablehlo.constant dense<4.471500e-02> : tensor<f32>\n    %6 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<2x20xf32>\n    %7 = stablehlo.multiply %6, %5 : tensor<2x20xf32>\n    %8 = stablehlo.add %3, %7 : tensor<2x20xf32>\n    %cst_0 = stablehlo.constant dense<0.797884583> : tensor<f32>\n    %9 = stablehlo.broadcast_in_dim %cst_0, dims = [] : (tensor<f32>) -> tensor<2x20xf32>\n    %10 = stablehlo.multiply %9, %8 : tensor<2x20xf32>\n    %11 = stablehlo.tanh %10 : tensor<2x20xf32>\n    %cst_1 = stablehlo.constant dense<1.000000e+00> : tensor<f32>\n    %12 = stablehlo.broadcast_in_dim %cst_1, dims = [] : (tensor<f32>) -> tensor<2x20xf32>\n    %13 = stablehlo.add %12, %11 : tensor<2x20xf32>\n    %cst_2 = stablehlo.constant dense<5.000000e-01> : tensor<f32>\n    %14 = stablehlo.broadcast_in_dim %cst_2, dims = [] : (tensor<f32>) -> tensor<2x20xf32>\n    %15 = stablehlo.multiply %14, %13 : tensor<2x20xf32>\n    %16 = stablehlo.multiply %3, %15 : tensor<2x20xf32>\n    return %16 : tensor<2x20xf32>\n  }\n}\n",
+  "xla_hlo": "HloModule jit_nn_layer_mepu, entry_computation_layout={(f32[2,12]{1,0}, f32[12,20]{1,0}, f32[20]{0})->f32[2,20]{1,0}}\n\nENTRY main.1 {\n  x.1 = f32[2,12]{1,0} parameter(0)\n  w.1 = f32[12,20]{1,0} parameter(1)\n  dot_general.1 = f32[2,20]{1,0} dot(x.1, w.1), lhs_contracting_dims={1}, rhs_contracting_dims={0}\n  b.1 = f32[20]{0} parameter(2)\n  broadcast_in_dim.1 = f32[1,20]{1,0} reshape(b.1)\n  add.8 = f32[1,20]{1,0} broadcast(broadcast_in_dim.1), dimensions={0,1}\n  add.9 = f32[20]{0} reshape(add.8)\n  add.10 = f32[2,20]{1,0} broadcast(add.9), dimensions={1}\n  add.11 = f32[2,20]{1,0} add(dot_general.1, add.10)\n  integer_pow.2 = f32[2,20]{1,0} multiply(add.11, add.11)\n  integer_pow.3 = f32[2,20]{1,0} multiply(integer_pow.2, add.11)\n  constant.7 = f32[] constant(0.044715)\n  mul.9 = f32[2,20]{1,0} broadcast(constant.7), dimensions={}\n  mul.10 = f32[2,20]{1,0} multiply(integer_pow.3, mul.9)\n  add.12 = f32[2,20]{1,0} add(add.11, mul.10)\n  constant.6 = f32[] constant(0.797884583)\n  mul.8 = f32[2,20]{1,0} broadcast(constant.6), dimensions={}\n  mul.11 = f32[2,20]{1,0} multiply(add.12, mul.8)\n  tanh.1 = f32[2,20]{1,0} tanh(mul.11)\n  constant.5 = f32[] constant(1)\n  add.7 = f32[2,20]{1,0} broadcast(constant.5), dimensions={}\n  add.13 = f32[2,20]{1,0} add(tanh.1, add.7)\n  constant.4 = f32[] constant(0.5)\n  mul.7 = f32[2,20]{1,0} broadcast(constant.4), dimensions={}\n  mul.12 = f32[2,20]{1,0} multiply(add.13, mul.7)\n  ROOT mul.13 = f32[2,20]{1,0} multiply(add.11, mul.12)\n}\n\n",
+  "input_shapes": [
+    [
+      2,
+      12
+    ],
+    [
+      12,
+      20
+    ],
+    [
+      20
+    ]
+  ],
+  "output_shape": [
+    2,
+    20
+  ]
+}

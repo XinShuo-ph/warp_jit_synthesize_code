@@ -1,0 +1,20 @@
+{
+  "name": "vmap_jjfg",
+  "python_source": "def vmap_jjfg(a_batch, b_batch):\n    \"\"\"Batched operation using vmap.\"\"\"\n    def inner(a, b):\n        return jnp.dot(a, b)\n    return jax.vmap(inner)(a_batch, b_batch)",
+  "jaxpr": "{ lambda ; a:f32[7,14] b:f32[7,14]. let\n    c:f32[7] = dot_general[\n      dimension_numbers=(([1], [1]), ([0], [0]))\n      preferred_element_type=float32\n    ] a b\n  in (c,) }",
+  "stablehlo": "module @jit_vmap_jjfg attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<7x14xf32>, %arg1: tensor<7x14xf32>) -> (tensor<7xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.dot_general %arg0, %arg1, batching_dims = [0] x [0], contracting_dims = [1] x [1], precision = [DEFAULT, DEFAULT] : (tensor<7x14xf32>, tensor<7x14xf32>) -> tensor<7xf32>\n    return %0 : tensor<7xf32>\n  }\n}\n",
+  "xla_hlo": "HloModule jit_vmap_jjfg, entry_computation_layout={(f32[7,14]{1,0}, f32[7,14]{1,0})->f32[7]{0}}\n\nENTRY main.1 {\n  a_batch.1 = f32[7,14]{1,0} parameter(0)\n  b_batch.1 = f32[7,14]{1,0} parameter(1)\n  ROOT dot_general.1 = f32[7]{0} dot(a_batch.1, b_batch.1), lhs_batch_dims={0}, lhs_contracting_dims={1}, rhs_batch_dims={0}, rhs_contracting_dims={1}\n}\n\n",
+  "input_shapes": [
+    [
+      7,
+      14
+    ],
+    [
+      7,
+      14
+    ]
+  ],
+  "output_shape": [
+    7
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "sin_wiio",
+  "python_source": "def sin_wiio(x):\n    \"\"\"Sine operation.\"\"\"\n    return jnp.sin(x)",
+  "jaxpr": "{ lambda ; a:f32[6,12]. let b:f32[6,12] = sin a in (b,) }",
+  "stablehlo": "module @jit_sin_wiio attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<6x12xf32>) -> (tensor<6x12xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.sine %arg0 : tensor<6x12xf32>\n    return %0 : tensor<6x12xf32>\n  }\n}\n",
+  "xla_hlo": "HloModule jit_sin_wiio, entry_computation_layout={(f32[6,12]{1,0})->f32[6,12]{1,0}}\n\nENTRY main.1 {\n  x.1 = f32[6,12]{1,0} parameter(0)\n  ROOT sin.1 = f32[6,12]{1,0} sine(x.1)\n}\n\n",
+  "input_shapes": [
+    [
+      6,
+      12
+    ]
+  ],
+  "output_shape": [
+    6,
+    12
+  ]
+}

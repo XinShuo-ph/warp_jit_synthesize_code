@@ -1,0 +1,15 @@
+{
+  "name": "softplus_futo",
+  "python_source": "def softplus_futo(x):\n    \"\"\"Softplus operation.\"\"\"\n    return jax.nn.softplus(x)",
+  "jaxpr": "{ lambda ; a:f32[3]. let\n    b:f32[3] = jit[\n      name=softplus\n      jaxpr={ lambda ; a:f32[3]. let\n          b:f32[3] = custom_jvp_call[\n            name=logaddexp\n            call_jaxpr={ lambda ; c:f32[3] d:f32[]. let\n                e:f32[3] = max c d\n                f:f32[3] = sub c d\n                g:bool[3] = ne f f\n                h:f32[3] = add c d\n                i:f32[3] = abs f\n                j:f32[3] = neg i\n                k:f32[3] = exp j\n                l:f32[3] = log1p k\n                m:f32[3] = add e l\n                n:f32[3] = select_n g m h\n              in (n,) }\n            jvp=_logaddexp_jvp\n            symbolic_zeros=False\n          ] a 0.0:f32[]\n        in (b,) }\n    ] a\n  in (b,) }",
+  "stablehlo": "module @jit_softplus_futo attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<3xf32>) -> (tensor<3xf32> {jax.result_info = \"result\"}) {\n    %0 = call @softplus(%arg0) : (tensor<3xf32>) -> tensor<3xf32>\n    return %0 : tensor<3xf32>\n  }\n  func.func private @softplus(%arg0: tensor<3xf32>) -> tensor<3xf32> {\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %0 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<3xf32>\n    %1 = stablehlo.maximum %arg0, %0 : tensor<3xf32>\n    %2 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<3xf32>\n    %3 = stablehlo.subtract %arg0, %2 : tensor<3xf32>\n    %4 = stablehlo.compare  NE, %3, %3,  FLOAT : (tensor<3xf32>, tensor<3xf32>) -> tensor<3xi1>\n    %5 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<3xf32>\n    %6 = stablehlo.add %arg0, %5 : tensor<3xf32>\n    %7 = stablehlo.abs %3 : tensor<3xf32>\n    %8 = stablehlo.negate %7 : tensor<3xf32>\n    %9 = stablehlo.exponential %8 : tensor<3xf32>\n    %10 = stablehlo.log_plus_one %9 : tensor<3xf32>\n    %11 = stablehlo.add %1, %10 : tensor<3xf32>\n    %12 = stablehlo.select %4, %6, %11 : tensor<3xi1>, tensor<3xf32>\n    return %12 : tensor<3xf32>\n  }\n}\n",
+  "xla_hlo": "HloModule jit_softplus_futo, entry_computation_layout={(f32[3]{0})->f32[3]{0}}\n\nsoftplus.1 {\n  Arg_0.1 = f32[3]{0} parameter(0)\n  ne.1 = pred[3]{0} compare(Arg_0.1, Arg_0.1), direction=NE\n  constant.1 = f32[] constant(0)\n  broadcast.1 = f32[3]{0} broadcast(constant.1), dimensions={}\n  max.1 = f32[3]{0} maximum(Arg_0.1, broadcast.1)\n  abs.1 = f32[3]{0} abs(Arg_0.1)\n  neg.1 = f32[3]{0} negate(abs.1)\n  exp.1 = f32[3]{0} exponential(neg.1)\n  log1p.1 = f32[3]{0} log-plus-one(exp.1)\n  add.1 = f32[3]{0} add(max.1, log1p.1)\n  ROOT select_n.1 = f32[3]{0} select(ne.1, Arg_0.1, add.1)\n}\n\nENTRY main.2 {\n  x.1 = f32[3]{0} parameter(0)\n  ROOT jit_softplus_.1 = f32[3]{0} call(x.1), to_apply=softplus.1\n}\n\n",
+  "input_shapes": [
+    [
+      3
+    ]
+  ],
+  "output_shape": [
+    3
+  ]
+}

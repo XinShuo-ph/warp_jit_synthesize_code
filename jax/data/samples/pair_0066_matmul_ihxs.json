@@ -1,0 +1,21 @@
+{
+  "name": "matmul_ihxs",
+  "python_source": "def matmul_ihxs(a, b):\n    \"\"\"Matrix multiplication of shapes (11,8) @ (8,9).\"\"\"\n    return jnp.dot(a, b)",
+  "jaxpr": "{ lambda ; a:f32[11,8] b:f32[8,9]. let\n    c:f32[11,9] = dot_general[\n      dimension_numbers=(([1], [0]), ([], []))\n      preferred_element_type=float32\n    ] a b\n  in (c,) }",
+  "stablehlo": "module @jit_matmul_ihxs attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<11x8xf32>, %arg1: tensor<8x9xf32>) -> (tensor<11x9xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.dot_general %arg0, %arg1, contracting_dims = [1] x [0], precision = [DEFAULT, DEFAULT] : (tensor<11x8xf32>, tensor<8x9xf32>) -> tensor<11x9xf32>\n    return %0 : tensor<11x9xf32>\n  }\n}\n",
+  "xla_hlo": "HloModule jit_matmul_ihxs, entry_computation_layout={(f32[11,8]{1,0}, f32[8,9]{1,0})->f32[11,9]{1,0}}\n\nENTRY main.1 {\n  a.1 = f32[11,8]{1,0} parameter(0)\n  b.1 = f32[8,9]{1,0} parameter(1)\n  ROOT dot_general.1 = f32[11,9]{1,0} dot(a.1, b.1), lhs_contracting_dims={1}, rhs_contracting_dims={0}\n}\n\n",
+  "input_shapes": [
+    [
+      11,
+      8
+    ],
+    [
+      8,
+      9
+    ]
+  ],
+  "output_shape": [
+    11,
+    9
+  ]
+}

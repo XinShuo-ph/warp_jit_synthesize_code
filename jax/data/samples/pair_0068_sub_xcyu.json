@@ -1,0 +1,24 @@
+{
+  "name": "sub_xcyu",
+  "python_source": "def sub_xcyu(x, y):\n    \"\"\"Subtraction operation.\"\"\"\n    return x - y",
+  "jaxpr": "{ lambda ; a:f32[5,4,4] b:f32[5,4,4]. let c:f32[5,4,4] = sub a b in (c,) }",
+  "stablehlo": "module @jit_sub_xcyu attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<5x4x4xf32>, %arg1: tensor<5x4x4xf32>) -> (tensor<5x4x4xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.subtract %arg0, %arg1 : tensor<5x4x4xf32>\n    return %0 : tensor<5x4x4xf32>\n  }\n}\n",
+  "xla_hlo": "HloModule jit_sub_xcyu, entry_computation_layout={(f32[5,4,4]{2,1,0}, f32[5,4,4]{2,1,0})->f32[5,4,4]{2,1,0}}\n\nENTRY main.1 {\n  x.1 = f32[5,4,4]{2,1,0} parameter(0)\n  y.1 = f32[5,4,4]{2,1,0} parameter(1)\n  ROOT sub.1 = f32[5,4,4]{2,1,0} subtract(x.1, y.1)\n}\n\n",
+  "input_shapes": [
+    [
+      5,
+      4,
+      4
+    ],
+    [
+      5,
+      4,
+      4
+    ]
+  ],
+  "output_shape": [
+    5,
+    4,
+    4
+  ]
+}

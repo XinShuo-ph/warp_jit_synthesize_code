@@ -1,0 +1,18 @@
+{
+  "name": "div_nypi",
+  "python_source": "def div_nypi(x, y):\n    \"\"\"Division (safe) operation.\"\"\"\n    return x / (y + 1e-6)",
+  "jaxpr": "{ lambda ; a:f32[4] b:f32[4]. let\n    c:f32[4] = add b 9.999999974752427e-07:f32[]\n    d:f32[4] = div a c\n  in (d,) }",
+  "stablehlo": "module @jit_div_nypi attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4xf32>, %arg1: tensor<4xf32>) -> (tensor<4xf32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<9.99999997E-7> : tensor<f32>\n    %0 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<4xf32>\n    %1 = stablehlo.add %arg1, %0 : tensor<4xf32>\n    %2 = stablehlo.divide %arg0, %1 : tensor<4xf32>\n    return %2 : tensor<4xf32>\n  }\n}\n",
+  "xla_hlo": "HloModule jit_div_nypi, entry_computation_layout={(f32[4]{0}, f32[4]{0})->f32[4]{0}}\n\nENTRY main.1 {\n  x.1 = f32[4]{0} parameter(0)\n  y.1 = f32[4]{0} parameter(1)\n  constant.1 = f32[] constant(1e-06)\n  broadcast.1 = f32[4]{0} broadcast(constant.1), dimensions={}\n  add.1 = f32[4]{0} add(y.1, broadcast.1)\n  ROOT div.1 = f32[4]{0} divide(x.1, add.1)\n}\n\n",
+  "input_shapes": [
+    [
+      4
+    ],
+    [
+      4
+    ]
+  ],
+  "output_shape": [
+    4
+  ]
+}

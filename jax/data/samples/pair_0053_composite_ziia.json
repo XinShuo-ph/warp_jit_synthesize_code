@@ -1,0 +1,17 @@
+{
+  "name": "composite_ziia",
+  "python_source": "def composite_ziia(x):\n    \"\"\"Composite function with multiple operations.\"\"\"\n    return x ** 2 + jnp.sin(x) + jax.nn.relu(x)",
+  "jaxpr": "{ lambda ; a:f32[3,11]. let\n    b:f32[3,11] = integer_pow[y=2] a\n    c:f32[3,11] = sin a\n    d:f32[3,11] = add b c\n    e:f32[3,11] = custom_jvp_call[\n      name=relu\n      call_jaxpr={ lambda ; f:f32[3,11]. let\n          g:f32[3,11] = jit[\n            name=relu\n            jaxpr={ lambda ; f:f32[3,11]. let\n                g:f32[3,11] = max f 0.0:f32[]\n              in (g,) }\n          ] f\n        in (g,) }\n      jvp=jvp\n      symbolic_zeros=False\n    ] a\n    h:f32[3,11] = add d e\n  in (h,) }",
+  "stablehlo": "module @jit_composite_ziia attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<3x11xf32>) -> (tensor<3x11xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.multiply %arg0, %arg0 : tensor<3x11xf32>\n    %1 = stablehlo.sine %arg0 : tensor<3x11xf32>\n    %2 = stablehlo.add %0, %1 : tensor<3x11xf32>\n    %3 = call @relu(%arg0) : (tensor<3x11xf32>) -> tensor<3x11xf32>\n    %4 = stablehlo.add %2, %3 : tensor<3x11xf32>\n    return %4 : tensor<3x11xf32>\n  }\n  func.func private @relu(%arg0: tensor<3x11xf32>) -> tensor<3x11xf32> {\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %0 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<3x11xf32>\n    %1 = stablehlo.maximum %arg0, %0 : tensor<3x11xf32>\n    return %1 : tensor<3x11xf32>\n  }\n}\n",
+  "xla_hlo": "HloModule jit_composite_ziia, entry_computation_layout={(f32[3,11]{1,0})->f32[3,11]{1,0}}\n\nrelu.1 {\n  Arg_0.1 = f32[3,11]{1,0} parameter(0)\n  constant.1 = f32[] constant(0)\n  max.2 = f32[3,11]{1,0} broadcast(constant.1), dimensions={}\n  ROOT max.3 = f32[3,11]{1,0} maximum(Arg_0.1, max.2)\n}\n\nENTRY main.2 {\n  x.1 = f32[3,11]{1,0} parameter(0)\n  integer_pow.1 = f32[3,11]{1,0} multiply(x.1, x.1)\n  sin.1 = f32[3,11]{1,0} sine(x.1)\n  add.2 = f32[3,11]{1,0} add(integer_pow.1, sin.1)\n  jit_relu_.1 = f32[3,11]{1,0} call(x.1), to_apply=relu.1\n  ROOT add.3 = f32[3,11]{1,0} add(add.2, jit_relu_.1)\n}\n\n",
+  "input_shapes": [
+    [
+      3,
+      11
+    ]
+  ],
+  "output_shape": [
+    3,
+    11
+  ]
+}

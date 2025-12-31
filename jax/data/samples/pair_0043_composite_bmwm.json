@@ -1,0 +1,17 @@
+{
+  "name": "composite_bmwm",
+  "python_source": "def composite_bmwm(x):\n    \"\"\"Composite function with multiple operations.\"\"\"\n    return jax.nn.relu(x) + jnp.exp(-jnp.abs(x)) + jnp.sin(x)",
+  "jaxpr": "{ lambda ; a:f32[12,4]. let\n    b:f32[12,4] = custom_jvp_call[\n      name=relu\n      call_jaxpr={ lambda ; c:f32[12,4]. let\n          d:f32[12,4] = jit[\n            name=relu\n            jaxpr={ lambda ; c:f32[12,4]. let\n                d:f32[12,4] = max c 0.0:f32[]\n              in (d,) }\n          ] c\n        in (d,) }\n      jvp=jvp\n      symbolic_zeros=False\n    ] a\n    e:f32[12,4] = abs a\n    f:f32[12,4] = neg e\n    g:f32[12,4] = exp f\n    h:f32[12,4] = add b g\n    i:f32[12,4] = sin a\n    j:f32[12,4] = add h i\n  in (j,) }",
+  "stablehlo": "module @jit_composite_bmwm attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<12x4xf32>) -> (tensor<12x4xf32> {jax.result_info = \"result\"}) {\n    %0 = call @relu(%arg0) : (tensor<12x4xf32>) -> tensor<12x4xf32>\n    %1 = stablehlo.abs %arg0 : tensor<12x4xf32>\n    %2 = stablehlo.negate %1 : tensor<12x4xf32>\n    %3 = stablehlo.exponential %2 : tensor<12x4xf32>\n    %4 = stablehlo.add %0, %3 : tensor<12x4xf32>\n    %5 = stablehlo.sine %arg0 : tensor<12x4xf32>\n    %6 = stablehlo.add %4, %5 : tensor<12x4xf32>\n    return %6 : tensor<12x4xf32>\n  }\n  func.func private @relu(%arg0: tensor<12x4xf32>) -> tensor<12x4xf32> {\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %0 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<12x4xf32>\n    %1 = stablehlo.maximum %arg0, %0 : tensor<12x4xf32>\n    return %1 : tensor<12x4xf32>\n  }\n}\n",
+  "xla_hlo": "HloModule jit_composite_bmwm, entry_computation_layout={(f32[12,4]{1,0})->f32[12,4]{1,0}}\n\nrelu.1 {\n  Arg_0.1 = f32[12,4]{1,0} parameter(0)\n  constant.1 = f32[] constant(0)\n  max.2 = f32[12,4]{1,0} broadcast(constant.1), dimensions={}\n  ROOT max.3 = f32[12,4]{1,0} maximum(Arg_0.1, max.2)\n}\n\nENTRY main.2 {\n  x.1 = f32[12,4]{1,0} parameter(0)\n  jit_relu_.1 = f32[12,4]{1,0} call(x.1), to_apply=relu.1\n  abs.1 = f32[12,4]{1,0} abs(x.1)\n  neg.1 = f32[12,4]{1,0} negate(abs.1)\n  exp.1 = f32[12,4]{1,0} exponential(neg.1)\n  add.2 = f32[12,4]{1,0} add(jit_relu_.1, exp.1)\n  sin.1 = f32[12,4]{1,0} sine(x.1)\n  ROOT add.3 = f32[12,4]{1,0} add(add.2, sin.1)\n}\n\n",
+  "input_shapes": [
+    [
+      12,
+      4
+    ]
+  ],
+  "output_shape": [
+    12,
+    4
+  ]
+}

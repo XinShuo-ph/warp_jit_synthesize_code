@@ -1,0 +1,20 @@
+{
+  "name": "vmap_bldx",
+  "python_source": "def vmap_bldx(a_batch, b_batch):\n    \"\"\"Batched operation using vmap.\"\"\"\n    def inner(a, b):\n        return jnp.sum(a * b)\n    return jax.vmap(inner)(a_batch, b_batch)",
+  "jaxpr": "{ lambda ; a:f32[2,12] b:f32[2,12]. let\n    c:f32[2,12] = mul a b\n    d:f32[2] = reduce_sum[axes=(np.int64(1),) out_sharding=None] c\n  in (d,) }",
+  "stablehlo": "module @jit_vmap_bldx attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<2x12xf32>, %arg1: tensor<2x12xf32>) -> (tensor<2xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.multiply %arg0, %arg1 : tensor<2x12xf32>\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %1 = stablehlo.reduce(%0 init: %cst) applies stablehlo.add across dimensions = [1] : (tensor<2x12xf32>, tensor<f32>) -> tensor<2xf32>\n    return %1 : tensor<2xf32>\n  }\n}\n",
+  "xla_hlo": "HloModule jit_vmap_bldx, entry_computation_layout={(f32[2,12]{1,0}, f32[2,12]{1,0})->f32[2]{0}}\n\nregion_0.1 {\n  reduce_sum.3 = f32[] parameter(0)\n  reduce_sum.4 = f32[] parameter(1)\n  ROOT reduce_sum.5 = f32[] add(reduce_sum.3, reduce_sum.4)\n}\n\nENTRY main.2 {\n  a_batch.1 = f32[2,12]{1,0} parameter(0)\n  b_batch.1 = f32[2,12]{1,0} parameter(1)\n  mul.1 = f32[2,12]{1,0} multiply(a_batch.1, b_batch.1)\n  constant.1 = f32[] constant(0)\n  ROOT reduce_sum.7 = f32[2]{0} reduce(mul.1, constant.1), dimensions={1}, to_apply=region_0.1\n}\n\n",
+  "input_shapes": [
+    [
+      2,
+      12
+    ],
+    [
+      2,
+      12
+    ]
+  ],
+  "output_shape": [
+    2
+  ]
+}

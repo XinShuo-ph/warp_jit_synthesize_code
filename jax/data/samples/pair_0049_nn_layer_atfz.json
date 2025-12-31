@@ -1,0 +1,24 @@
+{
+  "name": "nn_layer_atfz",
+  "python_source": "def nn_layer_atfz(x, w, b):\n    \"\"\"Neural network layer with tanh activation.\"\"\"\n    return jax.nn.tanh(jnp.dot(x, w) + b)",
+  "jaxpr": "{ lambda ; a:f32[4,23] b:f32[23,20] c:f32[20]. let\n    d:f32[4,20] = dot_general[\n      dimension_numbers=(([1], [0]), ([], []))\n      preferred_element_type=float32\n    ] a b\n    e:f32[1,20] = broadcast_in_dim[\n      broadcast_dimensions=(1,)\n      shape=(1, 20)\n      sharding=None\n    ] c\n    f:f32[4,20] = add d e\n    g:f32[4,20] = tanh f\n  in (g,) }",
+  "stablehlo": "module @jit_nn_layer_atfz attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4x23xf32>, %arg1: tensor<23x20xf32>, %arg2: tensor<20xf32>) -> (tensor<4x20xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.dot_general %arg0, %arg1, contracting_dims = [1] x [0], precision = [DEFAULT, DEFAULT] : (tensor<4x23xf32>, tensor<23x20xf32>) -> tensor<4x20xf32>\n    %1 = stablehlo.broadcast_in_dim %arg2, dims = [1] : (tensor<20xf32>) -> tensor<1x20xf32>\n    %2 = stablehlo.broadcast_in_dim %1, dims = [0, 1] : (tensor<1x20xf32>) -> tensor<4x20xf32>\n    %3 = stablehlo.add %0, %2 : tensor<4x20xf32>\n    %4 = stablehlo.tanh %3 : tensor<4x20xf32>\n    return %4 : tensor<4x20xf32>\n  }\n}\n",
+  "xla_hlo": "HloModule jit_nn_layer_atfz, entry_computation_layout={(f32[4,23]{1,0}, f32[23,20]{1,0}, f32[20]{0})->f32[4,20]{1,0}}\n\nENTRY main.1 {\n  x.1 = f32[4,23]{1,0} parameter(0)\n  w.1 = f32[23,20]{1,0} parameter(1)\n  dot_general.1 = f32[4,20]{1,0} dot(x.1, w.1), lhs_contracting_dims={1}, rhs_contracting_dims={0}\n  b.1 = f32[20]{0} parameter(2)\n  broadcast_in_dim.1 = f32[1,20]{1,0} reshape(b.1)\n  add.4 = f32[1,20]{1,0} broadcast(broadcast_in_dim.1), dimensions={0,1}\n  add.5 = f32[20]{0} reshape(add.4)\n  add.6 = f32[4,20]{1,0} broadcast(add.5), dimensions={1}\n  add.7 = f32[4,20]{1,0} add(dot_general.1, add.6)\n  ROOT tanh.1 = f32[4,20]{1,0} tanh(add.7)\n}\n\n",
+  "input_shapes": [
+    [
+      4,
+      23
+    ],
+    [
+      23,
+      20
+    ],
+    [
+      20
+    ]
+  ],
+  "output_shape": [
+    4,
+    20
+  ]
+}

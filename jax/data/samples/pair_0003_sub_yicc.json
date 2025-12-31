@@ -1,0 +1,21 @@
+{
+  "name": "sub_yicc",
+  "python_source": "def sub_yicc(x, y):\n    \"\"\"Subtraction operation.\"\"\"\n    return x - y",
+  "jaxpr": "{ lambda ; a:f32[11,6] b:f32[11,6]. let c:f32[11,6] = sub a b in (c,) }",
+  "stablehlo": "module @jit_sub_yicc attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<11x6xf32>, %arg1: tensor<11x6xf32>) -> (tensor<11x6xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.subtract %arg0, %arg1 : tensor<11x6xf32>\n    return %0 : tensor<11x6xf32>\n  }\n}\n",
+  "xla_hlo": "HloModule jit_sub_yicc, entry_computation_layout={(f32[11,6]{1,0}, f32[11,6]{1,0})->f32[11,6]{1,0}}\n\nENTRY main.1 {\n  x.1 = f32[11,6]{1,0} parameter(0)\n  y.1 = f32[11,6]{1,0} parameter(1)\n  ROOT sub.1 = f32[11,6]{1,0} subtract(x.1, y.1)\n}\n\n",
+  "input_shapes": [
+    [
+      11,
+      6
+    ],
+    [
+      11,
+      6
+    ]
+  ],
+  "output_shape": [
+    11,
+    6
+  ]
+}

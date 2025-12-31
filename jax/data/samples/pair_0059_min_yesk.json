@@ -1,0 +1,18 @@
+{
+  "name": "min_yesk",
+  "python_source": "def min_yesk(x):\n    \"\"\"Min reduction along axis 1.\"\"\"\n    return jnp.min(x, axis=1)",
+  "jaxpr": "{ lambda ; a:f32[4,16,16]. let b:f32[4,16] = reduce_min[axes=(1,)] a in (b,) }",
+  "stablehlo": "module @jit_min_yesk attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<4x16x16xf32>) -> (tensor<4x16xf32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<0x7F800000> : tensor<f32>\n    %0 = stablehlo.reduce(%arg0 init: %cst) applies stablehlo.minimum across dimensions = [1] : (tensor<4x16x16xf32>, tensor<f32>) -> tensor<4x16xf32>\n    return %0 : tensor<4x16xf32>\n  }\n}\n",
+  "xla_hlo": "HloModule jit_min_yesk, entry_computation_layout={(f32[4,16,16]{2,1,0})->f32[4,16]{1,0}}\n\nregion_0.1 {\n  reduce_min.3 = f32[] parameter(0)\n  reduce_min.4 = f32[] parameter(1)\n  ROOT reduce_min.5 = f32[] minimum(reduce_min.3, reduce_min.4)\n}\n\nENTRY main.2 {\n  x.1 = f32[4,16,16]{2,1,0} parameter(0)\n  constant.1 = f32[] constant(inf)\n  ROOT reduce_min.7 = f32[4,16]{1,0} reduce(x.1, constant.1), dimensions={1}, to_apply=region_0.1\n}\n\n",
+  "input_shapes": [
+    [
+      4,
+      16,
+      16
+    ]
+  ],
+  "output_shape": [
+    4,
+    16
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "name": "vmap_pzjx",
+  "python_source": "def vmap_pzjx(a_batch, b_batch):\n    \"\"\"Batched operation using vmap.\"\"\"\n    def inner(a, b):\n        return jnp.maximum(a, b)\n    return jax.vmap(inner)(a_batch, b_batch)",
+  "jaxpr": "{ lambda ; a:f32[7,5] b:f32[7,5]. let c:f32[7,5] = max a b in (c,) }",
+  "stablehlo": "module @jit_vmap_pzjx attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<7x5xf32>, %arg1: tensor<7x5xf32>) -> (tensor<7x5xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.maximum %arg0, %arg1 : tensor<7x5xf32>\n    return %0 : tensor<7x5xf32>\n  }\n}\n",
+  "xla_hlo": "HloModule jit_vmap_pzjx, entry_computation_layout={(f32[7,5]{1,0}, f32[7,5]{1,0})->f32[7,5]{1,0}}\n\nENTRY main.1 {\n  a_batch.1 = f32[7,5]{1,0} parameter(0)\n  b_batch.1 = f32[7,5]{1,0} parameter(1)\n  ROOT max.1 = f32[7,5]{1,0} maximum(a_batch.1, b_batch.1)\n}\n\n",
+  "input_shapes": [
+    [
+      7,
+      5
+    ],
+    [
+      7,
+      5
+    ]
+  ],
+  "output_shape": [
+    7,
+    5
+  ]
+}

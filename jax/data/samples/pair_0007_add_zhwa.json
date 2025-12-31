@@ -1,0 +1,18 @@
+{
+  "name": "add_zhwa",
+  "python_source": "def add_zhwa(x, y):\n    \"\"\"Addition operation.\"\"\"\n    return x + y",
+  "jaxpr": "{ lambda ; a:f32[7] b:f32[7]. let c:f32[7] = add a b in (c,) }",
+  "stablehlo": "module @jit_add_zhwa attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<7xf32>, %arg1: tensor<7xf32>) -> (tensor<7xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.add %arg0, %arg1 : tensor<7xf32>\n    return %0 : tensor<7xf32>\n  }\n}\n",
+  "xla_hlo": "HloModule jit_add_zhwa, entry_computation_layout={(f32[7]{0}, f32[7]{0})->f32[7]{0}}\n\nENTRY main.1 {\n  x.1 = f32[7]{0} parameter(0)\n  y.1 = f32[7]{0} parameter(1)\n  ROOT add.1 = f32[7]{0} add(x.1, y.1)\n}\n\n",
+  "input_shapes": [
+    [
+      7
+    ],
+    [
+      7
+    ]
+  ],
+  "output_shape": [
+    7
+  ]
+}

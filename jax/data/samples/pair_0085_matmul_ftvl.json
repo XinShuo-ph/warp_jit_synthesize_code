@@ -1,0 +1,21 @@
+{
+  "name": "matmul_ftvl",
+  "python_source": "def matmul_ftvl(a, b):\n    \"\"\"Matrix multiplication of shapes (8,15) @ (15,8).\"\"\"\n    return jnp.dot(a, b)",
+  "jaxpr": "{ lambda ; a:f32[8,15] b:f32[15,8]. let\n    c:f32[8,8] = dot_general[\n      dimension_numbers=(([1], [0]), ([], []))\n      preferred_element_type=float32\n    ] a b\n  in (c,) }",
+  "stablehlo": "module @jit_matmul_ftvl attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<8x15xf32>, %arg1: tensor<15x8xf32>) -> (tensor<8x8xf32> {jax.result_info = \"result\"}) {\n    %0 = stablehlo.dot_general %arg0, %arg1, contracting_dims = [1] x [0], precision = [DEFAULT, DEFAULT] : (tensor<8x15xf32>, tensor<15x8xf32>) -> tensor<8x8xf32>\n    return %0 : tensor<8x8xf32>\n  }\n}\n",
+  "xla_hlo": "HloModule jit_matmul_ftvl, entry_computation_layout={(f32[8,15]{1,0}, f32[15,8]{1,0})->f32[8,8]{1,0}}\n\nENTRY main.1 {\n  a.1 = f32[8,15]{1,0} parameter(0)\n  b.1 = f32[15,8]{1,0} parameter(1)\n  ROOT dot_general.1 = f32[8,8]{1,0} dot(a.1, b.1), lhs_contracting_dims={1}, rhs_contracting_dims={0}\n}\n\n",
+  "input_shapes": [
+    [
+      8,
+      15
+    ],
+    [
+      15,
+      8
+    ]
+  ],
+  "output_shape": [
+    8,
+    8
+  ]
+}

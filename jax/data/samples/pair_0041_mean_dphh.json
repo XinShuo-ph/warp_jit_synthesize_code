@@ -1,0 +1,16 @@
+{
+  "name": "mean_dphh",
+  "python_source": "def mean_dphh(x):\n    \"\"\"Mean reduction along axis 1.\"\"\"\n    return jnp.mean(x, axis=1)",
+  "jaxpr": "{ lambda ; a:f32[8,8]. let\n    b:f32[8] = reduce_sum[axes=(1,) out_sharding=None] a\n    c:f32[8] = div b 8.0:f32[]\n  in (c,) }",
+  "stablehlo": "module @jit_mean_dphh attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {\n  func.func public @main(%arg0: tensor<8x8xf32>) -> (tensor<8xf32> {jax.result_info = \"result\"}) {\n    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>\n    %0 = stablehlo.reduce(%arg0 init: %cst) applies stablehlo.add across dimensions = [1] : (tensor<8x8xf32>, tensor<f32>) -> tensor<8xf32>\n    %cst_0 = stablehlo.constant dense<8.000000e+00> : tensor<f32>\n    %1 = stablehlo.broadcast_in_dim %cst_0, dims = [] : (tensor<f32>) -> tensor<8xf32>\n    %2 = stablehlo.divide %0, %1 : tensor<8xf32>\n    return %2 : tensor<8xf32>\n  }\n}\n",
+  "xla_hlo": "HloModule jit_mean_dphh, entry_computation_layout={(f32[8,8]{1,0})->f32[8]{0}}\n\nregion_0.1 {\n  reduce_sum.3 = f32[] parameter(0)\n  reduce_sum.4 = f32[] parameter(1)\n  ROOT reduce_sum.5 = f32[] add(reduce_sum.3, reduce_sum.4)\n}\n\nENTRY main.2 {\n  x.1 = f32[8,8]{1,0} parameter(0)\n  constant.3 = f32[] constant(0)\n  reduce_sum.7 = f32[8]{0} reduce(x.1, constant.3), dimensions={1}, to_apply=region_0.1\n  constant.2 = f32[] constant(8)\n  broadcast.1 = f32[8]{0} broadcast(constant.2), dimensions={}\n  ROOT div.1 = f32[8]{0} divide(reduce_sum.7, broadcast.1)\n}\n\n",
+  "input_shapes": [
+    [
+      8,
+      8
+    ]
+  ],
+  "output_shape": [
+    8
+  ]
+}
